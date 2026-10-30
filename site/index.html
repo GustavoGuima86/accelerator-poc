@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Latency benchmark</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1b1f23; --muted: #6c757d; --card: #ffffff; --line: #e3e7ea; --track: #f1f3f5;
+    --red: #d64545; --green: #2f9e44; --blue: #4263eb; --orange: #f08c00; --accent: #4263eb;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14171a; --fg: #e8eaed; --muted: #9aa3ab; --card: #1b1f23; --line: #2c3238; --track: #262b30; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); line-height: 1.5;
+         font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 18px 80px; }
+  h1 { font-size: 1.5rem; margin: 0 0 2px; }
+  h2 { font-size: 1.1rem; margin: 0 0 4px; }
+  p { margin: 6px 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: .85rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin: 16px 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .grow { flex: 1 1 auto; }
+  label.field { display: flex; flex-direction: column; font-size: .8rem; color: var(--muted); gap: 4px; }
+  select, input[type=text], input[type=range] { font: inherit; color: var(--fg); }
+  select, input[type=text] { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+  input[type=range] { width: 170px; accent-color: var(--accent); }
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 8px 14px; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; padding: 7px 12px; }
+  .seg button[aria-pressed=true] { background: var(--accent); color: #fff; }
+  nav.tabs { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 10px 0; border-bottom: 1px solid var(--line); margin-top: 14px; }
+  nav.tabs .seg { width: 100%; }
+  nav.tabs .seg button { flex: 1; }
+  .panel { display: none; } .panel.active { display: block; }
+  .banner { border-radius: 10px; padding: 10px 14px; margin: 12px 0; font-size: .9rem; border: 1px solid var(--orange); background: rgba(240,140,0,.1); }
+  .banner.info { border-color: var(--blue); background: rgba(66,99,235,.08); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { font-size: .78rem; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; background: var(--track); }
+  .lane { display: grid; grid-template-columns: 200px 1fr 130px; gap: 12px; align-items: center; margin: 12px 0; }
+  .lane .name { font-size: .9rem; text-align: right; }
+  .lane .sub { color: var(--muted); font-size: .72rem; }
+  .track { background: var(--track); border-radius: 8px; height: 30px; overflow: hidden; position: relative; display: flex; }
+  .fill { height: 100%; transition: width .45s ease; min-width: 0; }
+  .fill.seg2 { opacity: .55; }
+  .val { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .race .track { height: 14px; margin-top: 4px; }
+  .speed { font-size: 1.05rem; margin-top: 10px; }
+  .speed strong { color: var(--green); }
+  .speed.bad strong { color: var(--orange); }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .scroll { overflow-x: auto; }
+  svg text { fill: var(--fg); font-family: inherit; }
+  .status { min-height: 1.4em; font-size: .88rem; color: var(--muted); }
+  .badge { font-size: .72rem; border-radius: 6px; padding: 2px 8px; background: var(--track); color: var(--muted); }
+  @media (max-width: 640px) {
+    .lane { grid-template-columns: 1fr; gap: 2px; } .lane .name { text-align: left; }
+    input[type=range] { width: 130px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title">Latency benchmark</h1>
+  <p class="muted" id="subtitle"></p>
+
+  <div class="card">
+    <div class="row">
+      <label class="field grow">Where are you? (included in exports and shared links)
+        <input type="text" id="loc" placeholder="e.g. Shanghai office, home Wi-Fi" maxlength="60">
+      </label>
+      <div class="small muted" id="netinfo"></div>
+    </div>
+  </div>
+
+  <div id="banners"></div>
+
+  <nav class="tabs"><div class="seg" id="tabs" role="tablist">
+    <button data-tab="static" aria-pressed="true">1 Static assets</button>
+    <button data-tab="api" aria-pressed="false">2 API</button>
+    <button data-tab="db" aria-pressed="false">3 Database</button>
+    <button data-tab="whatif" aria-pressed="false">4 What-if</button>
+    <button data-tab="results" aria-pressed="false">5 Results</button>
+  </div></nav>
+
+  <!-- ============ STATIC ============ -->
+  <section class="panel active" id="panel-static">
+    <div class="card">
+      <h2>Static assets: S3 in Sydney vs CloudFront</h2>
+      <div class="banner small">The direct baseline is a deliberately public S3 website bucket (HTTP only), created solely for this demo. Do not use this bucket pattern for production. The separate OAC-protected bucket remains private.</div>
+      <p class="muted small">The same file, fetched from your browser. Direct goes to the origin bucket in Sydney. CloudFront serves it from the nearest edge location once cached.</p>
+      <div class="row" style="margin-top:12px">
+        <label class="field">Payload <select id="static-size"></select></label>
+        <label class="field">Rounds: <b id="static-rounds-v">10</b><input type="range" id="static-rounds" min="1" max="30" value="10"></label>
+        <div class="seg" id="static-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
+        <button class="primary" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
+      </div>
+      <div class="status" id="static-status"></div>
+      <div id="static-lanes"></div>
+      <div id="static-speed"></div>
+      <div id="static-chips" class="chips"></div>
+      <div id="static-strip"></div>
+      <div class="row" style="margin-top:8px"><button id="static-replay" disabled>▶ Replay last round</button><span class="small muted">Animation of the last measured round, time-scaled. Measurements run one at a time so they don't compete for your bandwidth.</span></div>
+      <div id="static-race" class="race"></div>
+    </div>
+  </section>
+
+  <!-- ============ API ============ -->
+  <section class="panel" id="panel-api">
+    <div class="card">
+      <h2>API: direct ALB vs Global Accelerator</h2>
+      <p class="muted small">A tiny JSON response, so this is almost pure network latency to the endpoint in Sydney. Global Accelerator moves your traffic onto the AWS backbone at the nearest edge.</p>
+      <div class="row" style="margin-top:12px">
+        <label class="field">Rounds: <b id="api-rounds-v">15</b><input type="range" id="api-rounds" min="1" max="40" value="15"></label>
+        <div class="seg" id="api-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
+        <button class="primary" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
+      </div>
+      <div class="status" id="api-status"></div>
+      <div id="api-lanes"></div>
+      <div id="api-speed"></div>
+      <div id="api-strip"></div>
+      <div class="row" style="margin-top:8px"><button id="api-replay" disabled>▶ Replay last round</button></div>
+      <div id="api-race" class="race"></div>
+    </div>
+  </section>
+
+  <!-- ============ DATABASE ============ -->
+  <section class="panel" id="panel-db">
+    <div class="card">
+      <h2>Database: five ways to reach Aurora in Sydney</h2>
+      <div class="banner info small">A browser cannot speak the PostgreSQL protocol, so these runs execute in a function in <b id="db-client-region">Frankfurt</b> and report back. The numbers describe an application in that region talking to the database, <b>not your own network</b>.</div>
+      <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
+      <div id="db-controls">
+        <div class="row" style="margin-top:12px">
+          <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
+          <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
+          <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
+          <button class="primary" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
+        </div>
+        <div class="chips" id="db-paths" style="margin-top:10px"></div>
+        <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Sydney; the replica forwards them there.</p>
+      </div>
+      <div class="status" id="db-status"></div>
+      <div id="db-lanes"></div>
+      <div id="db-speed"></div>
+      <div id="db-table" class="scroll"></div>
+    </div>
+  </section>
+
+  <!-- ============ WHAT-IF ============ -->
+  <section class="panel" id="panel-whatif">
+    <div class="card">
+      <h2>What if my application is chatty?</h2>
+      <p class="muted small">Uses the latency you just measured. Every sequential request pays the round trip again, so the difference between paths multiplies with the number of calls.</p>
+      <div class="row" style="margin-top:12px">
+        <label class="field">Sequential calls per user action: <b id="n-v">20</b>
+          <input type="range" id="n" min="1" max="200" value="20" style="width:320px"></label>
+      </div>
+    </div>
+    <div class="card"><h2>API calls</h2><div id="wi-api"></div></div>
+    <div class="card"><h2>Database queries <span class="badge">measured from the near region</span></h2><div id="wi-db"></div></div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="panel" id="panel-results">
+    <div id="shared"></div>
+    <div class="card">
+      <h2>Your results</h2>
+      <div class="row" style="margin:8px 0">
+        <button id="export-csv">Download CSV</button>
+        <button id="copy-link">Copy shareable link</button>
+        <button id="copy-text">Copy summary</button>
+        <span class="status" id="export-status"></span>
+      </div>
+      <div id="results-table" class="scroll"></div>
+    </div>
+    <div class="card">
+      <div class="row"><h2 class="grow">History in this browser</h2><button id="clear-history">Clear</button></div>
+      <div id="history" class="scroll"></div>
+    </div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script>
+"use strict";
+const C = window.BENCH_CONFIG;
+const $ = (id) => document.getElementById(id);
+const COL = { direct: "var(--red)", opt: "var(--green)", blue: "var(--blue)", orange: "var(--orange)" };
+
+/* ---------- helpers ---------- */
+const fmt = (ms) => (ms == null || isNaN(ms)) ? "n/a" : ms >= 1000 ? (ms / 1000).toFixed(2) + " s" : (ms >= 100 ? Math.round(ms) : ms.toFixed(1)) + " ms";
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function stats(a) {
+  if (!a.length) return null;
+  const s = [...a].sort((x, y) => x - y);
+  const q = (p) => { const k = (s.length - 1) * p, f = Math.floor(k), c = Math.min(f + 1, s.length - 1); return s[f] + (s[c] - s[f]) * (k - f); };
+  return { n: a.length, min: s[0], max: s[s.length - 1], avg: a.reduce((x, y) => x + y, 0) / a.length, median: q(.5), p95: q(.95) };
+}
+const POPS = { FRA: "Frankfurt", AMS: "Amsterdam", LHR: "London", CDG: "Paris", MXP: "Milan", MAD: "Madrid", ARN: "Stockholm", WAW: "Warsaw", VIE: "Vienna", ZRH: "Zurich", DUB: "Dublin",
+  SIN: "Singapore", NRT: "Tokyo", HND: "Tokyo", KIX: "Osaka", ICN: "Seoul", HKG: "Hong Kong", TPE: "Taipei", BOM: "Mumbai", DEL: "Delhi", SYD: "Sydney", MEL: "Melbourne", PER: "Perth",
+  IAD: "Washington", JFK: "New York", ORD: "Chicago", SFO: "San Francisco", LAX: "Los Angeles", SEA: "Seattle", DFW: "Dallas", GRU: "Sao Paulo", JNB: "Johannesburg", DXB: "Dubai" };
+const popName = (p) => p ? (POPS[p.slice(0, 3)] ? `${p} (${POPS[p.slice(0, 3)]})` : p) : null;
+
+/* ---------- state ---------- */
+const state = {
+  tab: "static",
+  metric: { static: "total", api: "total" },
+  dbWorkload: "read",
+  dbPaths: new Set(),
+  runs: {},          // suite -> latest run {id, suite, params, lanes, samples}
+  running: {},       // suite -> {stop:boolean}
+  sharedView: false,
+};
+let runCounter = 0;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage may be unavailable */ } },
+};
+
+if (!C) {
+  document.body.innerHTML = '<div class="wrap"><div class="card"><h2>Missing config.js</h2><p>This page expects a <code>config.js</code> next to it that defines <code>window.BENCH_CONFIG</code>. Terraform generates it.</p></div></div>';
+  throw new Error("BENCH_CONFIG missing");
+}
+
+/* ---------- measurement ---------- */
+async function timeFetch(url, timeoutMs = 40000) {
+  const u = url + (url.includes("?") ? "&" : "?") + "cb=" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const ac = new AbortController();
+  const to = setTimeout(() => ac.abort(), timeoutMs);
+  const t0 = performance.now();
+  try {
+    const res = await fetch(u, { cache: "no-store", mode: "cors", credentials: "omit", signal: ac.signal });
+    const t1 = performance.now();                 // response headers received = time to first byte
+    const buf = await res.arrayBuffer();
+    const t2 = performance.now();
+    return { status: res.status, ok: res.ok, ttfb: t1 - t0, total: t2 - t0, bytes: buf.byteLength,
+             cache: res.headers.get("x-cache"), pop: res.headers.get("x-amz-cf-pop") };
+  } catch (e) {
+    return { status: 0, ok: false, error: e.name === "AbortError" ? "timeout" : (e.message || "network error") };
+  } finally { clearTimeout(to); }
+}
+
+async function probe(params, timeoutMs = 70000) {
+  const q = new URLSearchParams({ t: C.db.probeToken, cb: Date.now().toString(36), ...params });
+  const ac = new AbortController();
+  const to = setTimeout(() => ac.abort(), timeoutMs);
+  try {
+    const res = await fetch(C.db.probeUrl + "?" + q, { cache: "no-store", mode: "cors", credentials: "omit", signal: ac.signal });
+    if (!res.ok) return { error: "HTTP " + res.status };
+    return await res.json();
+  } catch (e) { return { error: e.name === "AbortError" ? "timeout" : (e.message || "network error") }; }
+  finally { clearTimeout(to); }
+}
+
+/* ---------- suites ---------- */
+function staticLanes() {
+  const key = $("static-size").value;
+  return [
+    { id: "direct", label: "Direct S3 (HTTP, Sydney)", color: COL.direct, url: `${C.static.directBase}/${key}` },
+    { id: "cdn", label: "CloudFront (nearest edge)", color: COL.opt, url: `${C.static.cloudfrontBase}/${key}` },
+  ];
+}
+function apiLanes() {
+  return [
+    { id: "direct", label: "Direct ALB (Sydney)", color: COL.direct, url: C.api.directUrl },
+    { id: "ga", label: "Global Accelerator", color: COL.opt, url: C.api.acceleratorUrl },
+  ];
+}
+const SUITES = {
+  static: { title: "Static assets", lanes: staticLanes, rounds: () => +$("static-rounds").value, desc: () => "payload " + $("static-size").selectedOptions[0].textContent },
+  api: { title: "API", lanes: apiLanes, rounds: () => +$("api-rounds").value, desc: () => "tiny JSON" },
+};
+
+async function runRace(suite) {
+  if (state.running[suite]) return;
+  const S = SUITES[suite], lanes = S.lanes(), rounds = S.rounds();
+  const run = { id: ++runCounter, suite, params: { desc: S.desc(), rounds }, lanes, samples: [], startedAt: new Date().toISOString() };
+  state.runs[suite] = run;
+  const ctl = state.running[suite] = { stop: false };
+  setRunning(suite, true);
+  for (let r = 0; r < rounds && !ctl.stop; r++) {
+    const order = r % 2 === 0 ? lanes : [...lanes].reverse();    // alternate order so neither lane always goes first
+    for (const lane of order) {
+      if (ctl.stop) break;
+      $(suite + "-status").textContent = `Round ${r + 1} of ${rounds}: measuring ${lane.label}...`;
+      const m = await timeFetch(lane.url);
+      run.samples.push({ ts: new Date().toISOString(), suite, target: lane.id, label: lane.label, round: r + 1, ...m });
+      renderRace(suite);
+      await sleep(60);
+    }
+  }
+  state.running[suite] = null;
+  setRunning(suite, false);
+  const done = run.samples.length;
+  $(suite + "-status").textContent = ctl.stop ? `Stopped after ${done} measurements.` : `Done: ${done} measurements.`;
+  if (done) saveHistory(run);
+  renderAll();
+}
+
+function setRunning(suite, on) {
+  $(suite + "-run").disabled = on; $(suite + "-stop").disabled = !on;
+  if ($(suite + "-replay")) $(suite + "-replay").disabled = on || !(state.runs[suite] && state.runs[suite].samples.length);
+}
+
+/* ---------- rendering: races ---------- */
+function laneStats(run, laneId, metric) {
+  const ok = run.samples.filter((s) => s.target === laneId && s.ok);
+  const all = run.samples.filter((s) => s.target === laneId);
+  return { st: stats(ok.map((s) => s[metric])), ok: ok.length, fail: all.length - ok.length, first: ok.length ? ok[0][metric] : null, samples: ok };
+}
+
+function renderRace(suite) {
+  const run = state.runs[suite];
+  if (!run) return;
+  const metric = state.metric[suite];
+  const info = run.lanes.map((l) => ({ lane: l, ...laneStats(run, l.id, metric) }));
+  const max = Math.max(1, ...info.map((i) => i.st ? i.st.avg : 0));
+  $(suite + "-lanes").innerHTML = info.map((i) => laneHtml(i.lane.label, i.lane.color,
+      i.st ? [{ v: i.st.avg, color: i.lane.color }] : [], max,
+      i.st ? fmt(i.st.avg) : (i.fail ? "failed" : "..."),
+      i.st ? `median ${fmt(i.st.median)} · p95 ${fmt(i.st.p95)} · n=${i.st.n}${i.fail ? " · " + i.fail + " failed" : ""}` : (i.fail ? esc(run.samples.find((s) => s.target === i.lane.id && !s.ok).error || "HTTP error") : ""),
+      i.first != null && i.st.n > 1 ? `first request ${fmt(i.first)}` : "")).join("");
+
+  const a = info[0], b = info[1];
+  if (a.st && b.st && b.st.avg > 0) {
+    const f = a.st.avg / b.st.avg;
+    $(suite + "-speed").innerHTML = f >= 1.05
+      ? `<div class="speed"><strong>${f.toFixed(1)}&times; faster</strong> with ${esc(b.lane.label)} than ${esc(a.lane.label)} from where you are (${metric === "ttfb" ? "time to first byte" : "total time"}, average).</div>`
+      : `<div class="speed bad"><strong>${f >= 0.95 ? "No meaningful difference" : (1 / f).toFixed(1) + "&times; slower"}</strong> with ${esc(b.lane.label)} from where you are. That is expected if you are close to the origin or the edge is far from you.</div>`;
+  } else { $(suite + "-speed").innerHTML = ""; }
+
+  if (suite === "static") {
+    const cdn = info.find((i) => i.lane.id === "cdn");
+    const caches = {}, pops = new Set();
+    run.samples.filter((s) => s.target === "cdn" && s.ok).forEach((s) => {
+      const k = /hit/i.test(s.cache || "") ? "Cache hit" : /miss/i.test(s.cache || "") ? "Cache miss" : "Cache status unknown";
+      caches[k] = (caches[k] || 0) + 1; if (s.pop) pops.add(s.pop);
+    });
+    $("static-chips").innerHTML = Object.entries(caches).map(([k, v]) => `<span class="chip">${k}: ${v}</span>`).join("")
+      + [...pops].map((p) => `<span class="chip">Edge: ${esc(popName(p))}</span>`).join("");
+  }
+  $(suite + "-strip").innerHTML = stripSvg(info, suite);
+  if (!state.running[suite]) setRunning(suite, false);
+}
+
+function laneHtml(label, color, segs, max, valueText, sub, sub2) {
+  const fills = segs.map((s, idx) => `<div class="fill${idx ? " seg2" : ""}" style="width:${Math.max(0.6, s.v / max * 100)}%;background:${s.color}"></div>`).join("");
+  return `<div class="lane"><div class="name">${esc(label)}</div><div class="track">${fills}</div>
+    <div><div class="val">${esc(valueText)}</div><div class="sub">${sub || ""}</div>${sub2 ? `<div class="sub">${sub2}</div>` : ""}</div></div>`;
+}
+
+/* ---------- distribution strip (every sample as a dot) ---------- */
+function stripSvg(info, suite) {
+  const metric = state.metric[suite];
+  const all = info.flatMap((i) => i.samples.map((s) => s[metric]));
+  if (all.length < 2) return "";
+  const max = Math.max(...all) * 1.05, W = 640, left = 10, right = 24, rowH = 26, H = info.length * rowH + 28;
+  const x = (v) => left + v / max * (W - left - right);
+  let g = "";
+  info.forEach((i, idx) => {
+    const y = 14 + idx * rowH + rowH / 2;
+    g += `<line x1="${left}" x2="${W - right}" y1="${y}" y2="${y}" stroke="var(--line)"/>`;
+    i.samples.forEach((s) => { g += `<circle cx="${x(s[metric]).toFixed(1)}" cy="${y}" r="4" fill="${i.lane.color}" fill-opacity=".55"/>`; });
+    if (i.st) g += `<line x1="${x(i.st.avg).toFixed(1)}" x2="${x(i.st.avg).toFixed(1)}" y1="${y - 10}" y2="${y + 10}" stroke="${i.lane.color}" stroke-width="2.5"/>`;
+  });
+  g += `<text x="${left}" y="${H - 4}" font-size="11" fill="var(--muted)">0</text><text x="${W - right}" y="${H - 4}" font-size="11" text-anchor="end">${esc(fmt(max))}</text>`;
+  return `<div class="small muted" style="margin-top:14px">Every measurement as a dot, the bar marks the average. Spread shows consistency, not just speed.</div>
+          <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Distribution of measurements">${g}</svg>`;
+}
+
+/* ---------- replay animation ---------- */
+function replay(suite) {
+  const run = state.runs[suite]; if (!run) return;
+  const metric = state.metric[suite];
+  const lastRound = Math.max(...run.samples.map((s) => s.round));
+  const rows = run.lanes.map((l) => ({ l, s: run.samples.find((x) => x.target === l.id && x.round === lastRound && x.ok) }));
+  const slowest = Math.max(1, ...rows.map((r) => r.s ? r.s[metric] : 0));
+  const SCALE_MS = 3200;   // the slowest lane takes this long on screen
+  $(suite + "-race").innerHTML = `<div class="small muted" style="margin-top:10px">Round ${lastRound}, time-scaled (slowest = ${(SCALE_MS / 1000).toFixed(1)} s on screen)</div>` + rows.map((r) =>
+    `<div class="lane"><div class="name">${esc(r.l.label)}</div><div class="track"><div class="fill" data-ms="${r.s ? r.s[metric] : 0}" style="width:0;transition:none;background:${r.l.color}"></div></div><div class="val">${r.s ? fmt(r.s[metric]) : "failed"}</div></div>`).join("");
+  const fills = [...$(suite + "-race").querySelectorAll(".fill")];
+  fills[0] && fills[0].offsetWidth;      // force reflow so the transition restarts
+  requestAnimationFrame(() => fills.forEach((f) => {
+    const ms = +f.dataset.ms; if (!ms) return;
+    f.style.transition = `width ${Math.max(60, ms / slowest * SCALE_MS)}ms linear`; f.style.width = "100%";
+  }));
+}
+
+/* ---------- database ---------- */
+function dbPaths() { return C.db.paths.filter((p) => state.dbPaths.has(p.id) && (state.dbWorkload === "read" || p.writes)); }
+
+async function runDb() {
+  if (state.running.db || !C.db) return;
+  const queries = +$("db-queries").value, sessions = +$("db-sessions").value, workload = state.dbWorkload;
+  const paths = dbPaths();
+  if (!paths.length) { $("db-status").textContent = "Select at least one path."; return; }
+  const run = { id: ++runCounter, suite: "db", params: { desc: `${workload}, ${queries} queries/session`, rounds: sessions, workload, queries },
+                lanes: paths.map((p) => ({ id: p.id, label: p.label, color: p.optimized ? COL.opt : COL.direct, optimized: p.optimized })), samples: [], startedAt: new Date().toISOString() };
+  state.runs.db = run;
+  const ctl = state.running.db = { stop: false };
+  $("db-run").disabled = true; $("db-stop").disabled = false;
+  $("db-status").textContent = "Warming up the probe (first call can take a few seconds)...";
+  await probe({ ping: "1" });
+  for (let s = 0; s < sessions && !ctl.stop; s++) {
+    for (const p of paths) {
+      if (ctl.stop) break;
+      $("db-status").textContent = `Session ${s + 1} of ${sessions}: ${p.label} (${queries} ${workload === "read" ? "reads" : "writes"})...`;
+      const r = await probe({ path: p.id, workload, queries });
+      const sample = { ts: new Date().toISOString(), suite: "db", target: p.id, label: p.label, round: s + 1, queries, ok: !r.error && r.total_ms != null, error: r.error, warning: r.warning };
+      if (sample.ok) {
+        if (p.id === "batched_api") { sample.total = r.total_ms; sample.connect = Math.max(0, r.total_ms - (r.inner_queries_ms || 0)); sample.perQuery = (r.inner_queries_ms || 0) / queries; }
+        else { sample.total = r.total_ms; sample.connect = r.connect_ms; sample.perQuery = r.query_ms.reduce((a, b) => a + b, 0) / Math.max(1, r.query_ms.length); }
+      }
+      run.samples.push(sample);
+      renderDb();
+    }
+  }
+  state.running.db = null;
+  $("db-run").disabled = false; $("db-stop").disabled = true;
+  $("db-status").textContent = ctl.stop ? "Stopped." : `Done: ${run.samples.length} sessions.`;
+  if (run.samples.length) saveHistory(run);
+  renderAll();
+}
+
+function dbLaneData(run) {
+  return run.lanes.map((l) => {
+    const ok = run.samples.filter((s) => s.target === l.id && s.ok), bad = run.samples.filter((s) => s.target === l.id && !s.ok);
+    const summary = (k) => stats(ok.map((s) => s[k]));
+    const totalStats = summary("total"), connectStats = summary("connect"), queryStats = summary("perQuery");
+    return { lane: l, n: ok.length, fail: bad.length, err: bad.length ? bad[0].error : null, warn: (ok.concat(bad).find((s) => s.warning) || {}).warning,
+             total: totalStats ? totalStats.avg : null, stats: totalStats,
+             connect: connectStats ? connectStats.avg : null, perQuery: queryStats ? queryStats.avg : null,
+             totals: ok.map((s) => s.total) };
+  });
+}
+
+function renderDb() {
+  const run = state.runs.db; if (!run) return;
+  const data = dbLaneData(run);
+  const max = Math.max(1, ...data.map((d) => d.total || 0));
+  $("db-lanes").innerHTML = `<div class="small muted" style="margin-top:12px">Total time of one session (solid = connection setup, faded = the ${run.params.queries} queries)</div>` +
+    data.map((d) => laneHtml(d.lane.label, d.lane.color,
+      d.total != null ? [{ v: d.connect, color: d.lane.color }, { v: d.total - d.connect, color: d.lane.color }] : [], max,
+      d.total != null ? fmt(d.total) : (d.fail ? "failed" : "..."),
+      d.total != null ? `${d.lane.id === "batched_api" ? "HTTPS call + connect" : "connect"} ${fmt(d.connect)} · per query ${fmt(d.perQuery)} · n=${d.n}` : esc(d.err || ""), d.warn ? "caveat: " + esc(d.warn) : "")).join("");
+  const direct = data.find((d) => d.lane.id === "public_direct" && d.total);
+  const best = data.filter((d) => d.total && d.lane.id !== "public_direct").sort((a, b) => a.total - b.total)[0];
+  $("db-speed").innerHTML = direct && best
+    ? (direct.total / best.total >= 1.05 ? `<div class="speed"><strong>${(direct.total / best.total).toFixed(1)}&times; faster</strong> with ${esc(best.lane.label)} than direct public access (session time, average).</div>`
+       : `<div class="speed bad"><strong>No meaningful improvement</strong> over direct public access for this workload. Writes cannot beat the distance to the writer.</div>`) : "";
+  $("db-table").innerHTML = `<table><thead><tr><th>Path</th><th class="num">Sessions</th><th class="num">Connect</th><th class="num">Per query</th><th class="num">Session total</th></tr></thead><tbody>` +
+    data.map((d) => `<tr><td>${esc(d.lane.label)}</td><td class="num">${d.n}${d.fail ? " (+" + d.fail + " failed)" : ""}</td><td class="num">${fmt(d.connect)}</td><td class="num">${fmt(d.perQuery)}</td><td class="num">${fmt(d.total)}</td></tr>`).join("") + "</tbody></table>";
+}
+
+/* ---------- what-if ---------- */
+function lineChart(lanes, n) {
+  const XMAX = 200, W = 640, H = 230, L = 52, R = 14, T = 12, B = 30;
+  const f = (l, x) => l.intercept + l.slope * x;
+  const ymax = Math.max(1, ...lanes.map((l) => f(l, XMAX))) * 1.05;
+  const X = (x) => L + x / XMAX * (W - L - R), Y = (y) => T + (1 - y / ymax) * (H - T - B);
+  let g = "";
+  for (let i = 0; i <= 4; i++) { const y = ymax * i / 4; g += `<line x1="${L}" x2="${W - R}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(y) + 4}" font-size="11" text-anchor="end">${esc(fmt(y))}</text>`; }
+  for (const x of [1, 50, 100, 150, 200]) g += `<text x="${X(x)}" y="${H - 8}" font-size="11" text-anchor="middle">${x}</text>`;
+  lanes.forEach((l) => { g += `<line x1="${X(0)}" y1="${Y(f(l, 0))}" x2="${X(XMAX)}" y2="${Y(f(l, XMAX))}" stroke="${l.color}" stroke-width="2.5"/>`; });
+  g += `<line x1="${X(n)}" x2="${X(n)}" y1="${T}" y2="${H - B}" stroke="var(--fg)" stroke-dasharray="4 4" opacity=".6"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Total time versus number of calls">${g}</svg>`;
+}
+
+function whatIfBlock(el, lanes, n, unit) {
+  if (!lanes.length) { el.innerHTML = `<p class="muted">Run the matching race first, then come back: this page scales your own measurements.</p>`; return; }
+  const total = (l) => l.intercept + l.slope * n;
+  const max = Math.max(1, ...lanes.map(total));
+  el.innerHTML = `<p class="small muted">${n} sequential ${unit}</p>` +
+    lanes.map((l) => laneHtml(l.label, l.color, [{ v: total(l), color: l.color }], max, fmt(total(l)), `${fmt(l.slope)} each${l.intercept > 1 ? " + " + fmt(l.intercept) + " setup" : ""}`)).join("") +
+    `<div style="margin-top:10px">${lineChart(lanes, n)}</div>`;
+}
+
+function renderWhatIf() {
+  const n = +$("n").value; $("n-v").textContent = n;
+  const api = state.runs.api, apiLanes_ = [];
+  if (api) api.lanes.forEach((l) => { const s = laneStats(api, l.id, "total").st; if (s) apiLanes_.push({ label: l.label, color: l.color, intercept: 0, slope: s.avg }); });
+  whatIfBlock($("wi-api"), apiLanes_, n, "API calls on a warm connection");
+  const db = state.runs.db, dbLanes_ = [];
+  if (db) dbLaneData(db).forEach((d) => { if (d.total != null) dbLanes_.push({ label: d.lane.label, color: d.lane.color, intercept: d.connect, slope: d.perQuery }); });
+  whatIfBlock($("wi-db"), dbLanes_, n, `${db ? db.params.workload : "read"} queries after one connection`);
+}
+
+/* ---------- results, history, export, share ---------- */
+function runSummary(run) {
+  const rows = [];
+  if (run.suite === "db") {
+    dbLaneData(run).forEach((d) => d.total != null && rows.push({ suite: "db", id: d.lane.id, label: d.lane.label,
+      n: d.stats.n, avg: d.stats.avg, median: d.stats.median, p95: d.stats.p95, min: d.stats.min, max: d.stats.max,
+      extra: `connect ${fmt(d.connect)}, per query ${fmt(d.perQuery)}` }));
+  } else {
+    run.lanes.forEach((l) => {
+      const x = laneStats(run, l.id, "total");
+      if (x.st) {
+        const ttfb = laneStats(run, l.id, "ttfb").st;
+        rows.push({ suite: run.suite, id: l.id, label: l.label, n: x.st.n, avg: x.st.avg, median: x.st.median, p95: x.st.p95, min: x.st.min, max: x.st.max, extra: ttfb ? `ttfb avg ${fmt(ttfb.avg)}` : "" });
+      }
+    });
+  }
+  return rows;
+}
+const allRuns = () => Object.values(state.runs).filter((r) => r && r.samples.length);
+
+function renderResults() {
+  const rows = allRuns().flatMap((r) => runSummary(r).map((x) => ({ ...x, params: r.params.desc })));
+  $("results-table").innerHTML = rows.length
+    ? `<table><thead><tr><th>Test</th><th>Target</th><th class="num">n</th><th class="num">Min</th><th class="num">Avg</th><th class="num">Median</th><th class="num">p95</th><th class="num">Max</th><th>Notes</th></tr></thead><tbody>` +
+      rows.map((x) => `<tr><td>${esc(x.suite)} <span class="muted">· ${esc(x.params)}</span></td><td>${esc(x.label)}</td><td class="num">${x.n}</td><td class="num">${fmt(x.min)}</td><td class="num"><b>${fmt(x.avg)}</b></td><td class="num">${fmt(x.median)}</td><td class="num">${fmt(x.p95)}</td><td class="num">${fmt(x.max)}</td><td class="muted">${esc(x.extra || "")}</td></tr>`).join("") + "</tbody></table>"
+    : `<p class="muted">Nothing measured yet. Run a race in one of the other tabs.</p>`;
+  const h = store.get("globalBenchHistory", []);
+  $("history").innerHTML = h.length
+    ? `<table><thead><tr><th>When</th><th>Where</th><th>Test</th><th>Results</th></tr></thead><tbody>` + h.map((e) =>
+        `<tr><td>${esc(new Date(e.ts).toLocaleString())}</td><td>${esc(e.loc || "")}</td><td>${esc(e.suite)} <span class="muted">· ${esc(e.desc)}</span></td><td>${e.rows.map((r) => `${esc(r.label)}: <b>${fmt(r.avg)}</b>`).join(" · ")}${e.speedup ? ` <span class="badge">${e.speedup.toFixed(1)}&times;</span>` : ""}</td></tr>`).join("") + "</tbody></table>"
+    : `<p class="muted">No earlier runs saved in this browser.</p>`;
+}
+
+function saveHistory(run) {
+  const rows = runSummary(run); if (!rows.length) return;
+  let speedup = null;
+  if (run.suite === "db") { const d = rows.find((r) => r.id === "public_direct"), b = rows.filter((r) => r.id !== "public_direct").sort((a, c) => a.avg - c.avg)[0]; if (d && b) speedup = d.avg / b.avg; }
+  else if (rows.length === 2) speedup = rows[0].avg / rows[1].avg;
+  const h = store.get("globalBenchHistory", []);
+  h.unshift({ ts: run.startedAt, loc: $("loc").value, suite: run.suite, desc: `${run.params.desc}, ${run.params.rounds} ${run.suite === "db" ? "sessions" : "rounds"}`, rows: rows.map((r) => ({ label: r.label, avg: r.avg })), speedup });
+  store.set("globalBenchHistory", h.slice(0, 30));
+}
+
+function netInfo() {
+  const c = navigator.connection || {};
+  return { effectiveType: c.effectiveType || null, rtt: c.rtt ?? null, downlink: c.downlink ?? null, ua: navigator.userAgent };
+}
+
+function csvEscape(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+function exportCsv() {
+  const head = ["timestamp", "location", "suite", "params", "target", "round", "status", "ttfb_ms", "total_ms", "connect_ms", "per_query_ms", "queries", "bytes", "x_cache", "edge_pop", "error"];
+  const lines = [head.join(",")];
+  allRuns().forEach((run) => run.samples.forEach((s) => {
+    const total = run.suite === "db" ? s.total : s.total, r = (v) => v == null ? "" : Math.round(v * 100) / 100;
+    lines.push([s.ts, $("loc").value, run.suite, run.params.desc, s.target, s.round, s.status != null ? s.status : (s.ok ? "ok" : "error"), r(s.ttfb), r(total), r(s.connect), r(s.perQuery), s.queries, s.bytes, s.cache, s.pop, s.error].map(csvEscape).join(","));
+  }));
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "latency-benchmark-" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  flash("CSV downloaded.");
+}
+
+const b64e = (o) => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const b64d = (s) => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))));
+function payload() {
+  return { v: 1, t: new Date().toISOString(), loc: $("loc").value, net: netInfo().effectiveType, rtt: netInfo().rtt,
+    rows: allRuns().flatMap((r) => runSummary(r).map((x) => ({ s: r.suite, p: r.params.desc, l: x.label, n: x.n, a: Math.round(x.avg * 10) / 10, m: Math.round(x.median * 10) / 10, q: Math.round(x.p95 * 10) / 10 }))) };
+}
+function summaryText() {
+  const p = payload();
+  return `Latency benchmark${p.loc ? " from " + p.loc : ""} (${new Date(p.t).toLocaleString()})\n` + p.rows.map((r) => `- ${r.s} (${r.p}) ${r.l}: avg ${fmt(r.a)}, median ${fmt(r.m)}, p95 ${fmt(r.q)}, n=${r.n}`).join("\n");
+}
+async function copy(text, okMsg) {
+  try { await navigator.clipboard.writeText(text); flash(okMsg); }
+  catch (e) { window.prompt("Copy this:", text); }
+}
+function flash(msg) { $("export-status").textContent = msg; setTimeout(() => { $("export-status").textContent = ""; }, 3500); }
+
+function renderShared() {
+  const m = /[#&]r=([^&]+)/.exec(location.hash);
+  if (!m) { $("shared").innerHTML = ""; return; }
+  try {
+    const p = b64d(m[1]);
+    $("shared").innerHTML = `<div class="card"><div class="row"><h2 class="grow">Shared result${p.loc ? " from " + esc(p.loc) : ""}</h2><button id="drop-shared">Dismiss</button></div>
+      <p class="muted small">Measured ${esc(new Date(p.t).toLocaleString())}${p.net ? " · connection " + esc(p.net) : ""}${p.rtt != null ? " · reported rtt " + esc(p.rtt) + " ms" : ""}</p>
+      <div class="scroll"><table><thead><tr><th>Test</th><th>Target</th><th class="num">n</th><th class="num">Avg</th><th class="num">Median</th><th class="num">p95</th></tr></thead><tbody>` +
+      p.rows.map((r) => `<tr><td>${esc(r.s)} <span class="muted">· ${esc(r.p)}</span></td><td>${esc(r.l)}</td><td class="num">${esc(r.n)}</td><td class="num"><b>${fmt(+r.a)}</b></td><td class="num">${fmt(+r.m)}</td><td class="num">${fmt(+r.q)}</td></tr>`).join("") + `</tbody></table></div></div>`;
+    $("drop-shared").onclick = () => { history.replaceState(null, "", location.pathname + location.search); renderShared(); };
+    setTab("results");
+  } catch (e) { $("shared").innerHTML = `<div class="banner">That shared link could not be read.</div>`; }
+}
+
+/* ---------- wiring ---------- */
+function renderAll() { renderRace("static"); renderRace("api"); renderDb(); renderWhatIf(); renderResults(); }
+function setTab(t) {
+  state.tab = t;
+  document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === t)));
+  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + t));
+  renderAll();
+}
+
+function init() {
+  document.title = C.title || document.title;
+  $("title").textContent = C.title || "Latency benchmark";
+  $("subtitle").textContent = `Origin in ${C.originRegion}. These numbers are measured live from your browser, wherever you are.`;
+  $("db-client-region").textContent = C.clientRegion || "the near region";
+
+  const loc = store.get("globalBenchLoc", ""); $("loc").value = loc;
+  $("loc").addEventListener("input", () => store.set("globalBenchLoc", $("loc").value));
+  const ni = netInfo(); $("netinfo").textContent = ni.effectiveType ? `Connection: ${ni.effectiveType}${ni.rtt != null ? ", rtt ~" + ni.rtt + " ms" : ""}` : "";
+
+  const banners = [];
+  const urls = [C.static.directBase, C.api.directUrl, C.api.acceleratorUrl];
+  if (location.protocol === "https:" && urls.some((u) => u.startsWith("http:")))
+    banners.push("This page is loaded over HTTPS, so the browser will block the plain-HTTP endpoints it measures (mixed content). Open the plain <b>http://</b> address instead.");
+  $("banners").innerHTML = banners.map((b) => `<div class="banner">${b}</div>`).join("");
+
+  $("static-size").innerHTML = [{ label: "Web page (tiny)", key: C.static.page }, ...C.static.assets.map((a) => ({ label: a.label, key: a.key }))]
+    .map((o, i) => `<option value="${esc(o.key)}"${o.label === "1 MB" ? " selected" : ""}>${esc(o.label)}</option>`).join("");
+
+  for (const [id, out] of [["static-rounds", "static-rounds-v"], ["api-rounds", "api-rounds-v"], ["db-queries", "db-queries-v"], ["db-sessions", "db-sessions-v"]])
+    $(id).addEventListener("input", () => { $(out).textContent = $(id).value; });
+  $("n").addEventListener("input", renderWhatIf);
+
+  document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+  for (const suite of ["static", "api"]) {
+    $(suite + "-run").addEventListener("click", () => runRace(suite));
+    $(suite + "-stop").addEventListener("click", () => { if (state.running[suite]) state.running[suite].stop = true; });
+    $(suite + "-replay").addEventListener("click", () => replay(suite));
+    document.querySelectorAll(`#${suite}-metric button`).forEach((b) => b.addEventListener("click", () => {
+      state.metric[suite] = b.dataset.m;
+      document.querySelectorAll(`#${suite}-metric button`).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      renderRace(suite);
+    }));
+  }
+  $("static-size").addEventListener("change", () => { /* next run uses the new payload */ });
+
+  if (!C.db) { $("db-disabled").style.display = ""; $("db-controls").style.display = "none"; }
+  else {
+    C.db.paths.forEach((p) => state.dbPaths.add(p.id));
+    const drawPaths = () => { $("db-paths").innerHTML = C.db.paths.map((p) => {
+      const off = state.dbWorkload === "write" && !p.writes;
+      return `<label class="chip" style="${off ? "opacity:.45" : ""}"><input type="checkbox" data-p="${p.id}" ${state.dbPaths.has(p.id) && !off ? "checked" : ""} ${off ? "disabled" : ""}> ${esc(p.label)}</label>`; }).join("");
+      $("db-paths").querySelectorAll("input").forEach((i) => i.addEventListener("change", () => { i.checked ? state.dbPaths.add(i.dataset.p) : state.dbPaths.delete(i.dataset.p); })); };
+    drawPaths();
+    document.querySelectorAll("#db-workload button").forEach((b) => b.addEventListener("click", () => {
+      state.dbWorkload = b.dataset.w; document.querySelectorAll("#db-workload button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawPaths();
+    }));
+    $("db-run").addEventListener("click", runDb);
+    $("db-stop").addEventListener("click", () => { if (state.running.db) state.running.db.stop = true; });
+  }
+
+  $("export-csv").addEventListener("click", exportCsv);
+  $("copy-link").addEventListener("click", () => copy(location.origin + location.pathname + "#r=" + b64e(payload()), "Link copied."));
+  $("copy-text").addEventListener("click", () => copy(summaryText(), "Summary copied."));
+  $("clear-history").addEventListener("click", () => { store.set("globalBenchHistory", []); renderResults(); });
+
+  window.addEventListener("hashchange", renderShared);
+  renderAll(); renderShared();
+}
+init();
+</script>
+</body>
+</html>

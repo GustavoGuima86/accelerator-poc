@@ -1,0 +1,22 @@
+# Copy to terraform.tfvars and adjust as needed.
+
+aws_region    = "ap-southeast-2"
+client_region = "eu-central-1"
+project_name  = "global-latency-poc"
+
+# Leave null to use the default VPC/subnets in ap-southeast-2.
+# vpc_id     = "vpc-xxxxxxxx"
+# subnet_ids = ["subnet-aaaaaaaa", "subnet-bbbbbbbb"]
+
+# Restrict this in real use to your test client's IP/CIDR.
+allowed_cidr_blocks = ["0.0.0.0/0"]
+
+# Set to false to skip the Frankfurt EC2 benchmark client + reports pipeline
+# and deploy only the core CloudFront/Global Accelerator POC infrastructure.
+# enable_benchmark_client = true
+
+# Set false to skip the public interactive browser benchmark page.
+# enable_interactive_page = true
+
+# Requests per endpoint per benchmark run.
+# benchmark_runs_per_target = 30
