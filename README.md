@@ -41,6 +41,12 @@ Open the automated report:
 terraform output -raw latest_report_url
 ```
 
+The interactive page is organized into **Overview**, **Static**, **API**,
+**Database**, and **Design** tabs. Overview contains the what-if model and
+session results; each technical tab includes a short implementation note.
+Database measurements run from Frankfurt, while static/API races run from the
+visitor's browser.
+
 The first report run starts during `terraform apply`; it may take several
 minutes while endpoints become ready. Rerun it later with:
 
