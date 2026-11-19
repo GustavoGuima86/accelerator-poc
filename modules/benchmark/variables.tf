@@ -57,6 +57,11 @@ variable "db_benchmark_script_path" {
   type        = string
 }
 
+variable "trace_script_path" {
+  description = "Local path to trace-hops.py, which runs one real traceroute on the instance and prints the hops as JSON (used by the interactive page's live-trace feature)."
+  type        = string
+}
+
 variable "db_config" {
   description = "Connection details and options for the Aurora benchmark, written into targets.json as its \"db\" section. Null disables the DB benchmark."
   type        = any

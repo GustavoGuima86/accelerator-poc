@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 Benchmarks the different ways a Frankfurt client can reach the Aurora
-PostgreSQL global database whose writer lives in Sydney:
+PostgreSQL global database whose writer lives in Ohio:
 
   public_direct       straight to the writer over the public internet
   global_accelerator  via Global Accelerator -> TCP forwarder -> writer
   vpc_peering         private path over inter-region VPC peering
   replica_local       the Frankfurt secondary cluster (reads are local;
-                      writes are forwarded to Sydney by write forwarding)
+                      writes are forwarded to Ohio by write forwarding)
   batch_api           ONE HTTPS call to a Lambda next to the writer that
                       runs the same N queries locally
 
@@ -241,13 +241,13 @@ def build_paths(cfg):
                            "note": note, "resolve_error": f"{type(exc).__name__}: {exc}"}
 
     add("public_direct", "Direct, public internet", lambda: resolve_public(cfg["primary_endpoint"]),
-        cfg["port"], False, "Sydney writer, public IP")
+        cfg["port"], False, "Ohio writer, public IP")
     add("global_accelerator", "Global Accelerator", lambda: cfg["global_accelerator_ip"],
-        cfg["db_accelerator_port"], True, "Anycast IP -> AWS backbone -> TCP forwarder -> Sydney writer")
+        cfg["db_accelerator_port"], True, "Anycast IP -> AWS backbone -> TCP forwarder -> Ohio writer")
     add("vpc_peering", "VPC peering (private)", lambda: resolve_vpc(cfg["primary_endpoint"]),
-        cfg["port"], True, "Inter-region peering to the Sydney writer's private IP")
+        cfg["port"], True, "Inter-region peering to the Ohio writer's private IP")
     add("replica_local", "Frankfurt replica", lambda: resolve_vpc(cfg["replica_endpoint"]),
-        cfg["port"], True, "Local reads; writes forwarded to Sydney by write forwarding")
+        cfg["port"], True, "Local reads; writes forwarded to Ohio by write forwarding")
 
     if paths["vpc_peering"].get("host") and not is_private(paths["vpc_peering"]["host"]):
         paths["vpc_peering"]["warning"] = (
@@ -291,7 +291,7 @@ def main():
         log("No usable path to the writer for schema setup; aborting DB benchmark.")
         sys.exit(1)
 
-    log("Preparing schema and seed data on the Sydney writer...")
+    log("Preparing schema and seed data on the Ohio writer...")
     if not wait_until_connectable("setup", cfg, setup_path["host"], setup_path["port"]):
         sys.exit(1)
     setup_schema(cfg, setup_path["host"], setup_path["port"])
@@ -324,7 +324,7 @@ def main():
                 )
 
     batch = {"meta": {"label": "One call to an API next to the DB", "optimized": True,
-                      "note": f"HTTPS to a Lambda in Sydney that runs the same {queries} reads locally"},
+                      "note": f"HTTPS to a Lambda in Ohio that runs the same {queries} reads locally"},
              "runs": []}
     if cfg.get("batch_api_url"):
         log(f"[batch_api] {sessions * 3} calls")

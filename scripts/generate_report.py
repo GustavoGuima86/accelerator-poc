@@ -212,7 +212,7 @@ def build_api_section(data):
     ]
 
     intro = (
-        "Mock API endpoint (fixed 200 OK response) behind an ALB in Sydney, reached directly over "
+        "Mock API endpoint (fixed 200 OK response) behind an ALB in Ohio, reached directly over "
         "the public internet vs. via AWS Global Accelerator's global network backbone, measured from Frankfurt."
     )
     return (
@@ -231,7 +231,7 @@ def db_session_stats(sessions, key):
 
 
 def render_db_section(db_raw):
-    """Database access paths: Frankfurt client -> Aurora writer in Sydney.
+    """Database access paths: Frankfurt client -> Aurora writer in Ohio.
 
     Two charts (read / write session time) plus a per-query table. A session is
     one fresh connection followed by N sequential statements, which is what a
@@ -313,18 +313,18 @@ def render_db_section(db_raw):
         warn_html = (f'<section class="card"><h2>Measurement caveats</h2><ul>{"".join(warnings)}</ul></section>')
 
     return "".join([
-        '<h2 style="margin-top:36px">Database access (Aurora PostgreSQL, writer in Sydney)</h2>',
+        '<h2 style="margin-top:36px">Database access (Aurora PostgreSQL, writer in Ohio)</h2>',
         warn_html,
         chart_block(
             f"Database reads: one session = connect + {n_queries} queries",
             "Fresh connection, then sequential primary-key lookups, from Frankfurt. Every statement pays "
-            "the Frankfurt-Sydney round trip unless the data is served locally by the replica, or the "
+            "the Frankfurt-Ohio round trip unless the data is served locally by the replica, or the "
             "whole batch runs next to the database.",
             read_rows,
         ),
         chart_block(
             f"Database writes: one session = connect + {n_queries} single-row INSERTs",
-            "Writes always have to reach the Sydney writer. The Frankfurt replica forwards them there "
+            "Writes always have to reach the Ohio writer. The Frankfurt replica forwards them there "
             "(write forwarding), so it cannot beat the network, only match or add to it.",
             write_rows,
         ),
@@ -359,7 +359,7 @@ def main():
     sections.append(
         build_static_section(
             "Static web page: total download time",
-            "Same index.html page, served from Sydney (ap-southeast-2), measured from Frankfurt (eu-central-1).",
+            "Same index.html page, served from Ohio (us-east-2), measured from Frankfurt (eu-central-1).",
             data,
             "static_direct_s3_page",
             "static_cloudfront_page",
@@ -368,7 +368,7 @@ def main():
     sections.append(
         build_static_section(
             "Static asset (1MB file): total download time",
-            "Same 1MB sample file, served from Sydney, measured from Frankfurt. Larger payloads make the "
+            "Same 1MB sample file, served from Ohio, measured from Frankfurt. Larger payloads make the "
             "egress/distance penalty of direct S3 access more visible.",
             data,
             "static_direct_s3_asset",
@@ -442,7 +442,7 @@ def main():
 <body>
   <h1>Global Network Latency POC — Results</h1>
   <p class="subtitle">
-    Origin: Sydney (ap-southeast-2) &nbsp;&middot;&nbsp;
+    Origin: Ohio (us-east-2) &nbsp;&middot;&nbsp;
     Client: Frankfurt (eu-central-1) &nbsp;&middot;&nbsp;
     Generated: {html.escape(raw.get("generated_at", "n/a"))} &nbsp;&middot;&nbsp;
     Runs per target: {raw.get("runs_per_target", "n/a")}

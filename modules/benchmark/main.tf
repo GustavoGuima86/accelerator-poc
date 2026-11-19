@@ -88,6 +88,14 @@ resource "aws_s3_object" "report_script" {
   content_type = "text/x-python"
 }
 
+resource "aws_s3_object" "trace_script" {
+  bucket       = aws_s3_bucket.artifacts.id
+  key          = "scripts/trace-hops.py"
+  source       = var.trace_script_path
+  etag         = filemd5(var.trace_script_path)
+  content_type = "text/x-python"
+}
+
 # Resolved target list, rendered to JSON by Terraform (all URLs are already
 # known after apply), so the EC2 instance just downloads and runs it — no
 # need to re-derive URLs on the client side.

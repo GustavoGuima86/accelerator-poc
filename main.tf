@@ -120,6 +120,25 @@ locals {
 
   interactive_enabled    = var.enable_interactive_page
   interactive_db_enabled = local.aurora_enabled && var.enable_interactive_page
+
+  # Live traceroute from the Frankfurt client, surfaced on the interactive
+  # page. Needs the benchmark EC2 (the only component that can run a real
+  # traceroute). Traces to the optimized targets (CloudFront domain, Global
+  # Accelerator anycast IP) stop at the AWS edge by design; the page draws an
+  # approximate continuation for the private backbone segment.
+  trace_enabled = var.enable_interactive_page && var.enable_benchmark_client
+  trace_targets = merge(
+    {
+      static_direct    = module.insecure_direct_site.website_endpoint
+      static_optimized = module.static_site.cloudfront_domain_name
+      api_direct       = module.api_endpoint.direct_alb_dns_name
+      api_optimized    = module.api_endpoint.global_accelerator_ip[0]
+    },
+    local.aurora_enabled ? {
+      db_direct    = module.aurora[0].primary_endpoint
+      db_optimized = module.api_endpoint.global_accelerator_ip[0]
+    } : {},
+  )
 }
 
 # Dedicated VPCs: the account's default VPCs share 172.31.0.0/16 in every
@@ -224,7 +243,7 @@ module "db_batch_api" {
   vpc_id      = module.vpc_far[0].vpc_id
   # This function only connects to Aurora over the local VPC route, so public
   # subnets are fine (Lambda ENIs still have no public IP) and avoid a second
-  # NAT gateway in Sydney.
+  # NAT gateway in Ohio.
   subnet_ids               = module.vpc_far[0].subnet_ids
   aurora_security_group_id = module.aurora[0].primary_security_group_id
   db_host                  = module.aurora[0].primary_endpoint
@@ -236,7 +255,7 @@ module "db_batch_api" {
 
 # Interactive page, database half: a Lambda in the NEAR region that runs one DB
 # session per request against a chosen access path. Browsers cannot speak the
-# Postgres protocol, so this is the HTTP face of the Frankfurt-to-Sydney paths.
+# Postgres protocol, so this is the HTTP face of the Frankfurt-to-Ohio paths.
 module "db_probe" {
   count  = local.interactive_db_enabled ? 1 : 0
   source = "./modules/db_probe"
@@ -260,6 +279,24 @@ module "db_probe" {
   global_accelerator_port = 5432
 
   depends_on = [module.vpc_peering, module.db_accelerator]
+}
+
+# Interactive page, live traceroute: a Lambda that triggers ONE real
+# traceroute on the Frankfurt benchmark EC2 (via SSM Run Command), geolocates
+# the hops, and hands them to the page's route maps.
+module "trace_probe" {
+  count  = local.trace_enabled ? 1 : 0
+  source = "./modules/trace_probe"
+
+  providers = {
+    aws = aws.client
+  }
+
+  name                = var.project_name
+  source_dir          = "${path.module}/trace_src"
+  instance_id         = module.benchmark[0].instance_id
+  trace_document_name = module.benchmark[0].trace_document_name
+  targets             = local.trace_targets
 }
 
 # Interactive page, browser half: static HTML + a generated config.js holding
@@ -301,6 +338,11 @@ module "interactive_site" {
         { id = "batched_api", label = "One call to API next to DB", optimized = true, writes = false },
       ]
     } : null
+    trace = local.trace_enabled ? {
+      url     = module.trace_probe[0].function_url
+      token   = module.trace_probe[0].token
+      targets = keys(local.trace_targets)
+    } : null
   }
 }
 
@@ -340,6 +382,7 @@ module "benchmark" {
   benchmark_script_path    = "${path.module}/scripts/benchmark.py"
   db_benchmark_script_path = "${path.module}/scripts/db_benchmark.py"
   report_script_path       = "${path.module}/scripts/generate_report.py"
+  trace_script_path        = "${path.module}/scripts/trace-hops.py"
   trigger_script_path      = "${path.module}/scripts/trigger_benchmark.sh"
   targets                  = local.benchmark_targets
   runs_per_target          = var.benchmark_runs_per_target

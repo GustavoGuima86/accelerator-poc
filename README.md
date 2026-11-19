@@ -1,7 +1,7 @@
 # Global latency POC
 
 Terraform demo comparing access to static assets, an API, and PostgreSQL
-across Sydney (`ap-southeast-2`) and Frankfurt (`eu-central-1`). It includes a
+across Ohio (`us-east-2`) and Frankfurt (`eu-central-1`). It includes a
 browser-based interactive benchmark and an automated Frankfurt report.
 
 ## Architecture
@@ -9,7 +9,7 @@ browser-based interactive benchmark and an automated Frankfurt report.
 - **Static:** private S3 + CloudFront/OAC, alongside a separate public S3
   website bucket used only as the direct-access benchmark baseline.
 - **API:** fixed-response ALB vs. AWS Global Accelerator in front of the ALB.
-- **Database (optional):** Aurora PostgreSQL Global Database with a Sydney
+- **Database (optional):** Aurora PostgreSQL Global Database with an Ohio
   writer and Frankfurt replica, plus direct, Global Accelerator, VPC peering,
   replica/write-forwarding, and batched-API tests.
 - **Interactive page:** static/API requests run from the visitor's browser;
@@ -41,10 +41,12 @@ Open the automated report:
 terraform output -raw latest_report_url
 ```
 
-The interactive page is organized into **Overview**, **Static**, **API**,
-**Database**, and **Design** tabs. Overview contains the what-if model and
-session results; each technical tab includes a short implementation note.
-Database measurements run from Frankfurt, while static/API races run from the
+The interactive page opens on an **Overview** tab explaining the POC's goal,
+the two-region setup, and a summary card per feature with a link straight into
+its test. The **Static assets**, **API**, and **Database** tabs each start
+with a short "Why this matters" explainer, then link the AWS docs, show a
+route map per access path, and run their own test. Database measurements run
+from a Frankfurt probe function, while static/API races run from the
 visitor's browser.
 
 The first report run starts during `terraform apply`; it may take several
@@ -61,8 +63,33 @@ The page includes:
 - Direct S3 vs. CloudFront asset tests, with selectable payload sizes, repeat
   counts, TTFB/total time, cache status, and edge location.
 - Direct ALB vs. Global Accelerator API tests from the viewer's browser.
-- Database path tests from Frankfurt, plus a what-if model, browser-local
-  history, CSV export, and shareable summaries.
+- Database path tests from Frankfurt, CSV export, and shareable summaries.
+- Per-path route maps plus a **live traceroute** that starts together with
+  each Run button and lands on the maps when it finishes (below).
+
+### Live traceroute (real hops)
+
+Browsers cannot run traceroute, so each **Run** button also calls a small
+Lambda (`modules/trace_probe`) which triggers a real `mtr`/`traceroute` on the
+Frankfurt benchmark EC2 via SSM Run Command, geolocates the hop IPs
+(best-effort, via ip-api.com), and returns them. When a trace arrives its map
+switches from the illustration to the observed hops, with a hop table below.
+The direct/public paths are traced end to end. The optimized paths
+(CloudFront, Global Accelerator) are traced to the service's anycast address,
+which stops at the AWS edge; the map then draws the private-backbone segment
+as a clearly-labelled **approximate** continuation.
+
+Two real-world limits apply, and the page says so:
+
+- CloudFront and Global Accelerator are anycast: a traceroute stops at the
+  AWS edge, and the AWS global network behind it never answers ICMP. That
+  opacity is by design, so the last segment is an approximation.
+- Backbone routers often stay silent, so `* * *` gaps in a real trace are
+  normal; such hops appear in the table but not on the map.
+
+Requires `enable_benchmark_client = true`. Local preview without AWS:
+`python3 site/preview_server.py` (serves the page plus mock endpoints, and a
+clearly-labelled simulated trace).
 
 The page uses plain HTTP for the direct S3 website, ALB, and Global Accelerator
 baselines. Open the URL over HTTP; HTTPS pages cannot call those endpoints due
@@ -101,7 +128,7 @@ needed. Useful variables:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `aws_region` | `ap-southeast-2` | Origin / database writer region |
+| `aws_region` | `us-east-2` | Origin / database writer region |
 | `client_region` | `eu-central-1` | Benchmark client and database replica region |
 | `enable_benchmark_client` | `true` | Frankfurt EC2 client and automated report |
 | `enable_interactive_page` | `true` | Interactive browser demo |

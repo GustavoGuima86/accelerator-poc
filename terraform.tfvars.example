@@ -1,10 +1,10 @@
 # Copy to terraform.tfvars and adjust as needed.
 
-aws_region    = "ap-southeast-2"
+aws_region    = "us-east-2"
 client_region = "eu-central-1"
 project_name  = "global-latency-poc"
 
-# Leave null to use the default VPC/subnets in ap-southeast-2.
+# Leave null to use the default VPC/subnets in us-east-2.
 # vpc_id     = "vpc-xxxxxxxx"
 # subnet_ids = ["subnet-aaaaaaaa", "subnet-bbbbbbbb"]
 

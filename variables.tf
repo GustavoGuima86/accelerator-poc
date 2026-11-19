@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "Primary AWS region where the origin resources (S3 bucket, ALB) are deployed. This simulates the 'far' region from the client's perspective."
   type        = string
-  default     = "ap-southeast-2"
+  default     = "us-east-2"
 }
 
 variable "global_accelerator_region" {

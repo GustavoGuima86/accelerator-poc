@@ -23,7 +23,7 @@ variable "requester_route_table_ids" {
 }
 
 variable "accepter_vpc_id" {
-  description = "VPC that accepts the peering (the database/Sydney VPC)."
+  description = "VPC that accepts the peering (the database/Ohio VPC)."
   type        = string
 }
 

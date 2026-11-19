@@ -33,6 +33,43 @@ resource "aws_ssm_document" "run_benchmark" {
 }
 
 # -----------------------------------------------------------------------------
+# SSM document that runs ONE real traceroute (mtr preferred) on the instance
+# and returns the hops as JSON on stdout. Triggered by the trace_probe Lambda,
+# which is the HTTP face used by the interactive page's live-trace buttons.
+# -----------------------------------------------------------------------------
+resource "aws_ssm_document" "run_trace" {
+  name            = "${var.project_name}-run-trace"
+  document_type   = "Command"
+  document_format = "YAML"
+
+  content = yamlencode({
+    schemaVersion = "2.2"
+    description   = "Runs a real traceroute from the benchmark client and prints the hops as JSON."
+    parameters = {
+      host = {
+        type        = "String"
+        description = "Host name or IP to trace to."
+      }
+    }
+    mainSteps = [
+      {
+        action = "aws:runShellScript"
+        name   = "runTrace"
+        inputs = {
+          timeoutSeconds = 240
+          runCommand = [
+            templatefile("${path.module}/templates/run_trace.sh.tpl", {
+              client_region    = data.aws_region.current.name
+              artifacts_bucket = aws_s3_bucket.artifacts.id
+            })
+          ]
+        }
+      }
+    ]
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Automatically runs the benchmark once, right after the instance and all
 # targets exist, so a working report is available without any manual step.
 # Re-running later (e.g. to refresh the report) is done with:

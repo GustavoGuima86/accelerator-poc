@@ -21,7 +21,7 @@ def _ssl_context():
 
 
 def _ensure_schema():
-    """Initialize the small demo tables directly through the Sydney writer."""
+    """Initialize the small demo tables directly through the Ohio writer."""
     global _schema_checked
     if _schema_checked:
         return

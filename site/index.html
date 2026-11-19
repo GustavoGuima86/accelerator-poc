@@ -688,12 +688,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
   body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 5% 0%, #e9efff 0, transparent 34rem), radial-gradient(ellipse at 98% 4%, #e5f8f3 0, transparent 30rem), var(--bg); color: var(--fg); line-height: 1.55; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   button, input, select { font: inherit; }
   .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 26px 80px; }
+  .page-intro { margin:0 0 16px; padding:13px 16px; border:1px solid #d9e2ff; border-radius:13px; background:#f2f5ff; color:#3c4a73; font-size:.88rem; line-height:1.55; }
+  .page-intro b { color:#2a3a63; }
+  .legend-chip { display:inline-flex; align-items:center; padding:2px 7px; border-radius:999px; background:#e9eef6; color:#607089; font-size:.72rem; font-weight:800; white-space:nowrap; }
+  .legend-chip.legend-first { background:#dcf7e9; color:#087947; }
   h2 { margin:0; font-size:1.14rem; letter-spacing:-.025em; }
   p { margin:6px 0; }
   .muted { color:var(--muted); }
   .small { font-size:.84rem; }
   label.field { display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:.75rem; font-weight:700; }
   input[type=text],select { min-height:42px; width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:10px; outline:0; background:#fff; color:var(--fg); transition:border-color .18s,box-shadow .18s; }
+  select { min-width:180px; }
   input[type=text]:focus,select:focus { border-color:#8da3fa; box-shadow:0 0 0 4px #5278f61a; }
   .card { margin:17px 0; padding:24px 26px; border:1px solid #e6ebf3; border-radius:var(--radius); background:var(--card); box-shadow:var(--shadow); }
   .card p { line-height:1.6; }
@@ -706,6 +711,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
   button.primary { color:white; border-color:#4f6ff2; background:linear-gradient(135deg,#6684ff,#4a63e6); box-shadow:0 7px 16px #5278f638; }
   button.primary:hover:not(:disabled) { box-shadow:0 9px 20px #5278f650; }
   button.primary:before { content:"▶"; margin-right:8px; font-size:.75em; }
+  button.run-button { min-height:48px; padding:12px 24px; border:1px solid #0b8155; border-radius:12px; color:#fff; background:linear-gradient(135deg,#20bd78,#0d925c); box-shadow:0 8px 20px #0d925c35; font-size:1rem; font-weight:800; letter-spacing:.01em; transition:transform .15s,box-shadow .15s,filter .15s; }
+  button.run-button:before { content:"▶"; margin-right:9px; font-size:.78em; }
+  button.run-button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 25px #0d925c45; filter:saturate(1.08); }
+  button.run-button:active:not(:disabled) { transform:translateY(0); }
+  button.run-button:disabled { opacity:.6; cursor:wait; }
   .seg { display:inline-flex; gap:3px; padding:3px; border:1px solid #e7ebf3; border-radius:11px; background:#f4f6fa; }
   .seg button { padding:7px 11px; border:0; border-radius:8px; background:transparent; box-shadow:none; color:var(--muted); font-size:.82rem; }
   .seg button:hover:not(:disabled) { transform:none; background:#fff; box-shadow:none; }
@@ -713,6 +723,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   input[type=range] { width:160px; accent-color:var(--accent); cursor:pointer; }
   nav.tabs { position:sticky; top:10px; z-index:5; margin:22px 0 20px; padding:6px; border:1px solid #e4e9f1; border-radius:15px; background:#ffffffed; box-shadow:0 8px 26px #263a7912; backdrop-filter:blur(14px); }
   nav.tabs .seg { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; width:100%; padding:0; border:0; background:transparent; }
+  nav.tabs .seg.seg-4 { grid-template-columns:repeat(4,1fr); }
   nav.tabs .seg button { padding:11px 8px; border-radius:10px; color:#6e7a91; font-size:.84rem; }
   nav.tabs .seg button[aria-pressed=true] { color:#354fb6; background:#eef2ff; box-shadow:none; }
   .panel { display:none; }
@@ -761,7 +772,74 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .route-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
   .route-title { display:flex; align-items:center; gap:9px; }
   .route-title .route-icon { display:grid; place-items:center; width:31px;height:31px;border-radius:10px;background:#eef2ff;color:#526be0; }
-  .leaflet-map { position:relative; width:100%; height:330px; margin-top:10px; border:1px solid #e4eaf3; border-radius:13px; background:#eef2f7; z-index:0; }
+  .route-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr)); gap:12px; margin:14px 0 20px; }
+  .route-map-card { min-width:0; padding:14px; border:1px solid #e4eaf3; border-radius:14px; background:linear-gradient(145deg,#fff,#f8faff); box-shadow:0 5px 18px #263a7908; }
+  .route-map-card.current { border-color:#8ba0ef; box-shadow:0 0 0 3px #5278f618,0 5px 18px #263a7908; }
+  .route-map-card h3 { margin:0; color:#34435d; font-size:.92rem; }
+  .map-rank { display:inline-flex; align-items:center; margin-right:7px; padding:3px 7px; border-radius:999px; background:#e9eef6; color:#607089; font-size:.68rem; font-weight:800; vertical-align:1px; white-space:nowrap; }
+  .map-rank.rank-first { background:#dcf7e9; color:#087947; }
+  .route-map-card.rank-first { border-color:#68c995; box-shadow:0 0 0 3px #17a76516,0 7px 20px #15945b12; }
+  .route-map-card.rank-rest { border-color:#e8edf4; }
+  .route-map-card.workload-excluded { opacity:.5; }
+  .workload-note { margin:8px 0 0; padding:7px 10px; border:1px solid #e3e8f1; border-radius:8px; background:#f7f9fc; color:#68758d; font-size:.78rem; line-height:1.4; font-style:italic; }
+  .route-map-card .route-caption { margin-top:4px; }
+  .route-hops { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin-top:10px; color:#516078; font-size:.74rem; }
+  .route-hop { padding:4px 7px; border:1px solid #e3e8f1; border-radius:7px; background:#f7f9fc; }
+  .route-hop-arrow { color:#98a3b6; font-weight:700; }
+  .trace-status { margin:10px 0 0; min-height:1.2em; line-height:1.4; }
+  .trace-table { margin-top:10px; max-height:250px; overflow:auto; border:1px solid #e4eaf3; border-radius:10px; background:#fff; }
+  .trace-table table { width:100%; border-collapse:collapse; font-size:.73rem; }
+  .trace-table th, .trace-table td { padding:5px 9px; border-bottom:1px solid #eef1f6; text-align:left; white-space:nowrap; }
+  .trace-table th { position:sticky; top:0; background:#f7f9fc; color:#516078; z-index:1; }
+  .trace-table td.silent { color:#98a3b6; font-style:italic; }
+  .trace-hop-marker { display:grid; place-items:center; width:21px; height:21px; margin-left:-10px; margin-top:-10px; border-radius:50%; background:#33415e; color:#fff; font-size:.66rem; font-weight:800; border:2px solid #fff; box-shadow:0 1px 6px #1c2d5445; }
+  .trace-hop-marker.endpoint { background:#13a985; }
+  .trace-hop-marker.edge { background:#5278f6; }
+  .trace-note { margin:10px 0 0; padding:7px 10px; border:1px solid #ead59c; border-radius:8px; background:#fff9e8; color:#765a1f; font-size:.74rem; line-height:1.4; }
+  .route-map-card { position:relative; }
+  .route-result { margin:8px 0 0; padding:7px 10px; border:1px solid #e4eaf3; border-radius:8px; background:#f2f5fa; font-size:.8rem; line-height:1.4; color:#33415e; }
+  .route-result b { font-size:.95rem; font-variant-numeric:tabular-nums; }
+  .route-result .cmp { color:#0d7f63; font-weight:700; }
+  .map-expand { position:absolute; top:10px; right:10px; z-index:5; width:30px; height:30px; padding:0; display:grid; place-items:center; border:1px solid #e4eaf3; border-radius:8px; background:#fff; color:#516078; font-size:1rem; cursor:pointer; }
+  .map-expand:hover { border-color:#aebcf2; color:#33415e; background:#f5f7ff; }
+  .map-modal { position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:18px; background:#10182899; }
+  .map-modal[hidden] { display:none; }
+  .map-modal-panel { width:min(1080px, 100%); max-height:92vh; overflow:auto; padding:18px 20px; border-radius:14px; background:#fff; box-shadow:0 18px 60px #10182855; }
+  .map-modal-head { display:flex; align-items:flex-start; gap:12px; }
+  .map-modal-head h3 { margin:0; font-size:1.05rem; }
+  .map-modal-head .route-result { margin-top:8px; }
+  .map-modal-caption { margin:8px 0 0; font-size:.8rem; color:#516078; }
+  .map-modal-close { margin-left:auto; flex:none; width:34px; height:34px; display:grid; place-items:center; border:1px solid #e4eaf3; border-radius:9px; background:#fff; color:#516078; font-size:1.05rem; cursor:pointer; }
+  .map-modal-close:hover { border-color:#f0a3a7; color:#b3383e; background:#fdf3f3; }
+  .map-modal-map { height:min(56vh, 520px); min-height:340px; margin-top:12px; border:1px solid #e4eaf3; border-radius:10px; overflow:hidden; background:#eef2f7; }
+  #map-modal-hops:not(:empty) { margin-top:10px; }
+  .map-modal-info { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-top:14px; }
+  .map-modal-info h4 { margin:0 0 6px; font-size:.74rem; letter-spacing:.06em; text-transform:uppercase; color:#516078; }
+  .map-modal-info p { margin:0; font-size:.85rem; line-height:1.5; color:#33415e; }
+  .map-modal-price { margin:14px 0 0; padding:10px 12px; border:1px solid #ead59c; border-radius:10px; background:#fff9e8; color:#765a1f; font-size:.84rem; line-height:1.5; }
+  .cost-card input[type=text] { min-height:42px; width:160px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--fg); font-variant-numeric:tabular-nums; }
+  .cost-card input[type=text]:focus { outline:0; border-color:#8da3fa; box-shadow:0 0 0 4px #5278f61a; }
+  .cost-bars { margin-top:16px; display:flex; flex-direction:column; gap:12px; }
+  .cost-bar-row { display:grid; grid-template-columns:200px minmax(100px,1fr) 150px; gap:14px; align-items:center; }
+  .cost-bar-name { color:#4c5870; font-size:.86rem; font-weight:650; text-align:right; display:flex; align-items:center; justify-content:flex-end; gap:6px; }
+  .cost-bar-track { position:relative; height:27px; overflow:hidden; border-radius:9px; background:linear-gradient(90deg,#f0f3f8,#e9edf4); box-shadow:inset 0 1px 2px #2739580b; }
+  .cost-bar-fill { height:100%; min-width:3px; border-radius:inherit; transition:width .5s cubic-bezier(.2,.7,.2,1); }
+  .cost-bar-value { color:#26344d; font-variant-numeric:tabular-nums; font-weight:780; letter-spacing:-.02em; }
+  .cost-bar-sub { color:var(--muted); font-size:.72rem; margin-top:2px; }
+  .cost-bar-row.cost-cheapest .cost-bar-name { color:#0d7f63; font-weight:800; }
+  .cost-crown { font-size:.9rem; }
+  .cost-callout { margin:16px 0 0; padding:13px 15px; border:1px solid #cceee5; border-radius:12px; background:#f0fbf7; color:#45645e; font-size:.93rem; }
+  .cost-callout strong { color:#078e70; font-size:1.1rem; letter-spacing:-.025em; }
+  .cost-table { margin-top:14px; overflow:auto; border:1px solid #edf0f5; border-radius:12px; }
+  .cost-table table { width:100%; min-width:520px; border-collapse:collapse; font-size:.85rem; }
+  .cost-table th, .cost-table td { padding:10px 12px; border-bottom:1px solid #edf0f5; text-align:left; }
+  .cost-table th { background:#f8f9fc; color:#78839a; font-size:.7rem; font-weight:750; letter-spacing:.06em; text-transform:uppercase; }
+  .cost-table td.num, .cost-table th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .cost-table tr.cost-best td { background:#f0fbf7; font-weight:700; color:#0d7f63; }
+  .cost-table-toggle { margin-top:10px; font-size:.78rem; color:#5266a8; }
+  .cost-note { margin:8px 0 0; color:var(--muted); font-size:.78rem; line-height:1.5; }
+  .map-modal-links { display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:12px; font-size:.8rem; }
+  .leaflet-map { position:relative; width:100%; height:210px; margin-top:10px; border:1px solid #e4eaf3; border-radius:10px; background:#eef2f7; z-index:0; }
   .leaflet-map .leaflet-control-attribution { font-size:10px; background:#ffffffcc; }
   .leaflet-container { font:inherit; }
   .map-tile-note { position:absolute; z-index:500; left:50%; bottom:12px; transform:translateX(-50%); max-width:calc(100% - 24px); padding:7px 10px; border:1px solid #ead59c; border-radius:8px; background:#fff9e8; color:#765a1f; font-size:.75rem; box-shadow:0 2px 8px #1c2d5422; }
@@ -774,25 +852,48 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .map-node.edge { background:#e6a43d; }
   .map-node.replica { background:#19b99a; }
   .map-node-label { position:absolute; left:11px; top:-10px; white-space:nowrap; padding:3px 8px; border-radius:7px; background:#fff; color:#3c4a63; font-size:.74rem; font-weight:700; box-shadow:0 2px 8px #1c2d5422; }
-  @media (max-width:720px) { .leaflet-map { height:250px; } }
+  .map-node-wrap { transition:opacity .15s; }
+  .map-node-wrap.emph .map-node { transform:scale(1.6); box-shadow:0 0 0 7px #5278f622,0 1px 6px #1c2d5445; }
+  .map-node-wrap.emph .map-node-label { outline:2px solid #5278f6; }
+  .map-node-wrap.dim { opacity:.32; }
+  @media (max-width:720px) { .leaflet-map { height:200px; } }
   .route-caption { margin:0; min-height:1.5em; color:var(--muted); font-size:.8rem; }
   .feature-docs { margin-top:17px; padding-top:13px; border-top:1px solid #edf0f5; }
   .feature-actions { margin-top:15px; padding-top:14px; border-top:1px solid #edf0f5; }
   [data-feature-status] { min-height:1.3em; color:#138b70; }
   .feature-docs summary { color:#5266a8; cursor:pointer; font-size:.8rem; font-weight:750; }
-  .route-select { display:flex; flex-wrap:wrap; gap:6px; }
-  .route-select button { padding:6px 10px; color:#65728b; font-size:.74rem; }
-  .route-select button[aria-pressed=true] { border-color:#9aabf3; background:#eef2ff; color:#405bbd; }
-  .route-select button[data-route="direct"] { display:inline-flex; }
   .badge { padding:4px 8px; border-radius:7px; background:#eef2ff; color:#5065bd; font-size:.7rem; font-weight:750; }
   #db-workload { flex:0 0 auto; }
-  #db-paths .chip { cursor:pointer; padding:7px 10px; }
   #static-race,#api-race { margin-top:15px; }
+  .overview-setup { display:grid; grid-template-columns:1.1fr 1fr; gap:20px; margin:4px 0 20px; align-items:stretch; }
+  .overview-map-wrap .leaflet-map { height:100%; min-height:260px; margin-top:0; }
+  .overview-setup-text { padding:4px 2px; }
+  .overview-setup-text h3 { margin:0 0 8px; font-size:1rem; }
+  .overview-setup-text p { color:var(--muted); font-size:.9rem; line-height:1.6; }
+  .overview-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:14px; margin:0 0 20px; }
+  .overview-card { padding:18px 20px; border:1px solid #e4eaf3; border-radius:16px; background:linear-gradient(145deg,#fff,#f8faff); box-shadow:0 8px 24px #263a7908; display:flex; flex-direction:column; }
+  .overview-card-kicker { color:#6a7fe0; font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+  .overview-card h3 { margin:6px 0 8px; font-size:1.05rem; }
+  .overview-card p { flex:1; color:var(--muted); font-size:.87rem; line-height:1.55; margin:0 0 14px; }
+  .overview-goto { align-self:flex-start; color:#4a63e6; border-color:#c7d4fb; background:#f5f7ff; font-size:.83rem; }
+  .overview-goto:hover:not(:disabled) { background:#eef2ff; }
+  .overview-steps { margin:0; padding-left:22px; display:flex; flex-direction:column; gap:10px; color:#39445c; font-size:.9rem; line-height:1.55; }
+  .overview-steps li::marker { color:#6a7fe0; font-weight:700; }
+  .why-card { margin:14px 0 18px; padding:18px 20px; border:1px solid #d9e2ff; border-radius:16px; background:linear-gradient(145deg,#f5f7ff,#eef2ff); }
+  .why-card h3 { margin:0 0 7px; font-size:.95rem; color:#2a3a63; }
+  .why-card > p { margin:0 0 14px; color:#3c4a73; font-size:.89rem; line-height:1.6; max-width:820px; }
+  .why-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:12px; }
+  .why-step { display:flex; gap:10px; align-items:flex-start; }
+  .why-num { flex:none; display:grid; place-items:center; width:24px; height:24px; margin-top:1px; border-radius:50%; background:#4a63e6; color:#fff; font-size:.76rem; font-weight:800; }
+  .why-step b { display:block; font-size:.86rem; color:#2a3a63; margin-bottom:3px; }
+  .why-step p { margin:0; color:#4e5c82; font-size:.81rem; line-height:1.5; }
   @media (max-width:720px) {
     .wrap { padding:16px 14px 52px; }
     nav.tabs { top:5px; }
     nav.tabs .seg button { padding:10px 3px; font-size:.75rem; }
     .card { padding:19px 17px; }
+    .overview-setup { grid-template-columns:1fr; }
+    .overview-map-wrap .leaflet-map { height:220px; }
     .lane { grid-template-columns:1fr; gap:4px; margin:15px 0; }
     .lane .name { text-align:left; }
     .lane .track { grid-row:2; }
@@ -810,33 +911,105 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </head>
 <body>
 <div class="wrap">
-  <nav class="tabs"><div class="seg" id="tabs" role="tablist" aria-label="Benchmark features">
-    <button data-tab="static" aria-pressed="true">Static assets</button>
+  <nav class="tabs"><div class="seg seg-4" id="tabs" role="tablist" aria-label="Benchmark features">
+    <button data-tab="overview" aria-pressed="true">Overview</button>
+    <button data-tab="static" aria-pressed="false">Static assets</button>
     <button data-tab="api" aria-pressed="false">API</button>
     <button data-tab="db" aria-pressed="false">Database</button>
   </div></nav>
   <div id="banners"></div>
 
-  <!-- ============ STATIC ============ -->
-  <section class="panel active" id="panel-static">
-    <div class="feature-head"><div><p class="section-kicker">Content delivery</p><h1>Static assets</h1><p class="section-intro">Compare a direct origin fetch with cached delivery from a CloudFront edge.</p></div><span class="badge">Browser-measured</span></div>
-    <div class="doc-links" id="static-docs"></div>
-    <div class="route-card">
-      <div class="route-card-head"><div class="route-title"><span class="route-icon">⌁</span><div><h2>Request path</h2><p class="route-caption" id="static-map-caption">Select a route, or run the benchmark to animate it.</p></div></div>
-        <div class="route-select" id="static-map-select"><button type="button" data-route="direct" aria-pressed="true">Direct</button><button type="button" data-route="optimized" aria-pressed="false">CloudFront</button></div>
+  <!-- ============ OVERVIEW ============ -->
+  <section class="panel active" id="panel-overview">
+    <div class="feature-head"><div><p class="section-kicker">Global latency POC</p><h1>Why this demo exists</h1><p class="section-intro">A single app split across two AWS regions, 6,800 km apart, used to show — with your own live measurements, not slides — what each AWS networking feature actually buys you, and what it costs.</p></div></div>
+
+    <div class="overview-setup">
+      <div class="overview-map-wrap">
+        <div class="leaflet-map" id="overview-map" role="img" aria-label="Map showing the origin region in Ohio and the example client region in Frankfurt">Map tiles load from OpenStreetMap; lines show the route design.</div>
       </div>
-      <div class="leaflet-map" id="static-map" role="img" aria-label="Map of the request path from your location to the Sydney origin">Real map needs JavaScript and internet access.</div>
-      <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Lines are great-circle guides, not traceroutes. CloudFront's reported edge moves the marker when available.</p>
+      <div class="overview-setup-text">
+        <h3>The setup</h3>
+        <p>All of this POC's "slow path" infrastructure — the database, the API, the file storage — lives in <b>Ohio (us-east-2)</b>. The tests simulate a client in <b>Frankfurt (eu-central-1)</b>, about 6,800&nbsp;km away by the shortest usable network paths — far enough that the transatlantic hop is unavoidable, which is exactly where these network optimizations earn their keep.</p>
+        <p>Every number on this page is measured live, right now, by your own browser or by a small function running in Frankfurt — never pre-recorded.</p>
+      </div>
     </div>
+
+    <div class="overview-cards">
+      <article class="overview-card">
+        <span class="overview-card-kicker">Content delivery</span>
+        <h3>Static assets</h3>
+        <p>A file fetched directly from Ohio vs. served from a <b>CloudFront</b> edge cache near you. Shows why a CDN exists: it moves the data closer to the reader instead of moving the reader closer to the data.</p>
+        <button type="button" class="overview-goto" data-goto="static">Open this test →</button>
+      </article>
+      <article class="overview-card">
+        <span class="overview-card-kicker">Dynamic traffic</span>
+        <h3>API routing</h3>
+        <p>A public load balancer reached over the open internet vs. through <b>AWS Global Accelerator</b>'s anycast network. Shows the benefit of riding AWS's private backbone instead of the public internet for traffic that cannot be cached.</p>
+        <button type="button" class="overview-goto" data-goto="api">Open this test →</button>
+      </article>
+      <article class="overview-card">
+        <span class="overview-card-kicker">Regional data access</span>
+        <h3>Database</h3>
+        <p>Five ways to reach the same <b>Aurora PostgreSQL Global Database</b>: direct, through Global Accelerator, over private VPC peering, against a local read replica, and batched through a nearby function. Shows that for chatty database traffic, moving the data (replication) beats moving the network (routing).</p>
+        <button type="button" class="overview-goto" data-goto="db">Open this test →</button>
+      </article>
+    </div>
+
     <div class="card">
-      <h2>Static assets: S3 in Sydney vs CloudFront</h2>
-      <p class="section-intro">Fetch the same payload from this browser. Direct access travels to the Sydney origin; CloudFront can serve a cached copy from an edge location closer to you.</p>
-      <div class="row" style="margin-top:12px">
+      <h2>How to read every test</h2>
+      <ol class="overview-steps">
+        <li><b>Read the map.</b> Each card shows one path as a line on a real map, with the AWS services it passes through labeled underneath.</li>
+        <li><b>Set the options and press Run.</b> Every test runs for real, alternating between paths each round so neither gets an unfair warm-connection advantage.</li>
+        <li><b>Watch the result land on the map.</b> As each path finishes, its average time appears right on its own card — no need to scroll to a table to see who's winning.</li>
+        <li><b>Check the ranking.</b> Once a run finishes, the fastest card moves to the front with a <span class="legend-chip legend-first">#1 · Fastest</span> badge, and the detailed bars below show the full distribution.</li>
+        <li><b>Open "⤢" for the full story.</b> Enlarging any map shows how that path is implemented, its real drawbacks, and a rough cost estimate with links to AWS's own pricing pages.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ STATIC ============ -->
+  <section class="panel" id="panel-static">
+    <div class="feature-head"><div><p class="section-kicker">Content delivery</p><h1>Static assets</h1><p class="section-intro">Compare a direct origin fetch with cached delivery from a CloudFront edge.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
+    <div class="why-card">
+      <h3>Why this matters</h3>
+      <p>Physics sets a floor on latency: a round trip across the Atlantic to Ohio takes roughly 90–110&nbsp;ms no matter how good the server is. A <b>CDN</b> works around that floor instead of fighting it — it keeps a copy of the file at an edge location near the reader, so most requests never leave the reader's region at all.</p>
+      <div class="why-steps">
+        <div class="why-step"><span class="why-num">1</span><div><b>Without a CDN</b><p>Every request travels the full distance to the origin and back, every time, for every visitor.</p></div></div>
+        <div class="why-step"><span class="why-num">2</span><div><b>With CloudFront</b><p>The first visitor's request still reaches the origin (a cache miss); CloudFront then serves every later request from the nearby edge.</p></div></div>
+        <div class="why-step"><span class="why-num">3</span><div><b>Run it below</b><p>Compare the two side by side with the same file — the gap you see is the round trip to Ohio you just avoided.</p></div></div>
+      </div>
+    </div>
+    <div class="doc-links" id="static-docs"></div>
+    <div class="card test-controls">
+      <div class="row">
         <label class="field">Payload <select id="static-size"></select></label>
         <label class="field">Rounds: <b id="static-rounds-v">10</b><input type="range" id="static-rounds" min="1" max="30" value="10"></label>
         <div class="seg" id="static-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
-        <button class="primary" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
+        <button class="run-button" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
       </div>
+    </div>
+    <div class="route-grid" id="static-route-grid" aria-label="Separate route maps for static asset paths">
+      <article class="route-map-card" id="static-map-card-direct">
+        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+        <h3>Direct · public S3 website</h3>
+        <p class="route-result" id="static-result-direct">No results yet — press Run.</p>
+        <p class="route-caption" id="static-map-caption-direct">Browser → origin region</p>
+        <div class="leaflet-map" id="static-map-direct" role="img" aria-label="Direct request route from the example client to the public S3 origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
+        <div class="route-hops" id="static-hops-direct" aria-label="Illustrated request path"></div>
+      </article>
+      <article class="route-map-card" id="static-map-card-optimized">
+        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+        <h3>Optimized · CloudFront + OAC</h3>
+        <p class="route-result" id="static-result-optimized">No results yet — press Run.</p>
+        <p class="route-caption" id="static-map-caption-optimized">Browser → CloudFront edge → private S3 origin</p>
+        <div class="leaflet-map" id="static-map-optimized" role="img" aria-label="CloudFront request route from the example client to the private origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
+        <div class="route-hops" id="static-hops-optimized" aria-label="Illustrated request path"></div>
+      </article>
+    </div>
+    <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Hop labels show known service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (for CloudFront/Global Accelerator the trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
+    <div class="card">
+      <h2>Results</h2>
+      <p class="section-intro">Fetch the same payload from this browser, alternating lanes each round so neither path has a network-warmup advantage.</p>
       <div class="status" id="static-status"></div>
       <div id="static-lanes"></div>
       <div id="static-speed"></div>
@@ -845,28 +1018,61 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <div class="row" style="margin-top:8px"><button id="static-replay" disabled>▶ Replay last round</button><span class="small muted">Animation of the last measured round, time-scaled. Measurements run one at a time so they don't compete for your bandwidth.</span></div>
       <div id="static-race" class="race"></div>
       <div class="row feature-actions"><button data-export-csv="static">CSV</button><button data-share="static">Share results</button><button data-copy-summary="static">Copy summary</button><span data-feature-status="static" class="small muted"></span></div>
+      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The direct bucket uses S3 static website hosting with public read access, purely as a baseline. The production-style bucket stays private and is only reachable through CloudFront via Origin Access Control (OAC). A cache hit is served entirely from the edge; a cache miss still pays one trip to the origin region, then caches the result for the next visitor.</p></details>
+    </div>
+    <div class="card cost-card" id="static-cost-card">
+      <h2>Simulated monthly cost</h2>
+      <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths. Uses the payload size from above.</p>
+      <div class="row">
+        <label class="field">Requests per month<input type="text" inputmode="numeric" id="static-cost-reqs" value="1,000,000"></label>
+        <label class="field">Cache hit rate <b id="static-cost-hit-v">90%</b><input type="range" id="static-cost-hit" min="0" max="100" value="90"></label>
+      </div>
+      <div class="cost-table" id="static-cost-table"></div>
     </div>
   </section>
 
   <!-- ============ API ============ -->
   <section class="panel" id="panel-api">
-    <div class="feature-head"><div><p class="section-kicker">Dynamic traffic</p><h1>API routing</h1><p class="section-intro">Race direct access against an anycast route into the AWS global network.</p></div><span class="badge">Browser-measured</span></div>
-    <div class="doc-links" id="api-docs"></div>
-    <div class="route-card">
-      <div class="route-card-head"><div class="route-title"><span class="route-icon">⌁</span><div><h2>Request path</h2><p class="route-caption" id="api-map-caption">Select a route, or run the benchmark to animate it.</p></div></div>
-        <div class="route-select" id="api-map-select"><button type="button" data-route="direct" aria-pressed="true">Direct</button><button type="button" data-route="optimized" aria-pressed="false">Accelerator</button></div>
+    <div class="feature-head"><div><p class="section-kicker">Dynamic traffic</p><h1>API routing</h1><p class="section-intro">Race direct access against an anycast route into the AWS global network.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
+    <div class="why-card">
+      <h3>Why this matters</h3>
+      <p>API responses are generated per request, so they usually can't be cached at the edge the way a static file can — a CDN doesn't help here. What <b>Global Accelerator</b> helps with instead is the network itself: once a connection enters the AWS backbone at the nearest edge, it rides AWS's own private fiber the rest of the way to Ohio, instead of the public internet's unpredictable, congested routing.</p>
+      <div class="why-steps">
+        <div class="why-step"><span class="why-num">1</span><div><b>Direct (public internet)</b><p>Every packet takes whatever route the public internet's routers pick that moment — consistent in theory, variable in practice.</p></div></div>
+        <div class="why-step"><span class="why-num">2</span><div><b>Through Global Accelerator</b><p>The connection enters AWS's network at the nearest anycast edge and travels on a private, consistently-routed backbone from there.</p></div></div>
+        <div class="why-step"><span class="why-num">3</span><div><b>Run it below</b><p>The win here is usually in consistency (fewer slow outliers) as much as raw average speed — watch the spread, not just the average.</p></div></div>
       </div>
-      <div class="leaflet-map" id="api-map" role="img" aria-label="Map of the API route from your location to the Sydney load balancer">Real map needs JavaScript and internet access.</div>
-      <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Global Accelerator routes into the AWS backbone at an anycast edge; the browser timing measures the whole round trip, not individual hops.</p>
     </div>
-    <div class="card">
-      <h2>API: direct ALB vs Global Accelerator</h2>
-      <p class="section-intro">A small response isolates connection and network time. The direct path uses the public internet; Global Accelerator enters the AWS network at an edge location.</p>
-      <div class="row" style="margin-top:12px">
+    <div class="doc-links" id="api-docs"></div>
+    <div class="card test-controls">
+      <div class="row">
         <label class="field">Rounds: <b id="api-rounds-v">15</b><input type="range" id="api-rounds" min="1" max="40" value="15"></label>
         <div class="seg" id="api-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
-        <button class="primary" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
+        <button class="run-button" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
       </div>
+    </div>
+    <div class="route-grid" id="api-route-grid" aria-label="Separate route maps for API paths">
+      <article class="route-map-card" id="api-map-card-direct">
+        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+        <h3>Direct · public ALB</h3>
+        <p class="route-result" id="api-result-direct">No results yet — press Run.</p>
+        <p class="route-caption" id="api-map-caption-direct">Browser → origin region ALB</p>
+        <div class="leaflet-map" id="api-map-direct" role="img" aria-label="Direct API route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
+        <div class="route-hops" id="api-hops-direct" aria-label="Illustrated request path"></div>
+      </article>
+      <article class="route-map-card" id="api-map-card-optimized">
+        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+        <h3>Optimized · Global Accelerator</h3>
+        <p class="route-result" id="api-result-optimized">No results yet — press Run.</p>
+        <p class="route-caption" id="api-map-caption-optimized">Browser → nearest anycast entry → AWS network → origin region ALB</p>
+        <div class="leaflet-map" id="api-map-optimized" role="img" aria-label="Global Accelerator route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
+        <div class="route-hops" id="api-hops-optimized" aria-label="Illustrated request path"></div>
+      </article>
+    </div>
+    <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location. Hop labels show architecture/service boundaries. The browser measures the complete request round trip, and Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
+    <div class="card">
+      <h2>Results</h2>
+      <p class="section-intro">A small, uncacheable JSON response isolates connection and network time rather than payload size.</p>
       <div class="status" id="api-status"></div>
       <div id="api-lanes"></div>
       <div id="api-speed"></div>
@@ -876,33 +1082,45 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <div class="row feature-actions"><button data-export-csv="api">CSV</button><button data-share="api">Share results</button><button data-copy-summary="api">Copy summary</button><span data-feature-status="api" class="small muted"></span></div>
       <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The ALB returns a fixed JSON response. Global Accelerator provides anycast entry IPs and routes connections to the regional ALB. It does not cache API responses.</p></details>
     </div>
+    <div class="card cost-card" id="api-cost-card">
+      <h2>Simulated monthly cost</h2>
+      <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths.</p>
+      <div class="row">
+        <label class="field">Requests per month<input type="text" inputmode="numeric" id="api-cost-reqs" value="1,000,000"></label>
+        <label class="field">Avg. response size (KB)<input type="text" inputmode="numeric" id="api-cost-kb" value="5"></label>
+      </div>
+      <div class="cost-table" id="api-cost-table"></div>
+    </div>
   </section>
 
   <!-- ============ DATABASE ============ -->
   <section class="panel" id="panel-db">
-    <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads, write forwarding, and batching.</p></div><span class="badge">Near-region probe</span></div>
-    <div class="doc-links" id="db-docs"></div>
-    <div class="route-card">
-      <div class="route-card-head"><div class="route-title"><span class="route-icon">⌁</span><div><h2>Database route map</h2><p class="route-caption" id="db-map-caption">Select a database access path.</p></div></div>
-        <div class="route-select" id="db-map-select"></div>
+    <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads, write forwarding, and batching.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
+    <div class="why-card">
+      <h3>Why this matters</h3>
+      <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the only two things that actually help are moving the <b>data</b> closer, or making fewer, bigger round trips. <b>Aurora Global Database</b> does the first with a read replica; application-level batching does the second.</p>
+      <div class="why-steps">
+        <div class="why-step"><span class="why-num">1</span><div><b>Routing fixes (direct / Global Accelerator / VPC peering)</b><p>These change <i>how</i> packets travel, not <i>how far</i>. The distance to Ohio is unchanged, so per-query latency barely moves.</p></div></div>
+        <div class="why-step"><span class="why-num">2</span><div><b>Moving the data (Frankfurt replica)</b><p>Reads hit a local copy of the data in Frankfurt — the distance to query is now zero. Writes still have to reach the Ohio primary.</p></div></div>
+        <div class="why-step"><span class="why-num">3</span><div><b>Fewer round trips (batched API)</b><p>Packing many queries into one request pays the Ohio round trip exactly once, no matter how many statements it carries.</p></div></div>
       </div>
-      <div class="leaflet-map" id="db-map" role="img" aria-label="Map of database access paths between Frankfurt and Sydney">Real map needs JavaScript and internet access.</div>
-      <p class="small muted">Map tiles © OpenStreetMap contributors. Database timings run from the Frankfurt probe function, so the paths start there—not at the visitor's network.</p>
     </div>
-    <div class="card">
-      <h2>Compare database access paths</h2>
-      <p class="section-intro">A browser cannot speak PostgreSQL, so these runs execute in a function in <b id="db-client-region">the near region</b>. Results represent an application in that region—not the visitor's network.</p>
-      <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
-      <div id="db-controls">
-        <div class="row" style="margin-top:12px">
-          <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
-          <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
-          <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
-          <button class="primary" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
-        </div>
-        <div class="chips" id="db-paths" style="margin-top:10px"></div>
-        <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Sydney; the replica forwards them there.</p>
+    <div class="doc-links" id="db-docs"></div>
+    <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
+    <div id="db-controls" class="card test-controls">
+      <div class="row">
+        <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
+        <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
+        <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
+        <button class="run-button" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
       </div>
+    </div>
+    <div class="route-grid" id="db-route-grid" aria-label="Separate route maps for database access paths"></div>
+    <p class="small muted">Map tiles © OpenStreetMap contributors. Database timings start at the Frankfurt probe function. Hop labels show configured service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client for the traceable paths; the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation.</p>
+    <div class="card">
+      <h2>Results</h2>
+      <p class="section-intro">A browser cannot speak PostgreSQL, so these runs execute in a function in <b id="db-client-region">the near region</b>, not the visitor's own network.</p>
+      <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Ohio; the replica forwards them there.</p>
       <div class="status" id="db-status"></div>
       <div id="db-lanes"></div>
       <div id="db-speed"></div>
@@ -910,8 +1128,38 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <div class="row feature-actions"><button data-export-csv="db">CSV</button><button data-share="db">Share results</button><button data-copy-summary="db">Copy summary</button><span data-feature-status="db" class="small muted"></span></div>
       <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">Global Database replicates storage to the near-region secondary. Reads can be local; forwarded writes still reach the primary. The Global Accelerator comparison uses a TCP forwarder because Aurora is not an Accelerator endpoint type.</p></details>
     </div>
+    <div class="card cost-card" id="db-cost-card">
+      <h2>Simulated monthly cost</h2>
+      <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month, plus the per-session cost at a traffic volume you choose. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
+      <div class="row">
+        <label class="field">Avg. Aurora ACUs<input type="text" inputmode="numeric" id="db-cost-acu" value="1"></label>
+        <label class="field">Sessions per month<input type="text" inputmode="numeric" id="db-cost-sessions" value="1,000,000"></label>
+      </div>
+      <div class="cost-table" id="db-cost-table"></div>
+    </div>
   </section>
 
+</div>
+
+<div class="map-modal" id="map-modal" hidden>
+  <div class="map-modal-panel" role="dialog" aria-modal="true" aria-labelledby="map-modal-title">
+    <div class="map-modal-head">
+      <div style="min-width:0">
+        <h3 id="map-modal-title"></h3>
+        <p class="route-result" id="map-modal-result"></p>
+        <p class="map-modal-caption" id="map-modal-caption"></p>
+      </div>
+      <button type="button" class="map-modal-close" id="map-modal-close" aria-label="Close enlarged view">✕</button>
+    </div>
+    <div class="map-modal-map" id="map-modal-map"></div>
+    <div id="map-modal-hops"></div>
+    <div class="map-modal-info">
+      <div><h4>Implementation</h4><p id="map-modal-impl"></p></div>
+      <div><h4>Drawbacks</h4><p id="map-modal-drawbacks"></p></div>
+    </div>
+    <p class="map-modal-price" id="map-modal-price"></p>
+    <div class="map-modal-links" id="map-modal-links"></div>
+  </div>
 </div>
 
 <script src="config.js"></script>
@@ -936,9 +1184,11 @@ const state = {
   tab: "static",
   metric: { static: "total", api: "total" },
   dbWorkload: "read",
-  dbPaths: new Set(),
   runs: {},          // suite -> latest run {id, suite, params, lanes, samples}
   running: {},       // suite -> {stop:boolean}
+  modalKey: null,    // route map currently enlarged in the modal
+  modalMapEl: null,
+  modalRestore: null,
 };
 let runCounter = 0;
 
@@ -958,8 +1208,10 @@ async function timeFetch(url, timeoutMs = 40000) {
     const t1 = performance.now();                 // response headers received = time to first byte
     const buf = await res.arrayBuffer();
     const t2 = performance.now();
-    return { status: res.status, ok: res.ok, ttfb: t1 - t0, total: t2 - t0, bytes: buf.byteLength,
-             cache: res.headers.get("x-cache"), pop: res.headers.get("x-amz-cf-pop") };
+    const result = { status: res.status, ok: res.ok, ttfb: t1 - t0, total: t2 - t0, bytes: buf.byteLength,
+      cache: res.headers.get("x-cache"), pop: res.headers.get("x-amz-cf-pop") };
+    if (!res.ok) result.error = `HTTP ${res.status}`;
+    return result;
   } catch (e) {
     return { status: 0, ok: false, error: e.name === "AbortError" ? "timeout" : (e.message || "network error") };
   } finally { clearTimeout(to); }
@@ -971,8 +1223,11 @@ async function probe(params, timeoutMs = 70000) {
   const to = setTimeout(() => ac.abort(), timeoutMs);
   try {
     const res = await fetch(C.db.probeUrl + "?" + q, { cache: "no-store", mode: "cors", credentials: "omit", signal: ac.signal });
-    if (!res.ok) return { error: "HTTP " + res.status };
-    return await res.json();
+    let body;
+    try { body = await res.json(); }
+    catch (e) { return { error: `HTTP ${res.status}: invalid JSON response` }; }
+    if (!res.ok) return { ...body, error: body.error || `HTTP ${res.status}` };
+    return body;
   } catch (e) { return { error: e.name === "AbortError" ? "timeout" : (e.message || "network error") }; }
   finally { clearTimeout(to); }
 }
@@ -981,13 +1236,12 @@ async function probe(params, timeoutMs = 70000) {
 function staticLanes() {
   const key = $("static-size").value;
   return [
-    { id: "direct", label: "Direct S3 (HTTP, Sydney)", color: COL.direct, url: `${C.static.directBase}/${key}` },
+    { id: "direct", label: `Direct S3 (HTTP, ${originRegion.name})`, color: COL.direct, url: `${C.static.directBase}/${key}` },
     { id: "cdn", label: "CloudFront (nearest edge)", color: COL.opt, url: `${C.static.cloudfrontBase}/${key}` },
   ];
 }
-/* ---------- live map (Leaflet + OpenStreetMap tiles) ---------- */
+/* ---------- per-path maps (Leaflet + OpenStreetMap tiles) ---------- */
 const MAPC = { direct: "#ed6a70", opt: "#13a985", blue: "#5278f6", orange: "#e6a43d", teal: "#19b99a", faded: "#b9c5d8" };
-const SYDNEY = [-33.8688, 151.2093];
 const GEO = {
   FRA: [50.11, 8.68, "Frankfurt"], AMS: [52.31, 4.76, "Amsterdam"], LHR: [51.47, -0.45, "London"],
   CDG: [49.01, 2.55, "Paris"], MXP: [45.63, 8.72, "Milan"], MAD: [40.47, -3.56, "Madrid"],
@@ -999,16 +1253,21 @@ const GEO = {
   MEL: [-37.67, 144.84, "Melbourne"], PER: [-31.94, 115.97, "Perth"], IAD: [38.95, -77.46, "Washington"],
   JFK: [40.64, -73.78, "New York"], ORD: [41.98, -87.9, "Chicago"], SFO: [37.62, -122.38, "San Francisco"],
   LAX: [33.94, -118.41, "Los Angeles"], SEA: [47.45, -122.31, "Seattle"], DFW: [32.9, -97.04, "Dallas"],
-  GRU: [-23.43, -46.47, "Sao Paulo"], JNB: [-26.14, 28.25, "Johannesburg"], DXB: [25.25, 55.36, "Dubai"],
+  CMH: [39.96, -82.99, "Columbus"], GRU: [-23.43, -46.47, "Sao Paulo"], JNB: [-26.14, 28.25, "Johannesburg"], DXB: [25.25, 55.36, "Dubai"],
 };
 const popName = (p) => { const g = GEO[(p || "").slice(0, 3)]; return g ? `${p} (${g[2]})` : p; };
 const REGION_GEO = {
-  "ap-southeast-2": { pos: SYDNEY, name: "Sydney" }, "eu-central-1": { pos: [50.11, 8.68], name: "Frankfurt" },
+  "us-east-2": { pos: [39.9612, -82.9988], name: "Ohio" }, "eu-central-1": { pos: [50.11, 8.68], name: "Frankfurt" },
   "us-east-1": { pos: [38.95, -77.46], name: "N. Virginia" }, "eu-west-1": { pos: [53.35, -6.26], name: "Dublin" },
   "ap-northeast-1": { pos: [35.68, 139.77], name: "Tokyo" }, "us-west-2": { pos: [45.52, -122.68], name: "Oregon" },
+  "ap-southeast-2": { pos: [-33.8688, 151.2093], name: "Sydney" },
 };
 const clientRegion = REGION_GEO[C.clientRegion] || REGION_GEO["eu-central-1"];
+const originRegion = REGION_GEO[C.originRegion] || REGION_GEO["us-east-2"];
+const ORIGIN = originRegion.pos;
 state.visitor = { pos: clientRegion.pos, label: `${clientRegion.name} example client` };
+const maps = {}; // keyed by feature + lane id
+state.cfEdge = null;
 
 function havKm(a, b) {
   const R = 6371, rad = Math.PI / 180;
@@ -1021,156 +1280,698 @@ function nearestEdge(pos) {
   for (const [code, g] of Object.entries(GEO)) {
     if (code === "SYD") continue;
     const d = havKm(pos, g);
-    if (d < bd) { bd = d; best = { pos: [g[0], g[1]], label: `Illustrative edge near ${g[2]}` }; }
+    if (d < bd) { bd = d; best = { pos: [g[0], g[1]], label: `Nearest edge (${g[2]}, estimated)` }; }
   }
   return best;
 }
-// Great-circle interpolation so arcs follow the real shortest path on the globe.
 function arcPoints(a, b, n = 56) {
   const rad = Math.PI / 180, deg = 180 / Math.PI;
   const la1 = a[0] * rad, lo1 = a[1] * rad, la2 = b[0] * rad, lo2 = b[1] * rad;
   const d = 2 * Math.asin(Math.sqrt(Math.sin((la1 - la2) / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin((lo1 - lo2) / 2) ** 2));
-  const pts = [];
-  let prev = null, offset = 0;
+  const pts = []; let prev = null, offset = 0;
   for (let i = 0; i <= n; i++) {
-    const f = i / n;
-    let la, lo;
+    const f = i / n; let la, lo;
     if (d < 1e-9) { la = a[0]; lo = a[1]; }
     else {
       const A = Math.sin((1 - f) * d) / Math.sin(d), B = Math.sin(f * d) / Math.sin(d);
       const x = A * Math.cos(la1) * Math.cos(lo1) + B * Math.cos(la2) * Math.cos(lo2);
       const y = A * Math.cos(la1) * Math.sin(lo1) + B * Math.cos(la2) * Math.sin(lo2);
       const z = A * Math.sin(la1) + B * Math.sin(la2);
-      la = Math.atan2(z, Math.sqrt(x * x + y * y)) * deg;
-      lo = Math.atan2(y, x) * deg;
+      la = Math.atan2(z, Math.sqrt(x * x + y * y)) * deg; lo = Math.atan2(y, x) * deg;
     }
     lo += offset;
     if (prev != null) { while (lo - prev > 180) { lo -= 360; offset -= 360; } while (prev - lo > 180) { lo += 360; offset += 360; } }
-    prev = lo;
-    pts.push([la, lo]);
+    prev = lo; pts.push([la, lo]);
   }
   return pts;
 }
-
-const maps = {};           // kind -> { map, routes, nodes, current }
-state.mapRoute = {};       // kind -> selected route id
-state.cfEdge = null;       // measured CloudFront edge after a static run
-
-function mapNode(cls, pos, label) {
-  return L.marker(pos, { interactive: false, keyboard: false, icon: L.divIcon({
+function routeCardId(kind, lane) { return `${kind}-${lane}`; }
+function nodeIcon(cls, label, mode) {
+  return L.divIcon({
     className: "", iconSize: [0, 0],
-    html: `<div class="map-node-wrap"><span class="map-node ${cls}"></span><span class="map-node-label">${esc(label)}</span></div>`,
-  }) });
+    html: `<div class="map-node-wrap${mode ? " " + mode : ""}"><span class="map-node ${cls}"></span><span class="map-node-label">${esc(label)}</span></div>`,
+  });
 }
-
-function routeDefs(kind) {
-  const B = state.visitor.pos, O = SYDNEY;
-  const browser = () => mapNode("browser", B, state.visitor.label);
-  if (kind === "db") {
-    const P = clientRegion.pos, R = [P[0] + 0.13, P[1] + 0.24], E = nearestEdge(P);
-    const probe = () => mapNode("browser", P, "Frankfurt probe (Lambda)");
-    const writer = () => mapNode("origin", O, "Sydney writer");
-    return [
-      { id: "public_direct", color: MAPC.direct, segs: [[P, O]], nodes: [probe(), writer()] },
-      { id: "global_accelerator", color: MAPC.opt, segs: [[P, E.pos], [E.pos, O]], nodes: [probe(), mapNode("edge", E.pos, E.label + " (Accelerator)"), mapNode("origin", O, "TCP forwarder → writer")] },
-      { id: "vpc_peering", color: MAPC.blue, segs: [[P, O]], nodes: [probe(), writer()] },
-      { id: "replica_local", color: MAPC.teal, segs: [[P, R]], nodes: [probe(), mapNode("replica", R, "Frankfurt replica")] },
-      { id: "batched_api", color: MAPC.orange, segs: [[P, O]], nodes: [probe(), mapNode("edge", [O[0] + 0.9, O[1] - 1.6], "Sydney batch API (Lambda)"), writer()] },
-    ];
-  }
-  if (kind === "api") {
-    const E = nearestEdge(B);
-    return [
-      { id: "direct", color: MAPC.direct, segs: [[B, O]], nodes: [browser(), mapNode("origin", O, "Sydney ALB")] },
-      { id: "optimized", color: MAPC.opt, segs: [[B, E.pos], [E.pos, O]], nodes: [browser(), mapNode("edge", E.pos, E.label + " (Accelerator entry)"), mapNode("origin", O, "Sydney ALB")] },
-    ];
-  }
-  const E = state.cfEdge || nearestEdge(B);
-  return [
-    { id: "direct", color: MAPC.direct, segs: [[B, O]], nodes: [browser(), mapNode("origin", O, "Sydney origin (public S3)")] },
-    { id: "optimized", color: MAPC.opt, segs: [[B, E.pos], [E.pos, O]], nodes: [browser(), mapNode("edge", E.pos, E.label), mapNode("origin", O, "Sydney origin (private S3)")] },
-  ];
-}
-
-function ensureMap(kind) {
-  if (!window.L || maps[kind]) return maps[kind];
-  const el = $(kind + "-map");
+let overviewMap = null;
+function ensureOverviewMap() {
+  if (overviewMap || !window.L) return overviewMap;
+  const el = $("overview-map");
   if (!el) return null;
-  el.textContent = "";   // drop the no-JS fallback note
   const map = L.map(el, { scrollWheelZoom: false, worldCopyJump: true, minZoom: 1 });
   const tiles = L.tileLayer("https://tile.openstreetmap.de/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>', maxZoom: 19,
   }).addTo(map);
-  const tileNote = document.createElement("div");
-  tileNote.className = "map-tile-note";
-  tileNote.textContent = "Map tiles are unavailable here; route lines and location markers are still shown.";
-  tileNote.hidden = true;
-  el.appendChild(tileNote);
-  tiles.on("tileerror", () => { tileNote.hidden = false; });
-  tiles.on("tileload", () => { tileNote.hidden = true; });
-  maps[kind] = { map, routes: L.layerGroup().addTo(map), nodes: L.layerGroup().addTo(map), current: null };
-  drawMap(kind);
-  return maps[kind];
+  const note = document.createElement("div"); note.className = "map-tile-note";
+  note.textContent = "Map tiles are unavailable here; the two regions are still marked below."; note.hidden = true; el.appendChild(note);
+  tiles.on("tileerror", () => { note.hidden = false; }); tiles.on("tileload", () => { note.hidden = true; });
+  const line = L.polyline(arcPoints(clientRegion.pos, ORIGIN), { color: MAPC.blue, weight: 3, opacity: .9, dashArray: "7 8", className: "route-anim" });
+  line.addTo(map);
+  L.marker(clientRegion.pos, { interactive: false, keyboard: false, icon: nodeIcon("browser", `${clientRegion.name} — example client`, "") }).addTo(map);
+  L.marker(ORIGIN, { interactive: false, keyboard: false, icon: nodeIcon("origin", `${originRegion.name} — origin region`, "") }).addTo(map);
+  map.fitBounds(L.latLngBounds([clientRegion.pos, ORIGIN]).pad(.35), { maxZoom: 5, animate: false });
+  overviewMap = map;
+  return map;
 }
-
-function drawMap(kind, forceFit) {
-  const M = maps[kind];
-  if (!M) return;
-  const sel = state.mapRoute[kind] || "direct";
-  const defs = routeDefs(kind);
-  const active = defs.find((d) => d.id === sel) || defs[0];
-  M.routes.clearLayers();
-  M.nodes.clearLayers();
-  for (const d of defs) {
-    const isActive = d === active;
-    for (const [a, b] of d.segs) {
-      M.routes.addLayer(L.polyline(arcPoints(a, b), isActive
-        ? { color: d.color, weight: 3.5, opacity: .95, dashArray: "7 9", className: "route-anim" }
-        : { color: MAPC.faded, weight: 2, opacity: .4 }));
-    }
+function routeDef(kind, lane) {
+  const client = clientRegion.pos, visitor = state.visitor.pos, origin = ORIGIN;
+  const O = originRegion.name;
+  const kmEachWay = Math.round(havKm(client, origin));
+  if (kind === "static" && lane === "direct") return {
+    color: MAPC.direct, from: visitor, to: origin,
+    stops: [["browser", visitor, `${clientRegion.name} example client`], ["origin", origin, `Public S3 website · ${O}`]],
+    hops: [
+      { label: "Browser", node: 0, desc: `The ${clientRegion.name} example client requests the object from the bucket's public website endpoint.` },
+      { label: "Public internet", seg: 0, desc: `Request and response cross the public internet end to end - roughly ${kmEachWay.toLocaleString()} km each way.` },
+      { label: `Public S3 website · ${O}`, node: 1, desc: "The S3 website endpoint in the origin region serves the object." },
+    ],
+  };
+  if (kind === "static") {
+    const edge = state.cfEdge || nearestEdge(visitor);
+    return { color: MAPC.opt, from: visitor, to: origin, via: [edge.pos],
+      stops: [["browser", visitor, `${clientRegion.name} example client`], ["edge", edge.pos, edge.label], ["origin", origin, `Private S3 origin · ${O}`]],
+      hops: [
+        { label: "Browser", node: 0, desc: "The example client requests the object from CloudFront instead of from the origin." },
+        { label: "CloudFront edge", node: 1, desc: `The nearest CloudFront edge location serves the cached object - on a cache hit the trip to ${O} never happens.` },
+        { label: "OAC-protected S3 origin", node: 2, desc: "Only on a cache miss does CloudFront fetch from the private bucket, locked down with Origin Access Control." },
+      ], };
   }
-  active.nodes.forEach((m) => M.nodes.addLayer(m));
-  if (forceFit || M.current !== sel) {
-    const pts = active.segs.flat();
-    M.map.fitBounds(L.latLngBounds(pts).pad(.28), { maxZoom: kind === "db" && sel === "replica_local" ? 9 : 8, animate: false });
+  if (kind === "api" && lane === "direct") return {
+    color: MAPC.direct, from: visitor, to: origin,
+    stops: [["browser", visitor, `${clientRegion.name} example client`], ["origin", origin, `Public ALB · ${O}`]],
+    hops: [
+      { label: "Browser", node: 0, desc: `The ${clientRegion.name} example client calls the API over the public internet.` },
+      { label: "Public internet", seg: 0, desc: `The connection crosses the public internet to ${O} and back.` },
+      { label: "Application Load Balancer", node: 1, desc: `The public ALB in ${O} answers the request.` },
+    ],
+  };
+  if (kind === "api") {
+    const edge = nearestEdge(visitor);
+    return { color: MAPC.opt, from: visitor, to: origin, via: [edge.pos],
+      stops: [["browser", visitor, `${clientRegion.name} example client`], ["edge", edge.pos, edge.label], ["origin", origin, `Application Load Balancer · ${O}`]],
+      hops: [
+        { label: "Browser", node: 0, desc: "The example client connects to a Global Accelerator anycast IP." },
+        { label: "Global Accelerator anycast entry", node: 1, desc: "The connection enters the AWS global network at the nearest edge location." },
+        { label: "AWS global network", seg: 1, desc: `The connection rides AWS's private backbone to ${O} instead of the public internet.` },
+        { label: `ALB endpoint · ${O}`, node: 2, desc: "The ALB receives the connection from inside the AWS network and answers it." },
+      ], };
   }
-  M.current = sel;
+  const probe = client, writer = origin;
+  if (lane === "public_direct") return { color: MAPC.direct, from: probe, to: writer,
+    stops: [["browser", probe, "Frankfurt probe · Lambda"], ["origin", writer, `Aurora writer · ${O}`]],
+    hops: [
+      { label: "Probe Lambda", node: 0, desc: "The Frankfurt probe opens a fresh PostgreSQL connection over the public internet." },
+      { label: "Public internet", seg: 0, desc: `Every statement makes the ~${kmEachWay.toLocaleString()} km round trip to ${O} over the public internet.` },
+      { label: "Aurora writer", node: 1, desc: "The Aurora PostgreSQL writer executes each statement." },
+    ], };
+  if (lane === "global_accelerator") {
+    const edge = nearestEdge(probe);
+    const forwarder = [writer[0] + 1.1, writer[1] - 2.6];
+    return { color: MAPC.opt, from: probe, to: writer, via: [edge.pos, forwarder],
+      stops: [["browser", probe, "Frankfurt probe · Lambda"], ["edge", edge.pos, edge.label], ["edge", forwarder, `TCP forwarder · ${O}`], ["origin", writer, `Aurora writer · ${O}`]],
+      hops: [
+        { label: "Probe Lambda", node: 0, desc: "The probe connects to Global Accelerator anycast IPs near Frankfurt." },
+        { label: "Global Accelerator", node: 1, desc: "The connection enters the AWS global network at the nearest edge location." },
+        { label: "AWS global network", seg: 1, desc: "Traffic rides AWS's private backbone instead of the public internet." },
+        { label: "TCP forwarder", node: 2, desc: `A small forwarder in ${O} relays the TCP stream, because Aurora cannot be an Accelerator endpoint itself.` },
+        { label: "Aurora writer", node: 3, desc: `The writer executes each statement; statements still pay the full distance to ${O}.` },
+      ], };
+  }
+  if (lane === "vpc_peering") return { color: MAPC.blue, from: probe, to: writer,
+    stops: [["browser", probe, "Probe Lambda · Frankfurt VPC"], ["origin", writer, `Aurora writer · ${O} VPC`]],
+    hops: [
+      { label: "Probe Lambda", node: 0, desc: "The probe connects through the private peering link instead of the public internet." },
+      { label: "VPC peering", seg: 0, desc: `A private VPC peering connection carries the traffic between the Frankfurt and ${O} VPCs.` },
+      { label: "Aurora writer", node: 1, desc: "The writer executes each statement; the distance is unchanged, only the network is private." },
+    ], };
+  if (lane === "replica_local") {
+    const replica = [probe[0] + .12, probe[1] + .18];
+    return { color: MAPC.teal, from: probe, to: replica,
+      extra: [{ a: replica, b: writer }],
+      stops: [["browser", probe, "Probe Lambda · Frankfurt"], ["replica", replica, "Aurora secondary · Frankfurt"]],
+      hops: [
+        { label: "Probe Lambda", node: 0, desc: "The probe connects to the Aurora replica in its own region." },
+        { label: "Local Aurora replica (read)", node: 1, desc: "Reads are served in Frankfurt with single-digit-millisecond round trips." },
+        { label: `Write forwarding → ${O} writer`, extra: 0, desc: `Writes are forwarded from the replica to the primary in ${O} (faded line), so they still pay the full distance.` },
+      ], };
+  }
+  const batch = [writer[0] + .7, writer[1] - 1.1];
+  return { color: MAPC.orange, from: probe, to: writer, via: [batch],
+    stops: [["browser", probe, "Probe Lambda · Frankfurt"], ["edge", batch, `Batch API Lambda · ${O}`], ["origin", writer, `Aurora writer · ${O}`]],
+    hops: [
+      { label: "Probe Lambda", node: 0, desc: "The probe packs all queries into one HTTPS request instead of N database round trips." },
+      { label: "One HTTPS batch request", seg: 0, desc: "A single request crosses the distance once, no matter how many queries it carries." },
+      { label: "Batch API Lambda", node: 1, desc: "A Lambda function next to the database runs the whole batch with near-local latency." },
+      { label: "Aurora writer", node: 2, desc: "Only the batch result crosses the distance back to Frankfurt." },
+    ], };
 }
-
-const MAP_CAPTIONS = {
-  static: { direct: "Browser → public S3 website in Sydney", optimized: "Browser → CloudFront edge → private S3 origin" },
-  api: { direct: "Browser → public ALB in Sydney", optimized: "Browser → Global Accelerator edge → Sydney ALB" },
-  db: {
-    public_direct: "Frankfurt function → public internet → Sydney writer",
-    global_accelerator: "Frankfurt function → Accelerator → TCP forwarder → Sydney writer",
-    vpc_peering: "Frankfurt function → private VPC peering → Sydney writer",
-    replica_local: "Frankfurt function → local replica (reads) / forwarded writer (writes)",
-    batched_api: "Frankfurt function → one HTTPS request → Sydney batch API → writer",
-  },
-};
-
+function hopMarkup(hops) {
+  return hops.map((hop, i) => {
+    const arrow = i ? '<span class="route-hop-arrow" aria-hidden="true">→</span>' : "";
+    return `${arrow}<span class="route-hop" title="${esc(hop.desc)}">${esc(hop.label)}</span>`;
+  }).join("");
+}
+function buildDbMapCards() {
+  const grid = $("db-route-grid");
+  if (!grid || !C.db?.paths) return;
+  grid.innerHTML = C.db.paths.map((path) => `<article class="route-map-card" id="db-map-card-${esc(path.id)}"><button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button><h3>${esc(path.label)}</h3><p class="route-result" id="db-result-${esc(path.id)}">No results yet — press Run.</p><p class="route-caption" id="db-map-caption-${esc(path.id)}">Illustrated service path</p><div class="leaflet-map" id="db-map-${esc(path.id)}" role="img" aria-label="Illustrated route for ${esc(path.label)}">Map tiles load from OpenStreetMap; lines show the route design.</div><div class="route-hops" id="db-hops-${esc(path.id)}" aria-label="Illustrated service path"></div></article>`).join("");
+}
+function markWorkloadExclusions() {
+  if (!C.db?.paths) return;
+  const writeOnly = state.dbWorkload === "write";
+  for (const path of C.db.paths) {
+    const card = $(`db-map-card-${path.id}`);
+    if (!card) continue;
+    const excluded = writeOnly && !path.writes;
+    card.classList.toggle("workload-excluded", excluded);
+    let note = card.querySelector(".workload-note");
+    if (excluded && !note) {
+      note = document.createElement("p");
+      note.className = "workload-note";
+      note.textContent = "Read-only path: skipped while \"Writes\" is selected.";
+      card.appendChild(note);
+    } else if (!excluded && note) { note.remove(); }
+  }
+}
+function ensureMap(kind, lane) {
+  const key = routeCardId(kind, lane);
+  if (!window.L || maps[key]) return maps[key];
+  const el = $(`${kind}-map-${lane}`);
+  if (!el) return null;
+  el.textContent = "";
+  const map = L.map(el, { scrollWheelZoom: false, worldCopyJump: true, minZoom: 1 });
+  const tiles = L.tileLayer("https://tile.openstreetmap.de/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>', maxZoom: 19,
+  }).addTo(map);
+  const note = document.createElement("div"); note.className = "map-tile-note";
+  note.textContent = "Map tiles are unavailable here; route lines and location markers are still shown."; note.hidden = true; el.appendChild(note);
+  tiles.on("tileerror", () => { note.hidden = false; }); tiles.on("tileload", () => { note.hidden = true; });
+  maps[key] = { key, kind, lane, map, routeLayer: L.layerGroup().addTo(map), nodeLayer: L.layerGroup().addTo(map),
+                segs: [], nodes: [], extras: [], def: null, trace: null, current: null };
+  installTraceControls(kind, lane);
+  drawMap(key, true);
+  return maps[key];
+}
+function drawMap(key, forceFit = false) {
+  const M = maps[key]; if (!M) return;
+  const hopsEl = $(`${M.kind}-hops-${M.lane}`);
+  if (M.trace) {                                          // live traceroute replaces the illustration
+    M.def = null;
+    M.routeLayer.clearLayers(); M.nodeLayer.clearLayers();
+    M.segs = []; M.nodes = []; M.extras = [];
+    drawTraceLayers(M);
+    const caption = $(`${M.kind}-map-caption-${M.lane}`);
+    if (caption) caption.textContent = M.trace.approx
+      ? `Real traceroute (${M.trace.tool}) to the AWS edge · approximate continuation through the private backbone`
+      : `Real traceroute (${M.trace.tool}) to ${M.trace.host} · ${M.trace.hops.length} hops`;
+    if (hopsEl) hopsEl.style.display = "none";
+    return;
+  }
+  if (hopsEl) hopsEl.style.display = "";
+  const def = routeDef(M.kind, M.lane); if (!def) return;
+  M.def = def;
+  M.routeLayer.clearLayers(); M.nodeLayer.clearLayers();
+  M.segs = []; M.nodes = []; M.extras = [];
+  const points = [def.from, ...(def.via || []), def.to];
+  for (let i = 0; i < points.length - 1; i++) {
+    const line = L.polyline(arcPoints(points[i], points[i + 1]), {
+      color: def.color, weight: 3.5, opacity: .95, dashArray: "7 8", className: "route-anim",
+    });
+    M.routeLayer.addLayer(line); M.segs.push(line);
+  }
+  (def.extra || []).forEach((x) => {
+    const line = L.polyline(arcPoints(x.a, x.b), { color: MAPC.faded, weight: 2.5, opacity: .85, dashArray: "3 6" });
+    M.routeLayer.addLayer(line); M.extras.push(line);
+  });
+  def.stops.forEach(([cls, pos, label]) => {
+    const marker = L.marker(pos, { interactive: false, keyboard: false, icon: nodeIcon(cls, label, "") });
+    M.nodeLayer.addLayer(marker); M.nodes.push(marker);
+  });
+  const caption = $(`${M.kind}-map-caption-${M.lane}`);
+  if (caption) caption.textContent = def.stops.map((s) => s[2]).join(" → ");
+  const hops = $(`${M.kind}-hops-${M.lane}`);
+  if (hops) hops.innerHTML = hopMarkup(def.hops);
+  if (forceFit || !M.current) {
+    const boundsPts = points.concat((def.extra || []).flatMap((x) => [x.a, x.b]));
+    M.map.fitBounds(L.latLngBounds(boundsPts).pad(.32), { maxZoom: 7, animate: false });
+  }
+  M.current = true;
+}
+function initFeatureMaps(kind) {
+  if (kind === "overview") { ensureOverviewMap()?.invalidateSize(); return; }
+  let lanes;
+  if (kind === "db") lanes = (C.db?.paths || []).map((p) => p.id);
+  else lanes = ["direct", "optimized"];
+  for (const lane of lanes) {
+    const M = ensureMap(kind, lane);
+    if (M) { M.map.invalidateSize(); drawMap(M.key, true); }
+  }
+}
 function setMapRoute(kind, selected) {
-  state.mapRoute[kind] = selected;
+  // Highlight the card of the path currently being measured; every path keeps its own map.
   if (kind === "db") {
-    const paths = C.db?.paths || [];
-    const selectors = $("db-map-select");
-    if (selectors && selectors.children.length !== paths.length) {
-      selectors.innerHTML = paths.map((x) => `<button type="button" data-route="${esc(x.id)}" aria-pressed="false">${esc(x.label.replace("Direct, public internet", "Direct").replace("VPC peering (private)", "Peering").replace("One call to API next to DB", "Batched API"))}</button>`).join("");
-      selectors.querySelectorAll("[data-route]").forEach((button) => button.addEventListener("click", () => setMapRoute("db", button.dataset.route)));
+    for (const path of (C.db?.paths || [])) {
+      const card = $(`${kind}-map-card-${path.id}`);
+      card?.classList.toggle("current", path.id === selected);
     }
-    selectors?.querySelectorAll("[data-route]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.route === selected)));
+    state.mapRoute = state.mapRoute || {}; state.mapRoute.db = selected;
   } else {
-    document.querySelectorAll(`#${kind}-map-select [data-route]`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.route === selected)));
+    const lane = selected === "direct" ? "direct" : "optimized";
+    for (const id of ["direct", "optimized"]) $(`${kind}-map-card-${id}`)?.classList.toggle("current", id === lane);
+    const M = maps[routeCardId(kind, lane)];
+    if (M) drawMap(M.key, true);
   }
-  const caption = $(kind + "-map-caption");
-  if (caption && MAP_CAPTIONS[kind]?.[selected]) caption.textContent = MAP_CAPTIONS[kind][selected];
-  drawMap(kind);
+}
+
+/* ---------- live traceroute from the Frankfurt client ---------- */
+/* Targets the trace_probe Lambda can trace on the benchmark EC2. Traces are
+   started by the Run buttons together with the measurements. The optimized
+   targets (CloudFront domain, Global Accelerator anycast IP) stop at the AWS
+   edge by design; the map then draws an approximate continuation for the
+   private backbone segment. */
+const TRACE_TARGETS = {
+  static: { direct: "static_direct", optimized: "static_optimized" },
+  api: { direct: "api_direct", optimized: "api_optimized" },
+  db: { public_direct: "db_direct", global_accelerator: "db_optimized" },
+};
+const traceFlights = {};                       // target -> in-flight promise (dedupes repeated Runs)
+function traceTargetFor(kind, lane) { return TRACE_TARGETS[kind]?.[lane] || null; }
+function traceAvailable(kind, lane) {
+  const target = traceTargetFor(kind, lane);
+  return Boolean(target && C.trace && Array.isArray(C.trace.targets) && C.trace.targets.includes(target));
+}
+function traceIsApprox(kind, lane) { return kind === "db" ? lane === "global_accelerator" : lane === "optimized"; }
+function installTraceControls(kind, lane) {
+  if (!C.trace) return;
+  const card = $(`${kind}-map-card-${lane}`);
+  if (!card || card.querySelector(".trace-status, .trace-note")) return;
+  if (traceAvailable(kind, lane)) {
+    const status = document.createElement("p");
+    status.className = "trace-status small muted"; status.id = `${kind}-trace-status-${lane}`;
+    const table = document.createElement("div");
+    table.className = "trace-table"; table.hidden = true; table.id = `${kind}-trace-table-${lane}`;
+    card.append(status, table);
+  } else {
+    const note = document.createElement("p");
+    note.className = "trace-note";
+    note.textContent = {
+      vpc_peering: "This path stays inside private VPCs, so traceroute can only observe the public-internet path.",
+      replica_local: "The replica sits next to the probe in Frankfurt; there is no long-haul path to trace.",
+      batched_api: `One HTTPS call to a function next to the database; the database hop itself stays inside the ${originRegion.name} region.`,
+    }[lane] || "This path is not traceable from the benchmark client in this deployment.";
+    card.appendChild(note);
+  }
+}
+function traceTableHtml(trace) {
+  const rows = trace.hops.map((h) => {
+    const silent = !h.ip;
+    return `<tr><td class="num">${h.hop}</td><td${silent ? ' class="silent"' : ""}>${silent ? "no response (* * *)" : esc(h.ip)}</td>` +
+      `<td class="num">${h.rtt_ms == null ? "—" : fmt(h.rtt_ms)}</td>` +
+      `<td class="num">${h.loss_pct == null ? "—" : h.loss_pct + "%"}</td>` +
+      `<td${silent ? ' class="silent"' : ""}>${esc(h.isp || (silent ? "" : "—"))}</td><td${silent ? ' class="silent"' : ""}>${esc(h.loc || "")}</td></tr>`;
+  }).join("");
+  const approxRow = trace.approx
+    ? `<tr><td class="num">…</td><td class="silent" colspan="5">AWS global network (private backbone) — never answers traceroute; approximate continuation to ${esc(originRegion.name)}</td></tr>`
+    : "";
+  return `<table><thead><tr><th>Hop</th><th>IP</th><th>RTT</th><th>Loss</th><th>Provider</th><th>Location</th></tr></thead><tbody>${rows}${approxRow}</tbody></table>`;
+}
+function drawTraceLayers(M) {
+  const approx = Boolean(M.trace.approx);
+  const geoHops = M.trace.hops.filter((h) => Number.isFinite(h.lat) && Number.isFinite(h.lon));
+  const pts = geoHops.map((h) => [h.lat, h.lon]);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const line = L.polyline(arcPoints(pts[i], pts[i + 1]), { color: "#33415e", weight: 3, opacity: .9 });
+    M.routeLayer.addLayer(line); M.segs.push(line);
+  }
+  geoHops.forEach((h, i) => {
+    const last = i === geoHops.length - 1;
+    const cls = last && approx ? " edge" : last ? " endpoint" : "";
+    const icon = L.divIcon({ className: "", iconSize: [0, 0],
+      html: `<div class="trace-hop-marker${cls}" title="Hop ${h.hop}${h.ip ? " · " + esc(h.ip) : ""}${h.isp ? " · " + esc(h.isp) : ""}${last && approx ? " · AWS edge" : ""}">${h.hop}</div>` });
+    const marker = L.marker([h.lat, h.lon], { interactive: false, keyboard: false, icon });
+    M.nodeLayer.addLayer(marker); M.nodes.push(marker);
+  });
+  if (approx && pts.length) {                                // private backbone: observed edge -> origin region (approximate)
+    const edge = pts[pts.length - 1];
+    const line = L.polyline(arcPoints(edge, ORIGIN), { color: MAPC.faded, weight: 3, opacity: .9, dashArray: "3 7" });
+    M.routeLayer.addLayer(line); M.segs.push(line);
+    const dest = L.marker(ORIGIN, { interactive: false, keyboard: false, icon: nodeIcon("origin", M.trace.dest || originRegion.name, "") });
+    M.nodeLayer.addLayer(dest); M.nodes.push(dest);
+    pts.push(ORIGIN);
+  }
+  if (pts.length) M.map.fitBounds(L.latLngBounds(pts).pad(.25), { maxZoom: 7, animate: false });
+}
+function requestTrace(target) {
+  if (traceFlights[target]) return traceFlights[target];
+  const q = new URLSearchParams({ t: C.trace.token, target, cb: Date.now().toString(36) });
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 295000);
+  const p = fetch(C.trace.url + "?" + q, { cache: "no-store", signal: ac.signal })
+    .then(async (res) => {
+      let r;
+      try { r = await res.json(); } catch (e) { r = { error: `HTTP ${res.status}: invalid JSON response` }; }
+      if (!res.ok && !r.error) r.error = `HTTP ${res.status}`;
+      return r;
+    })
+    .catch((e) => ({ error: e.name === "AbortError" ? "timed out waiting for the traceroute" : (e.message || "network error") }))
+    .finally(() => { clearTimeout(timer); delete traceFlights[target]; });
+  traceFlights[target] = p;
+  return p;
+}
+function runTraces(kind, lanes) {
+  if (!C.trace) return;
+  for (const lane of lanes) {
+    if (!traceAvailable(kind, lane)) continue;
+    const M = maps[routeCardId(kind, lane)];
+    const status = $(`${kind}-trace-status-${lane}`);
+    if (!M) continue;
+    if (status) status.textContent = "Traceroute running on the Frankfurt client alongside the test (takes ~30–90 s); the map switches to the real hops when it arrives.";
+    requestTrace(TRACE_TARGETS[kind][lane]).then((r) => applyTrace(kind, lane, r));
+  }
+}
+function applyTrace(kind, lane, r) {
+  const M = maps[routeCardId(kind, lane)];
+  if (!M) return;
+  const status = $(`${kind}-trace-status-${lane}`);
+  const table = $(`${kind}-trace-table-${lane}`);
+  if (r.error) {
+    if (status) status.textContent = `Traceroute failed: ${r.error}${r.detail ? " — " + r.detail : ""}. The illustration stays.`;
+    return;
+  }
+  r.approx = traceIsApprox(kind, lane);
+  if (r.approx) r.dest = { static: `Private S3 origin · ${originRegion.name}`, api: `ALB · ${originRegion.name}`, db: `Aurora writer · ${originRegion.name}` }[kind];
+  M.trace = r;
+  const mapped = r.hops.filter((h) => Number.isFinite(h.lat) && Number.isFinite(h.lon)).length;
+  if (status) status.textContent =
+    `${r.simulated ? "Simulated preview data · " : ""}${r.tool} · ${r.hops.length} hops (${mapped} placed on the map) · took ${(r.elapsed_ms / 1000).toFixed(0)} s` +
+    (r.approx ? " · last segment approximate" : "") + (r.geo ? ` · hop geolocation via ${r.geo}` : "");
+  if (table) { table.innerHTML = traceTableHtml(r); table.hidden = false; }
+  drawMap(M.key, true);
+}
+
+/* ---------- enlarged map view with implementation / drawbacks / price ---------- */
+const PRICE_NOTE = "Rough list-price ballpark for comparison only — always check the linked pricing page.";
+function buildMapInfo() {
+  const O = originRegion.name;
+  return {
+  static: {
+    direct: {
+      impl: `S3 bucket with public website hosting in the ${O} region. The browser fetches each object straight from the origin endpoint over the public internet.`,
+      drawbacks: "Every request pays the full cross-region round trip; no caching anywhere; throughput is limited by the slowest link on the path; S3 website endpoints serve plain HTTP only.",
+      price: `${PRICE_NOTE} S3 storage ~$0.023/GB-month, request fees, plus data-transfer-out to the internet (~$0.09–0.12/GB after the free 100 GB). No fixed hourly cost.`,
+      links: [["S3 website hosting", "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html"], ["S3 pricing", "https://aws.amazon.com/s3/pricing/"]],
+    },
+    optimized: {
+      impl: `CloudFront distribution in front of a private S3 bucket, locked down with Origin Access Control (OAC). Cached objects are served from the edge location nearest the visitor; only cache misses travel to the ${O} origin over the AWS backbone.`,
+      drawbacks: "Only helps cacheable content; a cache miss still pays the origin fetch; cache invalidations must be managed; the serving edge varies per visitor (first request after deploy is a miss).",
+      price: `${PRICE_NOTE} CloudFront charges per request and per GB (~$0.085/GB tiered; 1 TB/month is always free, with no 12-month expiry). Often cheaper than serving all traffic from the origin, since origin transfer is only paid on misses.`,
+      links: [["CloudFront + OAC", "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html"], ["CloudFront pricing", "https://aws.amazon.com/cloudfront/pricing/"]],
+    },
+  },
+  api: {
+    direct: {
+      impl: `Public Application Load Balancer in ${O} in front of a small API backend. The browser connects over the public internet end to end.`,
+      drawbacks: "The public-internet path varies with congestion and peering changes; every new TCP+TLS connection pays several full round trips before any data flows.",
+      price: `${PRICE_NOTE} ALB ~$0.0225/hour plus LCU usage (~$0.008/LCU-hour) and data-transfer-out (~$0.09/GB).`,
+      links: [["Application Load Balancer", "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html"], ["ELB pricing", "https://aws.amazon.com/elasticloadbalancing/pricing/"]],
+    },
+    optimized: {
+      impl: `Global Accelerator anycast static IPs: the connection enters the AWS global network at the edge nearest the visitor and rides the private backbone to the ${O} ALB endpoint group.`,
+      drawbacks: "Fixed hourly cost whether or not there is traffic; data transfer is billed at premium rates; the win is small when the client already sits close to the origin; one more service to operate.",
+      price: `${PRICE_NOTE} Global Accelerator $0.025/hour per accelerator (≈ $18/month) + premium per-GB data transfer (varies by region), plus the ALB costs.`,
+      links: [["Global Accelerator", "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"], ["Global Accelerator pricing", "https://aws.amazon.com/global-accelerator/pricing/"]],
+    },
+  },
+  db: {
+    public_direct: {
+      impl: `Aurora PostgreSQL (Serverless v2) writer in ${O} with a public endpoint, security group locked to the benchmark client's address. The probe opens a PostgreSQL connection over the public internet.`,
+      drawbacks: "Every statement pays the full cross-region round-trip time, so chatty applications are orders of magnitude slower; a public database endpoint (even CIDR-restricted) is a wider attack surface than a private one.",
+      price: `${PRICE_NOTE} Aurora Serverless v2 ~$0.13/ACU-hour (0.5 ACU minimum ≈ $47/month) + storage + data-transfer-out. The latency itself is free but usually costs more in compute and UX than the infra.`,
+      links: [["Aurora Global Database", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"], ["Aurora pricing", "https://aws.amazon.com/rds/aurora/pricing/"]],
+    },
+    global_accelerator: {
+      impl: "The probe connects to Global Accelerator anycast IPs; a TCP listener forwards the stream over the AWS backbone to a tiny socat forwarder EC2 next to the writer (Aurora cannot be an Accelerator endpoint type itself).",
+      drawbacks: `Connection setup is faster, but per-statement latency is unchanged — the writer is still in ${O}; the forwarder is an extra component to run and patch; GA fees apply.`,
+      price: `${PRICE_NOTE} GA $0.025/hour + premium data transfer, forwarder EC2 (~$0.01/hour for a t-class), plus Aurora.`,
+      links: [["Accelerator endpoints", "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"], ["Global Accelerator pricing", "https://aws.amazon.com/global-accelerator/pricing/"]],
+    },
+    vpc_peering: {
+      impl: `Dedicated VPCs in Frankfurt and ${O} joined by a VPC peering connection; routes and security groups send the probe's traffic privately instead of over the public internet.`,
+      drawbacks: "The physical distance is unchanged, so per-query latency is basically the same as direct; peering is not transitive (no hub-and-spoke through it); inter-region bandwidth is billed per GB.",
+      price: `${PRICE_NOTE} The peering connection itself is free; inter-region data transfer is billed per GB in each direction (US↔Europe rates apply), plus the NAT gateway the probe egresses through (~$0.045/hour + per-GB).`,
+      links: [["VPC peering", "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"], ["Data transfer pricing", "https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer"]],
+    },
+    replica_local: {
+      impl: `Aurora Global Database secondary in Frankfurt: storage is replicated to a local replica, reads are served in-region with single-digit-millisecond round trips, and write forwarding sends writes to the ${O} primary.`,
+      drawbacks: `Writes still pay the full distance to ${O}; freshly-written data can lag on the replica (replication lag); the replica's ACUs are an additional running cost.`,
+      price: `${PRICE_NOTE} Roughly doubles the Aurora compute bill (a second set of Serverless v2 ACUs) + storage in the second region; write forwarding itself has no separate fee.`,
+      links: [["Write forwarding", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding-apg.html"], ["Aurora pricing", "https://aws.amazon.com/rds/aurora/pricing/"]],
+    },
+    batched_api: {
+      impl: `The Frankfurt probe packs all queries into a single HTTPS call to a Lambda that runs next to the database in ${O}; the batch executes with near-local latency and only the result crosses the distance.`,
+      drawbacks: "Requires application-level batching, which does not fit every access pattern (transaction boundaries, ORMs); adds a small service to deploy and maintain.",
+      price: `${PRICE_NOTE} Lambda is per-request/per-millisecond — negligible at POC scale; Aurora remains the dominant cost.`,
+      links: [["Lambda Function URLs", "https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html"], ["Lambda pricing", "https://aws.amazon.com/lambda/pricing/"]],
+    },
+  },
+  };
+}
+const MAP_INFO = buildMapInfo();
+
+/* ---------- simulated monthly cost ---------- */
+// List-price constants, us-east-2 (Ohio) where relevant. Approximations
+// for a ballpark comparison only — not a quote. See MAP_INFO links for the
+// authoritative AWS pricing pages.
+const PRICING = {
+  s3StoragePerGbMonth: 0.025, s3RequestsPer1k: 0.0004, s3TransferPerGb: 0.114,
+  cloudfrontPerGb: 0.12, cloudfrontPer10kReq: 0.01,
+  albHourly: 0.0252, albLcuHourly: 0.008, albTransferPerGb: 0.114,
+  gaHourly: 0.025, gaTransferPerGb: 0.02,
+  auroraAcuHour: 0.13, natHourly: 0.052, natPerGb: 0.052,
+  lambdaPer1mReq: 0.20, lambdaGbSecond: 0.0000166667,
+  hoursPerMonth: 730,
+};
+function parseLocaleNumber(id, fallback) {
+  const raw = ($(id)?.value || "").replace(/[^\d.]/g, "");
+  const n = parseFloat(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+function money(v) {
+  if (!Number.isFinite(v)) return "—";
+  if (v < 1) return "$" + v.toFixed(3);
+  if (v < 1000) return "$" + v.toFixed(2);
+  return "$" + v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+const COST_COLORS = ["#4a63e6", "#13a985", "#e6a43d", "#ed6a70", "#19b99a", "#9b6fe0"];
+function renderCostTable(elId, rows) {
+  const el = $(elId); if (!el) return;
+  const sorted = [...rows].sort((a, b) => a.monthly - b.monthly);
+  const cheapest = sorted[0], priciest = sorted[sorted.length - 1];
+  const max = Math.max(1, ...rows.map((r) => r.monthly));
+  const bars = rows.map((r, i) => {
+    const isCheapest = r.monthly === cheapest.monthly;
+    const pct = Math.max(1.5, r.monthly / max * 100);
+    return `<div class="cost-bar-row${isCheapest ? " cost-cheapest" : ""}">
+      <div class="cost-bar-name">${isCheapest && rows.length > 1 ? '<span class="cost-crown" title="Cheapest at this volume">👑</span>' : ""}${esc(r.label)}</div>
+      <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${pct.toFixed(1)}%;background:${COST_COLORS[i % COST_COLORS.length]}"></div></div>
+      <div><div class="cost-bar-value">${money(r.monthly)}/mo</div><div class="cost-bar-sub">${esc(r.drivers)}</div></div>
+    </div>`;
+  }).join("");
+  let callout = "";
+  if (rows.length > 1 && priciest.monthly > cheapest.monthly * 1.05) {
+    const ratio = priciest.monthly / cheapest.monthly;
+    callout = `<div class="cost-callout"><strong>${ratio.toFixed(1)}&times; cheaper</strong> to run ${esc(cheapest.label)} than ${esc(priciest.label)} at this traffic volume.</div>`;
+  } else if (rows.length > 1) {
+    callout = `<div class="cost-callout">All paths cost about the same at this traffic volume — the choice here is about latency, not price.</div>`;
+  }
+  const table = `<table><thead><tr><th>Path</th><th class="num">Monthly estimate</th><th>Main drivers</th></tr></thead><tbody>` +
+    rows.map((r) => `<tr class="${r.monthly === cheapest.monthly ? "cost-best" : ""}"><td>${esc(r.label)}</td><td class="num">${money(r.monthly)}</td><td>${esc(r.drivers)}</td></tr>`).join("") +
+    `</tbody></table>`;
+  el.innerHTML = `<div class="cost-bars">${bars}</div>${callout}<details class="cost-table-toggle"><summary>Show exact numbers</summary><div class="cost-table">${table}</div></details>`;
+}
+function staticCostInputs() {
+  const reqs = parseLocaleNumber("static-cost-reqs", 1000000);
+  const hitRate = (+($("static-cost-hit")?.value) || 0) / 100;
+  const key = $("static-size")?.value;
+  const asset = [...(C.static?.assets || []), { key: C.static?.page, bytes: 1024 }].find((a) => a.key === key);
+  const bytesPerReq = asset?.bytes || 1024;
+  const gb = (reqs * bytesPerReq) / 1e9;
+  return { reqs, hitRate, gb };
+}
+function renderStaticCost() {
+  if (!C.static || !$("static-cost-table")) return;
+  const { reqs, hitRate, gb } = staticCostInputs();
+  $("static-cost-hit-v").textContent = Math.round(hitRate * 100) + "%";
+  const directMonthly = PRICING.s3StoragePerGbMonth * 5 /* assume ~5 GB stored */
+    + reqs / 1000 * PRICING.s3RequestsPer1k + gb * PRICING.s3TransferPerGb;
+  const misses = reqs * (1 - hitRate);
+  // Cache misses still fetch from S3 behind OAC, but CloudFront->S3 transfer within
+  // AWS is free; only CloudFront's own edge-to-viewer transfer and requests are billed.
+  const cfMonthly = PRICING.cloudfrontPerGb * Math.max(0, gb - 1024) /* first 1 TB free */
+    + reqs / 10000 * PRICING.cloudfrontPer10kReq;
+  renderCostTable("static-cost-table", [
+    { label: "Direct · public S3 website", monthly: directMonthly, drivers: `${gb.toFixed(1)} GB transfer + ${(reqs / 1000).toFixed(0)}k requests` },
+    { label: "Optimized · CloudFront + OAC", monthly: cfMonthly, drivers: `${Math.max(0, gb - 1024).toFixed(1)} GB over the 1 TB free tier · ${(misses / 1000).toFixed(0)}k misses reach the origin` },
+  ]);
+}
+function renderApiCost() {
+  if (!C.api || !$("api-cost-table")) return;
+  const reqs = parseLocaleNumber("api-cost-reqs", 1000000);
+  const kb = parseLocaleNumber("api-cost-kb", 5);
+  const gb = (reqs * kb * 1024) / 1e9;
+  const albMonthly = PRICING.albHourly * PRICING.hoursPerMonth + PRICING.albLcuHourly * PRICING.hoursPerMonth + gb * PRICING.albTransferPerGb;
+  const gaMonthly = PRICING.gaHourly * PRICING.hoursPerMonth + gb * PRICING.gaTransferPerGb + albMonthly;
+  renderCostTable("api-cost-table", [
+    { label: "Direct · public ALB", monthly: albMonthly, drivers: `ALB running 24/7 + ${gb.toFixed(2)} GB transfer` },
+    { label: "Optimized · Global Accelerator", monthly: gaMonthly, drivers: `Accelerator fee (≈$18/mo) + premium transfer, on top of the ALB` },
+  ]);
+}
+function renderDbCost() {
+  if (!C.db?.paths || !$("db-cost-table")) return;
+  const acus = Math.max(0.5, parseLocaleNumber("db-cost-acu", 1));
+  const sessions = parseLocaleNumber("db-cost-sessions", 1000000);
+  const writerMonthly = acus * PRICING.auroraAcuHour * PRICING.hoursPerMonth;
+  const natMonthly = PRICING.natHourly * PRICING.hoursPerMonth;
+  const rows = [
+    { id: "public_direct", label: "Direct, public internet", monthly: writerMonthly, drivers: `${acus} ACU writer, 24/7 — no extra fee for the public endpoint` },
+    { id: "global_accelerator", label: "Global Accelerator", monthly: writerMonthly + PRICING.gaHourly * PRICING.hoursPerMonth + 0.0084 * PRICING.hoursPerMonth, drivers: `Writer + accelerator (≈$18/mo) + a tiny forwarder EC2 (≈$6/mo)` },
+    { id: "vpc_peering", label: "VPC peering (private)", monthly: writerMonthly + natMonthly, drivers: `Writer + a NAT gateway for egress (peering itself is free)` },
+    { id: "replica_local", label: "Frankfurt replica", monthly: writerMonthly * 2, drivers: `A second ${acus}-ACU instance in Frankfurt — roughly doubles compute` },
+    { id: "batched_api", label: "One call to API next to DB", monthly: writerMonthly + sessions / 1e6 * PRICING.lambdaPer1mReq, drivers: `Writer + ${(sessions / 1e6).toFixed(2)}M Lambda invocations (compute is negligible)` },
+  ];
+  renderCostTable("db-cost-table", rows.filter((r) => C.db.paths.some((p) => p.id === r.id)));
+}
+function renderAllCosts() { renderStaticCost(); renderApiCost(); renderDbCost(); }
+
+function moveIntoModal(el, target) {
+  if (!el) return null;
+  const rec = { el, next: el.nextSibling, parent: el.parentNode };       // remember where it belongs
+  target.appendChild(el);
+  return rec;
+}
+function openMapModal(kind, lane) {
+  const key = routeCardId(kind, lane);
+  const card = $(`${kind}-map-card-${lane}`);
+  if (!card) return;
+  const M = maps[key] || ensureMap(kind, lane);
+  if (state.modalKey && state.modalKey !== key) closeMapModal();
+  const info = MAP_INFO[kind]?.[lane] || {};
+  const modalTitle = card.querySelector("h3").cloneNode(true);
+  modalTitle.querySelector(".map-rank")?.remove();
+  $("map-modal-title").textContent = modalTitle.textContent.trim();
+  $("map-modal-result").innerHTML = $(`${kind}-result-${lane}`)?.innerHTML || "No results yet.";
+  $("map-modal-caption").textContent = $(`${kind}-map-caption-${lane}`)?.textContent || "";
+  $("map-modal-impl").textContent = info.impl || "";
+  $("map-modal-drawbacks").textContent = info.drawbacks || "";
+  $("map-modal-price").textContent = info.price || "";
+  $("map-modal-links").innerHTML = (info.links || []).map(([label, url]) => `<a href="${url}" target="_blank" rel="noopener">${esc(label)} ↗</a>`).join("");
+  const modalHops = $("map-modal-hops");
+  modalHops.textContent = "";
+  state.modalMapEl = $(`${kind}-map-${lane}`);
+  state.modalRestore = [
+    moveIntoModal(state.modalMapEl, $("map-modal-map")),
+    moveIntoModal($(`${kind}-hops-${lane}`), modalHops),
+    moveIntoModal($(`${kind}-trace-status-${lane}`), modalHops),
+    moveIntoModal($(`${kind}-trace-table-${lane}`), modalHops),
+  ].filter(Boolean);
+  if (state.modalMapEl) state.modalMapEl.style.height = "100%";
+  $("map-modal").hidden = false;
+  document.body.style.overflow = "hidden";
+  state.modalKey = key;
+  requestAnimationFrame(() => { if (M) M.map.invalidateSize(); });
+}
+function closeMapModal() {
+  const modal = $("map-modal");
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  document.body.style.overflow = "";
+  const recs = state.modalRestore || [];
+  const M = maps[state.modalKey];
+  state.modalKey = null; state.modalRestore = null;
+  if (state.modalMapEl) state.modalMapEl.style.height = "";
+  state.modalMapEl = null;
+  for (const rec of [...recs].reverse()) {                  // reverse order: a saved "next" sibling may itself have been moved
+    if (rec.next && rec.next.parentNode === rec.parent) rec.parent.insertBefore(rec.el, rec.next);
+    else rec.parent.appendChild(rec.el);
+  }
+  requestAnimationFrame(() => { if (M) M.map.invalidateSize(); });
+}
+function updateRaceResults(suite, info, metric) {
+  const directAvg = info.find((i) => i.lane.id === "direct")?.st?.avg;
+  updateRankBadges(suite, info.map((i) => ({ lane: i.lane.id === "direct" ? "direct" : "optimized", value: i.st?.avg })));
+  for (const i of info) {
+    const laneId = i.lane.id === "direct" ? "direct" : "optimized";
+    const el = $(`${suite}-result-${laneId}`);
+    if (!el) continue;
+    if (i.st) {
+      let html = `<b>${fmt(i.st.avg)}</b> avg ${metric === "ttfb" ? "first byte" : "total time"} · median ${fmt(i.st.median)} · p95 ${fmt(i.st.p95)} · n=${i.st.n}${i.fail ? ` · ${i.fail} failed` : ""}`;
+      if (laneId === "optimized" && directAvg && i.st.avg > 0 && directAvg / i.st.avg >= 1.05)
+        html += ` · <span class="cmp">${(directAvg / i.st.avg).toFixed(1)}× faster than direct</span>`;
+      el.innerHTML = html;
+    } else if (i.fail) { el.textContent = `Failed (${i.fail} attempt${i.fail > 1 ? "s" : ""}).`; }
+  }
+}
+function updateDbResults(data) {
+  updateRankBadges("db", data.map((d) => ({ lane: d.lane.id, value: d.total })));
+  for (const d of data) {
+    const el = $(`db-result-${d.lane.id}`);
+    if (!el) continue;
+    if (d.total != null) el.innerHTML = `<b>${fmt(d.total)}</b> session avg · connect ${fmt(d.connect)} · per query ${fmt(d.perQuery)} · n=${d.n}${d.fail ? ` · ${d.fail} failed` : ""}`;
+    else if (d.fail) el.textContent = `Failed (${d.fail} attempt${d.fail > 1 ? "s" : ""}).`;
+  }
+}
+const lastRanking = {};                         // kind -> Map(lane -> rank), kept for the end-of-run reorder
+function updateRankBadges(kind, entries) {
+  // Updates the "#1 · Fastest" badges live, every sample. Reordering the
+  // cards themselves is deferred to reorderMapCards() (run end only), so the
+  // grid does not jump around mid-run while results are still trickling in.
+  const ranked = entries.filter((e) => Number.isFinite(e.value)).sort((a, b) => a.value - b.value);
+  const rankByLane = new Map(ranked.map((e, i) => [e.lane, i + 1]));
+  lastRanking[kind] = rankByLane;
+  const lanes = kind === "db" ? (C.db?.paths || []).map((p) => p.id) : ["direct", "optimized"];
+  for (const lane of lanes) {
+    const card = $(`${kind}-map-card-${lane}`);
+    if (!card) continue;
+    let badge = card.querySelector(".map-rank");
+    const rank = rankByLane.get(lane);
+    card.classList.toggle("rank-first", rank === 1);
+    card.classList.toggle("rank-rest", Boolean(rank && rank !== 1));
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "map-rank";
+      card.querySelector("h3")?.prepend(badge);
+    }
+    if (rank) {
+      badge.classList.toggle("rank-first", rank === 1);
+      badge.textContent = rank === 1 ? `#${rank} · Fastest` : `#${rank}`;
+      badge.hidden = false;
+    } else {
+      badge.textContent = "Not measured";
+      badge.classList.remove("rank-first");
+      badge.hidden = true;
+    }
+  }
+}
+function laneOfCard(kind, card) {
+  return kind === "db" ? card.id.replace(`${kind}-map-card-`, "") : card.id.endsWith("-direct") ? "direct" : "optimized";
+}
+function reorderMapCards(kind) {
+  // Keep cards with measurements ordered fastest first; unmeasured cards retain their configured order.
+  const rankByLane = lastRanking[kind];
+  const grid = $(kind === "db" ? "db-route-grid" : `${kind}-route-grid`);
+  if (!rankByLane || !grid) return;
+  const cards = [...grid.querySelectorAll(":scope > .route-map-card")];
+  cards.sort((a, b) => {
+    const ra = rankByLane.get(laneOfCard(kind, a)) || Infinity;
+    const rb = rankByLane.get(laneOfCard(kind, b)) || Infinity;
+    return ra - rb;
+  });
+  cards.forEach((card) => grid.appendChild(card));
+  cards.forEach((card) => { const M = maps[routeCardId(kind, laneOfCard(kind, card))]; if (M) requestAnimationFrame(() => M.map.invalidateSize()); });
 }
 
 function apiLanes() {
   return [
-    { id: "direct", label: "Direct ALB (Sydney)", color: COL.direct, url: C.api.directUrl },
+    { id: "direct", label: `Direct ALB (${originRegion.name})`, color: COL.direct, url: C.api.directUrl },
     { id: "ga", label: "Global Accelerator", color: COL.opt, url: C.api.acceleratorUrl },
   ];
 }
@@ -1182,13 +1983,13 @@ const SUITES = {
 async function runRace(suite) {
   if (state.running[suite]) return;
   const S = SUITES[suite], lanes = S.lanes(), rounds = S.rounds();
-  setMapRoute(suite, "optimized");
   const run = { id: ++runCounter, suite, params: { desc: S.desc(), rounds }, lanes, samples: [], startedAt: new Date().toISOString() };
   state.runs[suite] = run;
   const ctl = state.running[suite] = { stop: false };
   document.body.classList.add("running-" + suite);
   $(suite + "-lanes").innerHTML = lanes.map((l) => laneHtml(l.label, l.color, [{ v: 1, color: l.color }], 1, "Measuring…", "Warming up endpoint", "")).join("");
   setRunning(suite, true);
+  runTraces(suite, ["direct", "optimized"]);               // real traceroutes land on the maps while the race measures
   for (let r = 0; r < rounds && !ctl.stop; r++) {
     const order = r % 2 === 0 ? lanes : [...lanes].reverse();    // alternate order so neither lane always goes first
     for (const lane of order) {
@@ -1200,6 +2001,7 @@ async function runRace(suite) {
       renderRace(suite);
       await sleep(60);
     }
+    reorderMapCards(suite);               // re-settle every round so the ranking converges well before the run ends
   }
   state.running[suite] = null;
   document.body.classList.remove("running-" + suite);
@@ -1207,6 +2009,7 @@ async function runRace(suite) {
   const done = run.samples.length;
   $(suite + "-status").textContent = ctl.stop ? `Stopped after ${done} measurements.` : `Done: ${done} measurements.`;
   renderAll();
+  reorderMapCards(suite);
 }
 
 function setRunning(suite, on) {
@@ -1226,6 +2029,7 @@ function renderRace(suite) {
   if (!run) return;
   const metric = state.metric[suite];
   const info = run.lanes.map((l) => ({ lane: l, ...laneStats(run, l.id, metric) }));
+  updateRaceResults(suite, info, metric);
   const max = Math.max(1, ...info.map((i) => i.st ? i.st.avg : 0));
   $(suite + "-lanes").innerHTML = info.map((i) => laneHtml(i.lane.label, i.lane.color,
       i.st ? [{ v: i.st.avg, color: i.lane.color }] : [], max,
@@ -1251,7 +2055,11 @@ function renderRace(suite) {
     $("static-chips").innerHTML = Object.entries(caches).map(([k, v]) => `<span class="chip">${k}: ${v}</span>`).join("")
       + [...pops].map((p) => `<span class="chip">Edge: ${esc(popName(p))}</span>`).join("");
     const firstPop = [...pops][0], g = GEO[(firstPop || "").slice(0, 3)];
-    if (g) { state.cfEdge = { pos: [g[0], g[1]], label: `CloudFront edge · ${g[2]} (${firstPop})` }; drawMap("static"); }
+    if (g) {
+      state.cfEdge = { pos: [g[0], g[1]], label: `CloudFront edge · ${g[2]} (${firstPop})` };
+      const M = maps[routeCardId("static", "optimized")];
+      if (M) drawMap(M.key, true);
+    }
   }
   $(suite + "-strip").innerHTML = stripSvg(info, suite);
   if (!state.running[suite]) setRunning(suite, false);
@@ -1301,7 +2109,10 @@ function replay(suite) {
 }
 
 /* ---------- database ---------- */
-function dbPaths() { return C.db.paths.filter((p) => state.dbPaths.has(p.id) && (state.dbWorkload === "read" || p.writes)); }
+function dbPaths() {
+  // Always exercise every path that supports the selected workload.
+  return C.db.paths.filter((p) => state.dbWorkload === "read" || p.writes);
+}
 
 async function runDb() {
   if (state.running.db || !C.db) return;
@@ -1315,6 +2126,7 @@ async function runDb() {
   const ctl = state.running.db = { stop: false };
   document.body.classList.add("running-db");
   $("db-run").disabled = true; $("db-stop").disabled = false;
+  runTraces("db", paths.map((p) => p.id));                 // real traceroutes land on the maps while the sessions run
   $("db-status").textContent = "Warming up the probe (first call can take a few seconds)...";
   await probe({ ping: "1" });
   for (let s = 0; s < sessions && !ctl.stop; s++) {
@@ -1326,17 +2138,29 @@ async function runDb() {
       const sample = { ts: new Date().toISOString(), suite: "db", target: p.id, label: p.label, round: s + 1, queries, ok: !r.error && r.total_ms != null, error: r.error, warning: r.warning };
       if (sample.ok) {
         if (p.id === "batched_api") { sample.total = r.total_ms; sample.connect = Math.max(0, r.total_ms - (r.inner_queries_ms || 0)); sample.perQuery = (r.inner_queries_ms || 0) / queries; }
-        else { sample.total = r.total_ms; sample.connect = r.connect_ms; sample.perQuery = r.query_ms.reduce((a, b) => a + b, 0) / Math.max(1, r.query_ms.length); }
+        else {
+          const queryTimes = Array.isArray(r.query_ms) ? r.query_ms : [];
+          if (!Number.isFinite(r.connect_ms) || queryTimes.length === 0) {
+            sample.ok = false;
+            sample.error = "Probe response is missing connection or query timing data.";
+          } else {
+            sample.total = Number.isFinite(r.total_ms) ? r.total_ms : r.connect_ms + queryTimes.reduce((a, b) => a + b, 0);
+            sample.connect = r.connect_ms;
+            sample.perQuery = queryTimes.reduce((a, b) => a + b, 0) / queryTimes.length;
+          }
+        }
       }
       run.samples.push(sample);
       renderDb();
     }
+    reorderMapCards("db");                // re-settle every session so the ranking converges well before the run ends
   }
   state.running.db = null;
   document.body.classList.remove("running-db");
   $("db-run").disabled = false; $("db-stop").disabled = true;
   $("db-status").textContent = ctl.stop ? "Stopped." : `Done: ${run.samples.length} sessions.`;
   renderAll();
+  reorderMapCards("db");
 }
 
 function dbLaneData(run) {
@@ -1354,6 +2178,7 @@ function dbLaneData(run) {
 function renderDb() {
   const run = state.runs.db; if (!run) return;
   const data = dbLaneData(run);
+  updateDbResults(data);
   const max = Math.max(1, ...data.map((d) => d.total || 0));
   $("db-lanes").innerHTML = `<div class="small muted" style="margin-top:12px">Total time of one session (solid = connection setup, faded = the ${run.params.queries} queries)</div>` +
     data.map((d) => laneHtml(d.lane.label, d.lane.color,
@@ -1367,7 +2192,6 @@ function renderDb() {
        : `<div class="speed bad"><strong>No meaningful improvement</strong> over direct public access for this workload. Writes cannot beat the distance to the writer.</div>`) : "";
   $("db-table").innerHTML = `<table><thead><tr><th>Path</th><th class="num">Sessions</th><th class="num">Connect</th><th class="num">Per query</th><th class="num">Session total</th></tr></thead><tbody>` +
     data.map((d) => `<tr><td>${esc(d.lane.label)}</td><td class="num">${d.n}${d.fail ? " (+" + d.fail + " failed)" : ""}</td><td class="num">${fmt(d.connect)}</td><td class="num">${fmt(d.perQuery)}</td><td class="num">${fmt(d.total)}</td></tr>`).join("") + "</tbody></table>";
-  if (data.length) setMapRoute("db", data.find((d) => d.total)?.lane.id || data[0].lane.id);
 }
 
 /* ---------- feature-local sharing and export ---------- */
@@ -1451,19 +2275,13 @@ function setTab(t) {
   history.replaceState(null, "", location.pathname + location.search + "#" + params.toString());
   window.scrollTo({ top: 0, behavior: "smooth" });
   renderAll();
-  ensureMap(t);                            // the panel is visible now; create its map if needed
-  setTimeout(() => {                       // settle sizing once layout is done
-    const M = maps[t];
-    if (M) { M.map.invalidateSize(); drawMap(t, true); }
+  initFeatureMaps(t);
+  setTimeout(() => {                       // settle each map's layout after its panel becomes visible
+    if (t === "overview") { overviewMap?.invalidateSize(); return; }
+    for (const M of Object.values(maps).filter((m) => m.kind === t)) {
+      M.map.invalidateSize(); drawMap(M.key, true);
+    }
   }, 120);
-}
-
-function bindRouteMap(kind) {
-  const mapSelect = $(kind + "-map-select");
-  if (!mapSelect) return;
-  mapSelect.querySelectorAll("[data-route]").forEach((button) => {
-    button.addEventListener("click", () => setMapRoute(kind, button.dataset.route));
-  });
 }
 
 function addDocLinks(kind, links) {
@@ -1475,6 +2293,7 @@ function addDocLinks(kind, links) {
 function init() {
   document.title = C.title || "Network feature benchmark";
   $("db-client-region").textContent = clientRegion.name;
+  buildDbMapCards();
 
   addDocLinks("static", [
     ["CloudFront", "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html"],
@@ -1496,7 +2315,6 @@ function init() {
     ["Global Accelerator endpoints", "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"],
     ["Lambda Function URLs", "https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html"],
   ]);
-  for (const kind of ["static", "api"]) bindRouteMap(kind);
   if (C.db && C.db.paths.length) setMapRoute("db", C.db.paths[0].id);
 
   const banners = [];
@@ -1507,14 +2325,31 @@ function init() {
 
   $("static-size").innerHTML = [{ label: "Web page (tiny)", key: C.static.page }, ...C.static.assets.map((a) => ({ label: a.label, key: a.key }))]
     .map((o, i) => `<option value="${esc(o.key)}"${o.label === "1 MB" ? " selected" : ""}>${esc(o.label)}</option>`).join("");
-  $("static-size").addEventListener("change", () => { /* next run uses the selected payload */ });
+  $("static-size").addEventListener("change", renderStaticCost);
   setMapRoute("static", "direct");
   setMapRoute("api", "direct");
 
   for (const [id, out] of [["static-rounds", "static-rounds-v"], ["api-rounds", "api-rounds-v"], ["db-queries", "db-queries-v"], ["db-sessions", "db-sessions-v"]])
     $(id).addEventListener("input", () => { $(out).textContent = $(id).value; });
 
+  for (const [id, fn] of [
+    ["static-cost-reqs", renderStaticCost], ["static-cost-hit", renderStaticCost],
+    ["api-cost-reqs", renderApiCost], ["api-cost-kb", renderApiCost],
+    ["db-cost-acu", renderDbCost], ["db-cost-sessions", renderDbCost],
+  ]) { $(id)?.addEventListener("input", fn); }
+  renderAllCosts();
+
   document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+  document.addEventListener("click", (e) => {               // enlarge any route map
+    const btn = e.target.closest(".map-expand");
+    if (!btn) return;
+    const card = btn.closest(".route-map-card");
+    const m = card?.id.match(/^(static|api|db)-map-card-(.+)$/);
+    if (m) openMapModal(m[1], m[2]);
+  });
+  $("map-modal-close").addEventListener("click", closeMapModal);
+  $("map-modal").addEventListener("click", (e) => { if (e.target === $("map-modal")) closeMapModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMapModal(); });
   for (const suite of ["static", "api"]) {
     $(suite + "-run").addEventListener("click", () => runRace(suite));
     $(suite + "-stop").addEventListener("click", () => { if (state.running[suite]) state.running[suite].stop = true; });
@@ -1527,22 +2362,20 @@ function init() {
   }
   if (!C.db) { $("db-disabled").style.display = ""; $("db-controls").style.display = "none"; }
   else {
-    C.db.paths.forEach((p) => state.dbPaths.add(p.id));
-    const drawPaths = () => { $("db-paths").innerHTML = C.db.paths.map((p) => {
-      const off = state.dbWorkload === "write" && !p.writes;
-      return `<label class="chip" style="${off ? "opacity:.45" : ""}"><input type="checkbox" data-p="${p.id}" ${state.dbPaths.has(p.id) && !off ? "checked" : ""} ${off ? "disabled" : ""}> ${esc(p.label)}</label>`; }).join("");
-      $("db-paths").querySelectorAll("input").forEach((i) => i.addEventListener("change", () => { i.checked ? state.dbPaths.add(i.dataset.p) : state.dbPaths.delete(i.dataset.p); })); };
-    drawPaths();
     document.querySelectorAll("#db-workload button").forEach((b) => b.addEventListener("click", () => {
-      state.dbWorkload = b.dataset.w; document.querySelectorAll("#db-workload button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); drawPaths();
+      state.dbWorkload = b.dataset.w; document.querySelectorAll("#db-workload button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      markWorkloadExclusions();
     }));
+    markWorkloadExclusions();
     $("db-run").addEventListener("click", runDb);
     $("db-stop").addEventListener("click", () => { if (state.running.db) state.running.db.stop = true; });
   }
 
+  document.querySelectorAll(".overview-goto").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.goto)));
+
   bindFeatureActions();
   const initialTab = new URLSearchParams(location.hash.slice(1)).get("tab");
-  setTab(["static", "api", "db"].includes(initialTab) ? initialTab : "static");
+  setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview");
 
   window.addEventListener("hashchange", renderShared);
   renderAll(); renderShared();

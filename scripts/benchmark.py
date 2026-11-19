@@ -5,7 +5,7 @@ and writes the raw, per-request results to a JSON file.
 
 This script is uploaded to the Frankfurt benchmark EC2 instance by Terraform
 (see modules/benchmark) and executed there via SSM Run Command, so that the
-measurements reflect real Frankfurt -> Sydney network conditions regardless
+measurements reflect real Frankfurt -> Ohio network conditions regardless
 of where the benchmark is triggered from.
 
 Usage:

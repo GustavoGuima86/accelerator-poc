@@ -5,7 +5,7 @@ Runs ONE benchmark session (fresh connection + N sequential statements) against
 ONE access path and returns the timings measured inside the function, so the
 visitor-to-Lambda hop is not part of the numbers. It lives in the near region
 (next to the benchmark client), so the figures describe "an application in
-Frankfurt talking to the database in Sydney".
+Frankfurt talking to the database in Ohio".
 
   GET ?path=public_direct|global_accelerator|vpc_peering|replica_local
       &workload=read|write&queries=N
@@ -104,7 +104,7 @@ def _target(path):
 
 
 def _ensure_schema():
-    """Check the table exists; schema/seed creation is done by the Sydney Lambda during apply."""
+    """Check the table exists; schema/seed creation is done by the Ohio Lambda during apply."""
     global _schema_checked
     if _schema_checked:
         return
@@ -128,7 +128,7 @@ def _json(status, body):
 
 
 def _run_batched(queries):
-    """Frankfurt -> ONE HTTPS call to the Sydney function that runs all N queries next to the database."""
+    """Frankfurt -> ONE HTTPS call to the Ohio function that runs all N queries next to the database."""
     url = _env("BATCH_API_URL")
     result = {"path": "batched_api", "workload": "read", "queries": queries}
     t0 = time.perf_counter()

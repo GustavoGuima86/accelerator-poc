@@ -12,7 +12,7 @@ provider "aws" {
 
 # AWS Global Accelerator is a global service, but its control-plane API only
 # accepts requests in us-west-2 regardless of where its endpoints (e.g. the
-# Sydney ALB) actually live. This alias is used solely for the
+# Ohio ALB) actually live. This alias is used solely for the
 # aws_globalaccelerator_* resources.
 provider "aws" {
   alias  = "global_accelerator"

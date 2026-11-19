@@ -131,7 +131,7 @@ resource "aws_lambda_permission" "url_invoke_function" {
   principal     = "*"
 }
 
-# DDL cannot be forwarded from a global secondary cluster. Invoke the Sydney
+# DDL cannot be forwarded from a global secondary cluster. Invoke the Ohio
 # function after deployment so it creates/seeds tables through the actual
 # primary writer before the interactive Frankfurt probe starts.
 resource "terraform_data" "schema_init" {

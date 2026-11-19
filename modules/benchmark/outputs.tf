@@ -29,3 +29,8 @@ output "ssm_document_name" {
   description = "Name of the SSM document used to (re-)run the benchmark on the instance."
   value       = aws_ssm_document.run_benchmark.name
 }
+
+output "trace_document_name" {
+  description = "Name of the SSM document that runs a real traceroute on the instance (used by the trace_probe Lambda)."
+  value       = aws_ssm_document.run_trace.name
+}

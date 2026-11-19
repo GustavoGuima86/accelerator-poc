@@ -88,6 +88,11 @@ output "interactive_page_url" {
   value       = local.interactive_enabled ? module.interactive_site[0].url : null
 }
 
+output "trace_probe_url" {
+  description = "Function URL the interactive page calls to run a live traceroute on the Frankfurt benchmark client (null unless both the interactive page and the benchmark client are enabled)."
+  value       = local.trace_enabled ? module.trace_probe[0].function_url : null
+}
+
 # -----------------------------------------------------------------------------
 # Aurora PostgreSQL global database (null when enable_aurora = false).
 # -----------------------------------------------------------------------------
