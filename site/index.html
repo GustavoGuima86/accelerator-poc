@@ -1016,6 +1016,50 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .badge { background:var(--yellow); color:var(--navy-deep); }
   .banner { background:#473920; border-color:#8d6b32; color:#fff0c8; }
   .banner.info { background:#29345f; border-color:#596487; color:#d4daed; }
+  /* Rounded, padded presentation cards with visible page-colored gutters. */
+  html { scroll-behavior:smooth; scroll-snap-type:y proximity; scroll-padding-top:100px; }
+  body { background:#fff; }
+  .wrap { max-width:1220px; padding:28px 38px 88px; }
+  .panel, .narrative-slide {
+    min-height:calc(100vh - 120px);
+    margin:34px 0;
+    padding:clamp(24px, 4.5vw, 58px);
+    border:1px solid #485276;
+    border-radius:28px;
+    scroll-margin-top:100px;
+    scroll-snap-align:start;
+    opacity:.62;
+    transform:translateY(14px) scale(.992);
+    transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1), box-shadow .7s ease;
+    box-shadow:0 12px 32px rgba(20,23,46,.10);
+  }
+  .panel.in-view, .narrative-slide.in-view {
+    opacity:1;
+    transform:translateY(0) scale(1);
+    box-shadow:0 18px 44px rgba(20,23,46,.18);
+  }
+  .panel::before, .narrative-slide:not(.title-slide)::before { top:20px; right:24px; }
+  .title-slide {
+    margin:34px 0;
+    padding:clamp(48px, 7vw, 88px) clamp(24px, 5vw, 64px);
+    border:1px solid #485276;
+    border-radius:28px;
+  }
+  .card { padding:clamp(22px, 3vw, 34px); border-radius:24px; }
+  .overview-card, .why-card { padding:clamp(22px, 3vw, 32px); border-radius:24px; }
+  .route-card, .route-map-card, .cost-card { border-radius:22px; }
+  .route-map-card { padding:20px; }
+  .test-controls { padding:22px 24px; }
+  .map-modal-panel { border-radius:24px; padding:24px; }
+  @media (max-width:720px) {
+    .wrap { padding:16px 14px 56px; }
+    .panel, .narrative-slide { margin:22px 0; padding:28px 20px; border-radius:22px; }
+    .title-slide { margin:22px 0; padding:48px 20px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    html { scroll-behavior:auto; scroll-snap-type:none; }
+    .panel, .narrative-slide { opacity:1; transform:none; }
+  }
 </style>
 </head>
 <body>
@@ -2633,7 +2677,7 @@ function setTab(t, focus) {
   setActiveTabUI(t, focus);
   const focusId = FOCUS_TARGETS[t]?.[focus];
   const targetEl = (focusId && $(focusId)) || $("panel-" + t);
-  targetEl?.scrollIntoView({ behavior: "auto", block: "start" });
+  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
   pickActivePanel();                       // update fade-in state immediately, don't wait on a scroll event
   setTimeout(() => {                       // let maps settle, then let the scrollspy take over again
     if (t === "overview") overviewMap?.invalidateSize();
@@ -2773,7 +2817,7 @@ function init() {
   // its cost section (data-goto-focus="cost") or auto-starting its test
   // (data-goto-run="1") — the same deep-link vocabulary as #tab=...&run=1.
   document.querySelectorAll(".slide-goto[data-goto-id]").forEach((b) => b.addEventListener("click", () => {
-    $(b.dataset.gotoId)?.scrollIntoView({ behavior: "auto", block: "start" });
+    $(b.dataset.gotoId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     pickActivePanel();
   }));
   document.querySelectorAll(".slide-goto[data-goto]").forEach((b) => b.addEventListener("click", () => {
