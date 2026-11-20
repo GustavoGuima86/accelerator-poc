@@ -1059,10 +1059,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .route-map-card { padding:20px; }
   .test-controls { padding:22px 24px; }
   .map-modal-panel { border-radius:24px; padding:24px; }
+  .back-to-top {
+    position:absolute; right:clamp(16px, 3vw, 30px); bottom:20px; z-index:4;
+    display:inline-flex; align-items:center; gap:7px;
+    padding:7px 12px; border:1px solid #596487; border-radius:999px;
+    background:var(--navy); color:var(--yellow); box-shadow:0 4px 12px #080b1e35;
+    font-family:var(--font-head); font-size:.76rem; font-weight:700; line-height:1.2;
+  }
+  .back-to-top:hover:not(:disabled) { background:#29345f; border-color:var(--yellow); box-shadow:0 6px 16px #080b1e45; }
+  .back-to-top .arrow { font-size:1rem; line-height:1; }
   @media (max-width:720px) {
     .wrap { padding:16px 14px 56px; }
     .panel, .narrative-slide { margin:22px 0; padding:28px 20px; border-radius:22px; }
     .title-slide { margin:22px 0; padding:48px 20px; }
+    .back-to-top { right:14px; bottom:14px; }
   }
   @media (prefers-reduced-motion:reduce) {
     html { scroll-behavior:auto; scroll-snap-type:none; }
@@ -2729,6 +2739,21 @@ function setupScrollSpy() {
   window.addEventListener("resize", pickActivePanel);
   pickActivePanel();
 }
+
+function installBackToTopButtons() {
+  const title = $("slide-title");
+  if (!title) return;
+  document.querySelectorAll(".panel, .narrative-slide").forEach((slide) => {
+    if (slide.querySelector(":scope > .back-to-top")) return;
+    const link = document.createElement("a");
+    link.href = "#slide-title";
+    link.className = "back-to-top";
+    link.setAttribute("aria-label", "Back to the top of the presentation");
+    link.innerHTML = '<span class="arrow" aria-hidden="true">↑</span><span>Top</span>';
+    slide.appendChild(link);
+  });
+}
+
 function initAllFeatureMaps() { for (const t of ["overview", "static", "api", "db"]) initFeatureMaps(t); }
 
 function addDocLinks(kind, links) {
@@ -2852,6 +2877,7 @@ function init() {
   // instead of lazily when a tab becomes active. setupScrollSpy also drives
   // the scroll-progress bar and each panel's fade-in as the page scrolls.
   initAllFeatureMaps();
+  installBackToTopButtons();
   scrollSpySuspended = true;               // setTab below clears this once it settles
   setupScrollSpy();
   setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview", initialFocus);
