@@ -684,7 +684,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
     --shadow: 0 12px 34px rgba(28, 45, 84, .07);
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
   body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 5% 0%, #e9efff 0, transparent 34rem), radial-gradient(ellipse at 98% 4%, #e5f8f3 0, transparent 30rem), var(--bg); color: var(--fg); line-height: 1.55; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
   button, input, select { font: inherit; }
   .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 26px 80px; }
@@ -726,13 +725,33 @@ svg.leaflet-image-layer.leaflet-interactive path {
   nav.tabs .seg.seg-4 { grid-template-columns:repeat(4,1fr); }
   nav.tabs .seg button { padding:11px 8px; border-radius:10px; color:#6e7a91; font-size:.84rem; }
   nav.tabs .seg button[aria-pressed=true] { color:#354fb6; background:#eef2ff; box-shadow:none; }
-  .panel { display:none; }
-  .panel.active { display:block; animation:panel-in .42s cubic-bezier(.2,.7,.2,1) both; }
-  @keyframes panel-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-  .panel > .card { animation:card-in .55s both; }
-  .panel > .card:nth-child(2) { animation-delay:.05s; }
-  .panel > .card:nth-child(3) { animation-delay:.1s; }
+  /* ---- presentation / slide mode: every panel is a full "page" the user
+     scrolls to, instead of a tab-toggled show/hide block. ---- */
+  .panel {
+    position: relative; display: block; min-height: calc(100vh - 20px);
+    padding: 36px 0 60px; margin: 0; border-top: 1px solid #e7ecf5;
+    scroll-margin-top: 92px;
+    opacity: .4; transform: translateY(18px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .panel.in-view { opacity: 1; transform: translateY(0); }
+  .panel:first-of-type { border-top: 0; }
+  .panel::before {
+    content: attr(data-slide-label); position: absolute; top: 10px; right: 2px;
+    color: #c4cce3; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .panel > .card { animation: card-in .55s both; }
+  .panel > .card:nth-child(2) { animation-delay: .05s; }
+  .panel > .card:nth-child(3) { animation-delay: .1s; }
   @keyframes card-in { from { opacity:0; transform:translateY(12px) scale(.995); } to { opacity:1; transform:translateY(0) scale(1); } }
+  #scroll-progress { position:fixed; top:0; left:0; z-index:20; height:3px; width:0%; background:linear-gradient(90deg,#4f6ff2,#19b99a); transition:width .08s linear; }
+  .slide-grid { display:grid; grid-template-columns:minmax(300px,0.95fr) minmax(340px,1.25fr); gap:22px; align-items:start; }
+  .slide-text { position:sticky; top:96px; }
+  .slide-live > .route-grid:last-child { margin-bottom:4px; }
+  @media (max-width:900px) {
+    .slide-grid { grid-template-columns:1fr; }
+    .slide-text { position:static; }
+  }
   .banner { margin:12px 0; padding:11px 14px; border:1px solid #f3d9a7; border-radius:12px; background:#fff9ec; color:#81612c; font-size:.88rem; }
   .banner.info { border-color:#d9e2ff; background:#f2f5ff; color:#465c9b; }
   .chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
@@ -910,8 +929,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 </style>
 </head>
 <body>
+<div id="scroll-progress"></div>
 <div class="wrap">
-  <nav class="tabs"><div class="seg seg-4" id="tabs" role="tablist" aria-label="Benchmark features">
+  <nav class="tabs"><div class="seg seg-4" id="tabs" role="tablist" aria-label="Benchmark features — also the scroll progress for this slide deck">
     <button data-tab="overview" aria-pressed="true">Overview</button>
     <button data-tab="static" aria-pressed="false">Static assets</button>
     <button data-tab="api" aria-pressed="false">API</button>
@@ -920,7 +940,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   <div id="banners"></div>
 
   <!-- ============ OVERVIEW ============ -->
-  <section class="panel active" id="panel-overview">
+  <section class="panel in-view" id="panel-overview" data-slide-label="Slide · Overview">
     <div class="feature-head"><div><p class="section-kicker">Global latency POC</p><h1>Why this demo exists</h1><p class="section-intro">A single app split across two AWS regions, 6,800 km apart, used to show — with your own live measurements, not slides — what each AWS networking feature actually buys you, and what it costs.</p></div></div>
 
     <div class="overview-setup">
@@ -968,174 +988,192 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ STATIC ============ -->
-  <section class="panel" id="panel-static">
+  <section class="panel" id="panel-static" data-slide-label="Slide · CloudFront">
     <div class="feature-head"><div><p class="section-kicker">Content delivery</p><h1>Static assets</h1><p class="section-intro">Compare a direct origin fetch with cached delivery from a CloudFront edge.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
-    <div class="why-card">
-      <h3>Why this matters</h3>
-      <p>Physics sets a floor on latency: a round trip across the Atlantic to Ohio takes roughly 90–110&nbsp;ms no matter how good the server is. A <b>CDN</b> works around that floor instead of fighting it — it keeps a copy of the file at an edge location near the reader, so most requests never leave the reader's region at all.</p>
-      <div class="why-steps">
-        <div class="why-step"><span class="why-num">1</span><div><b>Without a CDN</b><p>Every request travels the full distance to the origin and back, every time, for every visitor.</p></div></div>
-        <div class="why-step"><span class="why-num">2</span><div><b>With CloudFront</b><p>The first visitor's request still reaches the origin (a cache miss); CloudFront then serves every later request from the nearby edge.</p></div></div>
-        <div class="why-step"><span class="why-num">3</span><div><b>Run it below</b><p>Compare the two side by side with the same file — the gap you see is the round trip to Ohio you just avoided.</p></div></div>
+    <div class="slide-grid">
+      <div class="slide-text">
+        <div class="why-card">
+          <h3>Why this matters</h3>
+          <p>Physics sets a floor on latency: a round trip across the Atlantic to Ohio takes roughly 90–110&nbsp;ms no matter how good the server is. A <b>CDN</b> works around that floor instead of fighting it — it keeps a copy of the file at an edge location near the reader, so most requests never leave the reader's region at all.</p>
+          <div class="why-steps">
+            <div class="why-step"><span class="why-num">1</span><div><b>Without a CDN</b><p>Every request travels the full distance to the origin and back, every time, for every visitor.</p></div></div>
+            <div class="why-step"><span class="why-num">2</span><div><b>With CloudFront</b><p>The first visitor's request still reaches the origin (a cache miss); CloudFront then serves every later request from the nearby edge.</p></div></div>
+            <div class="why-step"><span class="why-num">3</span><div><b>Run it alongside</b><p>Compare the two side by side with the same file — the gap you see is the round trip to Ohio you just avoided.</p></div></div>
+          </div>
+        </div>
+        <div class="doc-links" id="static-docs"></div>
       </div>
-    </div>
-    <div class="doc-links" id="static-docs"></div>
-    <div class="card test-controls">
-      <div class="row">
-        <label class="field">Payload <select id="static-size"></select></label>
-        <label class="field">Rounds: <b id="static-rounds-v">10</b><input type="range" id="static-rounds" min="1" max="30" value="10"></label>
-        <div class="seg" id="static-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
-        <button class="run-button" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
+      <div class="slide-live">
+        <div class="card test-controls">
+          <div class="row">
+            <label class="field">Payload <select id="static-size"></select></label>
+            <label class="field">Rounds: <b id="static-rounds-v">10</b><input type="range" id="static-rounds" min="1" max="30" value="10"></label>
+            <div class="seg" id="static-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
+            <button class="run-button" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
+          </div>
+        </div>
+        <div class="route-grid" id="static-route-grid" aria-label="Separate route maps for static asset paths">
+          <article class="route-map-card" id="static-map-card-direct">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Direct · public S3 website</h3>
+            <p class="route-result" id="static-result-direct">No results yet — press Run.</p>
+            <p class="route-caption" id="static-map-caption-direct">Browser → origin region</p>
+            <div class="leaflet-map" id="static-map-direct" role="img" aria-label="Direct request route from the example client to the public S3 origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="static-hops-direct" aria-label="Illustrated request path"></div>
+          </article>
+          <article class="route-map-card" id="static-map-card-optimized">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Optimized · CloudFront + OAC</h3>
+            <p class="route-result" id="static-result-optimized">No results yet — press Run.</p>
+            <p class="route-caption" id="static-map-caption-optimized">Browser → CloudFront edge → private S3 origin</p>
+            <div class="leaflet-map" id="static-map-optimized" role="img" aria-label="CloudFront request route from the example client to the private origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="static-hops-optimized" aria-label="Illustrated request path"></div>
+          </article>
+        </div>
+        <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Hop labels show known service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (for CloudFront/Global Accelerator the trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
+        <div class="card">
+          <h2>Results</h2>
+          <p class="section-intro">Fetch the same payload from this browser, alternating lanes each round so neither path has a network-warmup advantage.</p>
+          <div class="status" id="static-status"></div>
+          <div id="static-lanes"></div>
+          <div id="static-speed"></div>
+          <div id="static-chips" class="chips"></div>
+          <div id="static-strip"></div>
+          <div class="row" style="margin-top:8px"><button id="static-replay" disabled>▶ Replay last round</button><span class="small muted">Animation of the last measured round, time-scaled. Measurements run one at a time so they don't compete for your bandwidth.</span></div>
+          <div id="static-race" class="race"></div>
+          <div class="row feature-actions"><button data-export-csv="static">CSV</button><button data-share="static">Share results</button><button data-copy-summary="static">Copy summary</button><span data-feature-status="static" class="small muted"></span></div>
+          <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The direct bucket uses S3 static website hosting with public read access, purely as a baseline. The production-style bucket stays private and is only reachable through CloudFront via Origin Access Control (OAC). A cache hit is served entirely from the edge; a cache miss still pays one trip to the origin region, then caches the result for the next visitor.</p></details>
+        </div>
+        <div class="card cost-card" id="static-cost-card">
+          <h2>Simulated monthly cost</h2>
+          <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths. Uses the payload size from above.</p>
+          <div class="row">
+            <label class="field">Requests per month<input type="text" inputmode="numeric" id="static-cost-reqs" value="1,000,000"></label>
+            <label class="field">Cache hit rate <b id="static-cost-hit-v">90%</b><input type="range" id="static-cost-hit" min="0" max="100" value="90"></label>
+          </div>
+          <div class="cost-table" id="static-cost-table"></div>
+        </div>
       </div>
-    </div>
-    <div class="route-grid" id="static-route-grid" aria-label="Separate route maps for static asset paths">
-      <article class="route-map-card" id="static-map-card-direct">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Direct · public S3 website</h3>
-        <p class="route-result" id="static-result-direct">No results yet — press Run.</p>
-        <p class="route-caption" id="static-map-caption-direct">Browser → origin region</p>
-        <div class="leaflet-map" id="static-map-direct" role="img" aria-label="Direct request route from the example client to the public S3 origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="static-hops-direct" aria-label="Illustrated request path"></div>
-      </article>
-      <article class="route-map-card" id="static-map-card-optimized">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Optimized · CloudFront + OAC</h3>
-        <p class="route-result" id="static-result-optimized">No results yet — press Run.</p>
-        <p class="route-caption" id="static-map-caption-optimized">Browser → CloudFront edge → private S3 origin</p>
-        <div class="leaflet-map" id="static-map-optimized" role="img" aria-label="CloudFront request route from the example client to the private origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="static-hops-optimized" aria-label="Illustrated request path"></div>
-      </article>
-    </div>
-    <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Hop labels show known service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (for CloudFront/Global Accelerator the trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
-    <div class="card">
-      <h2>Results</h2>
-      <p class="section-intro">Fetch the same payload from this browser, alternating lanes each round so neither path has a network-warmup advantage.</p>
-      <div class="status" id="static-status"></div>
-      <div id="static-lanes"></div>
-      <div id="static-speed"></div>
-      <div id="static-chips" class="chips"></div>
-      <div id="static-strip"></div>
-      <div class="row" style="margin-top:8px"><button id="static-replay" disabled>▶ Replay last round</button><span class="small muted">Animation of the last measured round, time-scaled. Measurements run one at a time so they don't compete for your bandwidth.</span></div>
-      <div id="static-race" class="race"></div>
-      <div class="row feature-actions"><button data-export-csv="static">CSV</button><button data-share="static">Share results</button><button data-copy-summary="static">Copy summary</button><span data-feature-status="static" class="small muted"></span></div>
-      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The direct bucket uses S3 static website hosting with public read access, purely as a baseline. The production-style bucket stays private and is only reachable through CloudFront via Origin Access Control (OAC). A cache hit is served entirely from the edge; a cache miss still pays one trip to the origin region, then caches the result for the next visitor.</p></details>
-    </div>
-    <div class="card cost-card" id="static-cost-card">
-      <h2>Simulated monthly cost</h2>
-      <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths. Uses the payload size from above.</p>
-      <div class="row">
-        <label class="field">Requests per month<input type="text" inputmode="numeric" id="static-cost-reqs" value="1,000,000"></label>
-        <label class="field">Cache hit rate <b id="static-cost-hit-v">90%</b><input type="range" id="static-cost-hit" min="0" max="100" value="90"></label>
-      </div>
-      <div class="cost-table" id="static-cost-table"></div>
     </div>
   </section>
 
   <!-- ============ API ============ -->
-  <section class="panel" id="panel-api">
+  <section class="panel" id="panel-api" data-slide-label="Slide · Global Accelerator">
     <div class="feature-head"><div><p class="section-kicker">Dynamic traffic</p><h1>API routing</h1><p class="section-intro">Race direct access against an anycast route into the AWS global network.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
-    <div class="why-card">
-      <h3>Why this matters</h3>
-      <p>API responses are generated per request, so they usually can't be cached at the edge the way a static file can — a CDN doesn't help here. What <b>Global Accelerator</b> helps with instead is the network itself: once a connection enters the AWS backbone at the nearest edge, it rides AWS's own private fiber the rest of the way to Ohio, instead of the public internet's unpredictable, congested routing.</p>
-      <div class="why-steps">
-        <div class="why-step"><span class="why-num">1</span><div><b>Direct (public internet)</b><p>Every packet takes whatever route the public internet's routers pick that moment — consistent in theory, variable in practice.</p></div></div>
-        <div class="why-step"><span class="why-num">2</span><div><b>Through Global Accelerator</b><p>The connection enters AWS's network at the nearest anycast edge and travels on a private, consistently-routed backbone from there.</p></div></div>
-        <div class="why-step"><span class="why-num">3</span><div><b>Run it below</b><p>The win here is usually in consistency (fewer slow outliers) as much as raw average speed — watch the spread, not just the average.</p></div></div>
+    <div class="slide-grid">
+      <div class="slide-text">
+        <div class="why-card">
+          <h3>Why this matters</h3>
+          <p>API responses are generated per request, so they usually can't be cached at the edge the way a static file can — a CDN doesn't help here. What <b>Global Accelerator</b> helps with instead is the network itself: once a connection enters the AWS backbone at the nearest edge, it rides AWS's own private fiber the rest of the way to Ohio, instead of the public internet's unpredictable, congested routing.</p>
+          <div class="why-steps">
+            <div class="why-step"><span class="why-num">1</span><div><b>Direct (public internet)</b><p>Every packet takes whatever route the public internet's routers pick that moment — consistent in theory, variable in practice.</p></div></div>
+            <div class="why-step"><span class="why-num">2</span><div><b>Through Global Accelerator</b><p>The connection enters AWS's network at the nearest anycast edge and travels on a private, consistently-routed backbone from there.</p></div></div>
+            <div class="why-step"><span class="why-num">3</span><div><b>Run it alongside</b><p>The win here is usually in consistency (fewer slow outliers) as much as raw average speed — watch the spread, not just the average.</p></div></div>
+          </div>
+        </div>
+        <div class="doc-links" id="api-docs"></div>
       </div>
-    </div>
-    <div class="doc-links" id="api-docs"></div>
-    <div class="card test-controls">
-      <div class="row">
-        <label class="field">Rounds: <b id="api-rounds-v">15</b><input type="range" id="api-rounds" min="1" max="40" value="15"></label>
-        <div class="seg" id="api-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
-        <button class="run-button" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
+      <div class="slide-live">
+        <div class="card test-controls">
+          <div class="row">
+            <label class="field">Rounds: <b id="api-rounds-v">15</b><input type="range" id="api-rounds" min="1" max="40" value="15"></label>
+            <div class="seg" id="api-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
+            <button class="run-button" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
+          </div>
+        </div>
+        <div class="route-grid" id="api-route-grid" aria-label="Separate route maps for API paths">
+          <article class="route-map-card" id="api-map-card-direct">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Direct · public ALB</h3>
+            <p class="route-result" id="api-result-direct">No results yet — press Run.</p>
+            <p class="route-caption" id="api-map-caption-direct">Browser → origin region ALB</p>
+            <div class="leaflet-map" id="api-map-direct" role="img" aria-label="Direct API route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="api-hops-direct" aria-label="Illustrated request path"></div>
+          </article>
+          <article class="route-map-card" id="api-map-card-optimized">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Optimized · Global Accelerator</h3>
+            <p class="route-result" id="api-result-optimized">No results yet — press Run.</p>
+            <p class="route-caption" id="api-map-caption-optimized">Browser → nearest anycast entry → AWS network → origin region ALB</p>
+            <div class="leaflet-map" id="api-map-optimized" role="img" aria-label="Global Accelerator route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="api-hops-optimized" aria-label="Illustrated request path"></div>
+          </article>
+        </div>
+        <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location. Hop labels show architecture/service boundaries. The browser measures the complete request round trip, and Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
+        <div class="card">
+          <h2>Results</h2>
+          <p class="section-intro">A small, uncacheable JSON response isolates connection and network time rather than payload size.</p>
+          <div class="status" id="api-status"></div>
+          <div id="api-lanes"></div>
+          <div id="api-speed"></div>
+          <div id="api-strip"></div>
+          <div class="row" style="margin-top:8px"><button id="api-replay" disabled>▶ Replay last round</button></div>
+          <div id="api-race" class="race"></div>
+          <div class="row feature-actions"><button data-export-csv="api">CSV</button><button data-share="api">Share results</button><button data-copy-summary="api">Copy summary</button><span data-feature-status="api" class="small muted"></span></div>
+          <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The ALB returns a fixed JSON response. Global Accelerator provides anycast entry IPs and routes connections to the regional ALB. It does not cache API responses.</p></details>
+        </div>
+        <div class="card cost-card" id="api-cost-card">
+          <h2>Simulated monthly cost</h2>
+          <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths.</p>
+          <div class="row">
+            <label class="field">Requests per month<input type="text" inputmode="numeric" id="api-cost-reqs" value="1,000,000"></label>
+            <label class="field">Avg. response size (KB)<input type="text" inputmode="numeric" id="api-cost-kb" value="5"></label>
+          </div>
+          <div class="cost-table" id="api-cost-table"></div>
+        </div>
       </div>
-    </div>
-    <div class="route-grid" id="api-route-grid" aria-label="Separate route maps for API paths">
-      <article class="route-map-card" id="api-map-card-direct">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Direct · public ALB</h3>
-        <p class="route-result" id="api-result-direct">No results yet — press Run.</p>
-        <p class="route-caption" id="api-map-caption-direct">Browser → origin region ALB</p>
-        <div class="leaflet-map" id="api-map-direct" role="img" aria-label="Direct API route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="api-hops-direct" aria-label="Illustrated request path"></div>
-      </article>
-      <article class="route-map-card" id="api-map-card-optimized">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Optimized · Global Accelerator</h3>
-        <p class="route-result" id="api-result-optimized">No results yet — press Run.</p>
-        <p class="route-caption" id="api-map-caption-optimized">Browser → nearest anycast entry → AWS network → origin region ALB</p>
-        <div class="leaflet-map" id="api-map-optimized" role="img" aria-label="Global Accelerator route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="api-hops-optimized" aria-label="Illustrated request path"></div>
-      </article>
-    </div>
-    <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location. Hop labels show architecture/service boundaries. The browser measures the complete request round trip, and Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
-    <div class="card">
-      <h2>Results</h2>
-      <p class="section-intro">A small, uncacheable JSON response isolates connection and network time rather than payload size.</p>
-      <div class="status" id="api-status"></div>
-      <div id="api-lanes"></div>
-      <div id="api-speed"></div>
-      <div id="api-strip"></div>
-      <div class="row" style="margin-top:8px"><button id="api-replay" disabled>▶ Replay last round</button></div>
-      <div id="api-race" class="race"></div>
-      <div class="row feature-actions"><button data-export-csv="api">CSV</button><button data-share="api">Share results</button><button data-copy-summary="api">Copy summary</button><span data-feature-status="api" class="small muted"></span></div>
-      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The ALB returns a fixed JSON response. Global Accelerator provides anycast entry IPs and routes connections to the regional ALB. It does not cache API responses.</p></details>
-    </div>
-    <div class="card cost-card" id="api-cost-card">
-      <h2>Simulated monthly cost</h2>
-      <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths.</p>
-      <div class="row">
-        <label class="field">Requests per month<input type="text" inputmode="numeric" id="api-cost-reqs" value="1,000,000"></label>
-        <label class="field">Avg. response size (KB)<input type="text" inputmode="numeric" id="api-cost-kb" value="5"></label>
-      </div>
-      <div class="cost-table" id="api-cost-table"></div>
     </div>
   </section>
 
   <!-- ============ DATABASE ============ -->
-  <section class="panel" id="panel-db">
+  <section class="panel" id="panel-db" data-slide-label="Slide · Aurora Global Database">
     <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads, write forwarding, and batching.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
-    <div class="why-card">
-      <h3>Why this matters</h3>
-      <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the only two things that actually help are moving the <b>data</b> closer, or making fewer, bigger round trips. <b>Aurora Global Database</b> does the first with a read replica; application-level batching does the second.</p>
-      <div class="why-steps">
-        <div class="why-step"><span class="why-num">1</span><div><b>Routing fixes (direct / Global Accelerator / VPC peering)</b><p>These change <i>how</i> packets travel, not <i>how far</i>. The distance to Ohio is unchanged, so per-query latency barely moves.</p></div></div>
-        <div class="why-step"><span class="why-num">2</span><div><b>Moving the data (Frankfurt replica)</b><p>Reads hit a local copy of the data in Frankfurt — the distance to query is now zero. Writes still have to reach the Ohio primary.</p></div></div>
-        <div class="why-step"><span class="why-num">3</span><div><b>Fewer round trips (batched API)</b><p>Packing many queries into one request pays the Ohio round trip exactly once, no matter how many statements it carries.</p></div></div>
+    <div class="slide-grid">
+      <div class="slide-text">
+        <div class="why-card">
+          <h3>Why this matters</h3>
+          <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the only two things that actually help are moving the <b>data</b> closer, or making fewer, bigger round trips. <b>Aurora Global Database</b> does the first with a read replica; application-level batching does the second.</p>
+          <div class="why-steps">
+            <div class="why-step"><span class="why-num">1</span><div><b>Routing fixes (direct / Global Accelerator / VPC peering)</b><p>These change <i>how</i> packets travel, not <i>how far</i>. The distance to Ohio is unchanged, so per-query latency barely moves.</p></div></div>
+            <div class="why-step"><span class="why-num">2</span><div><b>Moving the data (Frankfurt replica)</b><p>Reads hit a local copy of the data in Frankfurt — the distance to query is now zero. Writes still have to reach the Ohio primary.</p></div></div>
+            <div class="why-step"><span class="why-num">3</span><div><b>Fewer round trips (batched API)</b><p>Packing many queries into one request pays the Ohio round trip exactly once, no matter how many statements it carries.</p></div></div>
+          </div>
+        </div>
+        <div class="doc-links" id="db-docs"></div>
       </div>
-    </div>
-    <div class="doc-links" id="db-docs"></div>
-    <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
-    <div id="db-controls" class="card test-controls">
-      <div class="row">
-        <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
-        <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
-        <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
-        <button class="run-button" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
+      <div class="slide-live">
+        <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
+        <div id="db-controls" class="card test-controls">
+          <div class="row">
+            <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
+            <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
+            <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
+            <button class="run-button" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
+          </div>
+        </div>
+        <div class="route-grid" id="db-route-grid" aria-label="Separate route maps for database access paths"></div>
+        <p class="small muted">Map tiles © OpenStreetMap contributors. Database timings start at the Frankfurt probe function. Hop labels show configured service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client for the traceable paths; the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation.</p>
+        <div class="card">
+          <h2>Results</h2>
+          <p class="section-intro">A browser cannot speak PostgreSQL, so these runs execute in a function in <b id="db-client-region">the near region</b>, not the visitor's own network.</p>
+          <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Ohio; the replica forwards them there.</p>
+          <div class="status" id="db-status"></div>
+          <div id="db-lanes"></div>
+          <div id="db-speed"></div>
+          <div id="db-table" class="scroll"></div>
+          <div class="row feature-actions"><button data-export-csv="db">CSV</button><button data-share="db">Share results</button><button data-copy-summary="db">Copy summary</button><span data-feature-status="db" class="small muted"></span></div>
+          <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">Global Database replicates storage to the near-region secondary. Reads can be local; forwarded writes still reach the primary. The Global Accelerator comparison uses a TCP forwarder because Aurora is not an Accelerator endpoint type.</p></details>
+        </div>
+        <div class="card cost-card" id="db-cost-card">
+          <h2>Simulated monthly cost</h2>
+          <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month, plus the per-session cost at a traffic volume you choose. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
+          <div class="row">
+            <label class="field">Avg. Aurora ACUs<input type="text" inputmode="numeric" id="db-cost-acu" value="1"></label>
+            <label class="field">Sessions per month<input type="text" inputmode="numeric" id="db-cost-sessions" value="1,000,000"></label>
+          </div>
+          <div class="cost-table" id="db-cost-table"></div>
+        </div>
       </div>
-    </div>
-    <div class="route-grid" id="db-route-grid" aria-label="Separate route maps for database access paths"></div>
-    <p class="small muted">Map tiles © OpenStreetMap contributors. Database timings start at the Frankfurt probe function. Hop labels show configured service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client for the traceable paths; the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation.</p>
-    <div class="card">
-      <h2>Results</h2>
-      <p class="section-intro">A browser cannot speak PostgreSQL, so these runs execute in a function in <b id="db-client-region">the near region</b>, not the visitor's own network.</p>
-      <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Ohio; the replica forwards them there.</p>
-      <div class="status" id="db-status"></div>
-      <div id="db-lanes"></div>
-      <div id="db-speed"></div>
-      <div id="db-table" class="scroll"></div>
-      <div class="row feature-actions"><button data-export-csv="db">CSV</button><button data-share="db">Share results</button><button data-copy-summary="db">Copy summary</button><span data-feature-status="db" class="small muted"></span></div>
-      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">Global Database replicates storage to the near-region secondary. Reads can be local; forwarded writes still reach the primary. The Global Accelerator comparison uses a TCP forwarder because Aurora is not an Accelerator endpoint type.</p></details>
-    </div>
-    <div class="card cost-card" id="db-cost-card">
-      <h2>Simulated monthly cost</h2>
-      <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month, plus the per-session cost at a traffic volume you choose. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
-      <div class="row">
-        <label class="field">Avg. Aurora ACUs<input type="text" inputmode="numeric" id="db-cost-acu" value="1"></label>
-        <label class="field">Sessions per month<input type="text" inputmode="numeric" id="db-cost-sessions" value="1,000,000"></label>
-      </div>
-      <div class="cost-table" id="db-cost-table"></div>
     </div>
   </section>
 
@@ -2266,34 +2304,75 @@ function renderShared() {
 
 /* ---------- wiring ---------- */
 function renderAll() { renderRace("static"); renderRace("api"); renderDb(); }
-// Deep-link targets a presentation can jump straight to, e.g. #tab=db&focus=cost.
-// "maps" scrolls to the route-map grid, "cost" to the cost simulator; anything
-// else (or none) leaves the view at the top of the tab, as before.
+
+/* ---- presentation / slide mode ----
+   Every panel is a full "slide" stacked in the page and always in the DOM
+   (no display:none), so it scrolls into view like a presentation. The tab
+   bar becomes a jump-to-slide + "where am I" indicator: clicking a tab
+   smooth-scrolls to that slide, and scrolling by hand keeps the tabs (and
+   the URL hash) in sync via IntersectionObserver, like a scrollspy. */
 const FOCUS_TARGETS = {
   static: { maps: "static-route-grid", cost: "static-cost-card" },
   api: { maps: "api-route-grid", cost: "api-cost-card" },
   db: { maps: "db-route-grid", cost: "db-cost-card" },
 };
-function setTab(t, focus) {
+let scrollSpySuspended = false;              // true while an explicit setTab() scroll is in flight
+let pickActivePanel = () => {};              // replaced by setupScrollSpy(); called directly after setTab's jump
+function setActiveTabUI(t, focus) {
   state.tab = t;
   document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === t)));
-  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + t));
   const params = new URLSearchParams(location.hash.slice(1));
   params.set("tab", t);
   if (focus) params.set("focus", focus); else params.delete("focus");
   history.replaceState(null, "", location.pathname + location.search + "#" + params.toString());
-  const focusId = FOCUS_TARGETS[t]?.[focus];
-  if (!focusId) window.scrollTo({ top: 0, behavior: "smooth" });
-  renderAll();
-  initFeatureMaps(t);
-  setTimeout(() => {                       // settle each map's layout after its panel becomes visible
-    if (t === "overview") { overviewMap?.invalidateSize(); return; }
-    for (const M of Object.values(maps).filter((m) => m.kind === t)) {
-      M.map.invalidateSize(); drawMap(M.key, true);
-    }
-    if (focusId) $(focusId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 120);
 }
+function setTab(t, focus) {
+  scrollSpySuspended = true;
+  setActiveTabUI(t, focus);
+  const focusId = FOCUS_TARGETS[t]?.[focus];
+  const targetEl = (focusId && $(focusId)) || $("panel-" + t);
+  targetEl?.scrollIntoView({ behavior: "auto", block: "start" });
+  pickActivePanel();                       // update fade-in state immediately, don't wait on a scroll event
+  setTimeout(() => {                       // let maps settle, then let the scrollspy take over again
+    if (t === "overview") overviewMap?.invalidateSize();
+    for (const M of Object.values(maps).filter((m) => m.kind === t)) M.map.invalidateSize();
+    scrollSpySuspended = false;
+  }, 650);
+}
+function updateScrollProgress() {
+  const doc = document.documentElement;
+  const max = doc.scrollHeight - doc.clientHeight;
+  const bar = $("scroll-progress");
+  if (bar) bar.style.width = (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0) + "%";
+}
+function setupScrollSpy() {
+  // Panels vary a lot in height (the Database slide carries 5 route-map
+  // cards, several times taller than Overview), so "largest intersection
+  // ratio" would favor short panels. Instead, on every scroll, compute each
+  // panel's position directly: fade in whichever ones are anywhere near the
+  // viewport, and make the one whose top edge is closest to just above a
+  // line near the top of the viewport the "active" slide for the tab bar —
+  // the classic scrollspy approach, independent of panel height.
+  const panels = Array.from(document.querySelectorAll(".panel"));
+  pickActivePanel = () => {
+    const line = 140;                        // px from the top of the viewport
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    let best = panels[0], bestDist = -Infinity;
+    for (const p of panels) {
+      const rect = p.getBoundingClientRect();
+      p.classList.toggle("in-view", rect.bottom > 0 && rect.top < vh);
+      if (rect.top <= line && rect.top > bestDist) { bestDist = rect.top; best = p; }
+    }
+    updateScrollProgress();
+    if (scrollSpySuspended) return;
+    const t = best.id.replace("panel-", "");
+    if (t !== state.tab) setActiveTabUI(t);
+  };
+  window.addEventListener("scroll", pickActivePanel, { passive: true });
+  window.addEventListener("resize", pickActivePanel);
+  pickActivePanel();
+}
+function initAllFeatureMaps() { for (const t of ["overview", "static", "api", "db"]) initFeatureMaps(t); }
 
 function addDocLinks(kind, links) {
   const target = $(kind + "-docs");
@@ -2385,10 +2464,20 @@ function init() {
   document.querySelectorAll(".overview-goto").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.goto)));
 
   bindFeatureActions();
-  // Deep links for the companion presentation, e.g. index.html#tab=db&focus=cost&run=1
+  // Deep links for the companion presentation, e.g. index.html#tab=db&focus=cost&run=1.
+  // Read before setupScrollSpy() runs, because its first pass (at scrollY 0,
+  // before setTab below has scrolled anywhere) would otherwise rewrite the
+  // hash to #tab=overview and lose this.
   const initialParams = new URLSearchParams(location.hash.slice(1));
   const initialTab = initialParams.get("tab");
   const initialFocus = initialParams.get("focus");
+
+  // Every slide lives in the page at once now, so its maps are built up front
+  // instead of lazily when a tab becomes active. setupScrollSpy also drives
+  // the scroll-progress bar and each panel's fade-in as the page scrolls.
+  initAllFeatureMaps();
+  scrollSpySuspended = true;               // setTab below clears this once it settles
+  setupScrollSpy();
   setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview", initialFocus);
   if (initialParams.get("run") === "1") {
     setTimeout(() => {
