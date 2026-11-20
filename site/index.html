@@ -1013,6 +1013,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .cost-callout strong, .speed strong { color:#8de5cd; }
   .speed.bad { background:#473920; border-color:#8d6b32; color:#fff0c8; }
   .trace-note, .map-tile-note { color:#543f12; }
+  /* Traceroute hop tables sit inside navy route cards, so use PCG sky blue
+     for the whole table surface and navy ink for readable contrast. */
+  .trace-table { background:#eaf6fc; border-color:var(--sky); }
+  .trace-table table { color:var(--navy-deep); }
+  .trace-table th { background:#b7e1f2; color:var(--navy-deep); border-bottom-color:#91cce4; }
+  .trace-table td { background:#eaf6fc; color:var(--navy-deep); border-bottom-color:#c6e5f1; }
+  .trace-table td.silent { color:#58627e; }
+  .trace-table tr:hover td { background:#d9eff9; }
   .badge { background:var(--yellow); color:var(--navy-deep); }
   .banner { background:#473920; border-color:#8d6b32; color:#fff0c8; }
   .banner.info { background:#29345f; border-color:#596487; color:#d4daed; }
