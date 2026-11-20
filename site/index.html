@@ -732,8 +732,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   nav.tabs { position:sticky; top:10px; z-index:5; margin:22px 0 20px; padding:6px; border:1px solid var(--navy); border-radius:15px; background:var(--navy); box-shadow:0 8px 26px #14172e2e; }
   nav.tabs .seg { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; width:100%; padding:0; border:0; background:transparent; }
   nav.tabs .seg.seg-4 { grid-template-columns:repeat(4,1fr); }
-  nav.tabs .seg button { padding:12px 8px; border-radius:10px; color:#b7bdd6; font-size:.92rem; font-family: var(--font-head); font-weight: 600; }
-  nav.tabs .seg button[aria-pressed=true] { color:var(--yellow-ink); background:var(--yellow); box-shadow:none; }
+  nav.tabs .seg button { padding:12px 8px; border:1px solid var(--yellow); border-radius:10px; color:var(--navy-deep); background:var(--yellow); font-size:.92rem; font-family:var(--font-head); font-weight:700; box-shadow:none; }
+  nav.tabs .seg button:hover:not(:disabled) { background:#fff27a; border-color:#fff27a; box-shadow:none; }
+  nav.tabs .seg button[aria-pressed=true] { color:var(--navy-deep); background:var(--yellow); border-color:#fff; box-shadow:inset 0 0 0 2px var(--navy); font-weight:800; }
   /* ---- presentation / slide mode: every panel, and every narrative-only
      slide between them, is a full "page" the user scrolls to. ---- */
   .panel, .narrative-slide {
@@ -2764,6 +2765,10 @@ function addDocLinks(kind, links) {
 
 function init() {
   document.title = C.title || "Network feature benchmark";
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  const navigationEntry = performance.getEntriesByType?.("navigation")?.[0];
+  const reloaded = navigationEntry?.type === "reload";
+  if (reloaded) history.replaceState(null, "", location.pathname + location.search);
   $("db-client-region").textContent = clientRegion.name;
   buildDbMapCards();
 
@@ -2872,6 +2877,11 @@ function init() {
   const initialParams = new URLSearchParams(location.hash.slice(1));
   const initialTab = initialParams.get("tab");
   const initialFocus = initialParams.get("focus");
+  const hasTabDeepLink = ["overview", "static", "api", "db"].includes(initialTab);
+  if (!hasTabDeepLink) {
+    history.replaceState(null, "", location.pathname + location.search);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
 
   // Every slide lives in the page at once now, so its maps are built up front
   // instead of lazily when a tab becomes active. setupScrollSpy also drives
@@ -2880,8 +2890,15 @@ function init() {
   installBackToTopButtons();
   scrollSpySuspended = true;               // setTab below clears this once it settles
   setupScrollSpy();
-  setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview", initialFocus);
-  if (initialParams.get("run") === "1") {
+  if (!hasTabDeepLink) {
+    setActiveTabUI("overview");
+    window.scrollTo({ top: 0, behavior: "auto" });
+    pickActivePanel();
+    setTimeout(() => { scrollSpySuspended = false; }, 650);
+  } else {
+    setTab(initialTab, initialFocus);
+  }
+  if (hasTabDeepLink && initialParams.get("run") === "1") {
     setTimeout(() => {
       if (initialTab === "static" || initialTab === "api") runRace(initialTab);
       else if (initialTab === "db" && C.db) runDb();

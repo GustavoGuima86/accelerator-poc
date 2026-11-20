@@ -41,6 +41,20 @@ Open the automated report:
 terraform output -raw latest_report_url
 ```
 
+### Run the mock version locally (no AWS required)
+
+The preview server serves `site/index.html` with a generated mock `config.js`
+and local mock endpoints, so the presentation and latency tests can be tried
+without AWS resources or credentials. From the repository root, run:
+
+```sh
+python3 site/preview_server.py
+```
+
+Then open <http://127.0.0.1:8751/>. To use another port, pass it as the first
+argument, for example `python3 site/preview_server.py 8760`, then open
+`http://127.0.0.1:8760/`. Stop the server with `Ctrl+C`.
+
 The interactive page is a scroll-driven presentation: a title slide, the
 consulting narrative (situation, the three tools, trade-offs/cost for each,
 a "what applies to what" mapping, a cost summary, honest caveats, and next
