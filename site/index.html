@@ -725,25 +725,43 @@ svg.leaflet-image-layer.leaflet-interactive path {
   nav.tabs .seg.seg-4 { grid-template-columns:repeat(4,1fr); }
   nav.tabs .seg button { padding:11px 8px; border-radius:10px; color:#6e7a91; font-size:.84rem; }
   nav.tabs .seg button[aria-pressed=true] { color:#354fb6; background:#eef2ff; box-shadow:none; }
-  /* ---- presentation / slide mode: every panel is a full "page" the user
-     scrolls to, instead of a tab-toggled show/hide block. ---- */
-  .panel {
+  /* ---- presentation / slide mode: every panel, and every narrative-only
+     slide between them, is a full "page" the user scrolls to. ---- */
+  .panel, .narrative-slide {
     position: relative; display: block; min-height: calc(100vh - 20px);
     padding: 36px 0 60px; margin: 0; border-top: 1px solid #e7ecf5;
     scroll-margin-top: 92px;
     opacity: .4; transform: translateY(18px);
     transition: opacity .5s ease, transform .5s ease;
   }
-  .panel.in-view { opacity: 1; transform: translateY(0); }
-  .panel:first-of-type { border-top: 0; }
-  .panel::before {
+  .panel.in-view, .narrative-slide.in-view { opacity: 1; transform: translateY(0); }
+  .wrap > section:first-of-type { border-top: 0; }
+  .panel::before, .narrative-slide::before {
     content: attr(data-slide-label); position: absolute; top: 10px; right: 2px;
     color: #c4cce3; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
   }
-  .panel > .card { animation: card-in .55s both; }
-  .panel > .card:nth-child(2) { animation-delay: .05s; }
-  .panel > .card:nth-child(3) { animation-delay: .1s; }
+  .panel > .card, .narrative-slide > .card { animation: card-in .55s both; }
+  .panel > .card:nth-child(2), .narrative-slide > .card:nth-child(2) { animation-delay: .05s; }
+  .panel > .card:nth-child(3), .narrative-slide > .card:nth-child(3) { animation-delay: .1s; }
   @keyframes card-in { from { opacity:0; transform:translateY(12px) scale(.995); } to { opacity:1; transform:translateY(0) scale(1); } }
+  /* Narrative-only slides: the talking-points side of the presentation,
+     carrying the consulting pitch between the live-test panels. */
+  .narrative-slide { display: flex; flex-direction: column; justify-content: center; }
+  .narrative-slide .narrative-body { max-width: 760px; }
+  .narrative-slide .narrative-body.wide { max-width: 920px; }
+  .narrative-list { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .narrative-list li { position: relative; padding-left: 26px; color: #39445c; font-size: .95rem; line-height: 1.6; }
+  .narrative-list li::before { content: "→"; position: absolute; left: 0; top: 0; color: #4a63e6; font-weight: 800; }
+  .narrative-list li b { color: #1c2740; }
+  .narrative-list.compact li { font-size: .9rem; }
+  .slide-goto { margin-top: 20px; }
+  .title-slide { align-items: center; text-align: center; }
+  .title-slide .section-kicker { text-align: center; }
+  .title-slide h1 { font-size: clamp(1.9rem, 4vw, 3.1rem); max-width: 860px; margin: 0 auto 18px; letter-spacing: -.02em; }
+  .title-slide .title-sub { max-width: 640px; margin: 0 auto 30px; color: var(--muted); font-size: 1.05rem; line-height: 1.65; }
+  .title-slide .scroll-cue { margin-top: 36px; color: #9aa6c2; font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; animation: cue-bounce 1.8s ease-in-out infinite; }
+  @keyframes cue-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+  .step-num-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-right: 8px; border-radius: 50%; background: #eef2ff; color: #4a63e6; font-size: .72rem; font-weight: 800; vertical-align: 2px; }
   #scroll-progress { position:fixed; top:0; left:0; z-index:20; height:3px; width:0%; background:linear-gradient(90deg,#4f6ff2,#19b99a); transition:width .08s linear; }
   .slide-grid { display:grid; grid-template-columns:minmax(300px,0.95fr) minmax(340px,1.25fr); gap:22px; align-items:start; }
   .slide-text { position:sticky; top:96px; }
@@ -939,8 +957,49 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div></nav>
   <div id="banners"></div>
 
+  <!-- ============ TITLE ============ -->
+  <section class="narrative-slide title-slide in-view" id="slide-title" data-slide-label="Slide 1 · Title">
+    <p class="section-kicker">Making your application faster for a global user base</p>
+    <h1>Three AWS tools, three different trade-offs — demonstrated live, not just described</h1>
+    <p class="title-sub">A working Terraform deployment and an interactive page that measures real latency between two AWS regions, right here, right now — so every claim in this review can be checked instead of taken on faith.</p>
+    <button type="button" class="run-button slide-goto" data-goto-id="slide-situation">Start the walkthrough ↓</button>
+    <p class="scroll-cue">Scroll to continue</p>
+  </section>
+
+  <!-- ============ SITUATION ============ -->
+  <section class="narrative-slide" id="slide-situation" data-slide-label="Slide 2 · The situation">
+    <div class="narrative-body">
+      <p class="section-kicker">The situation today</p>
+      <h1>Your users are global. Your application isn't — yet.</h1>
+      <ul class="narrative-list">
+        <li><b>Users are spread around the world</b>, but the application and its data currently sit in one region. Every user far from that region pays the physical distance in latency — no amount of server tuning removes that.</li>
+        <li>You run an <b>EKS cluster</b> for the API/application layer, and you have <b>static assets</b> (web content, downloads, media) served from the same region.</li>
+        <li>Three AWS tools are on the table, each solving a <b>different part</b> of the distance problem. They are not interchangeable, and not all of them apply to every workload — that's the core message of this review.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ THREE TOOLS ============ -->
+  <section class="narrative-slide" id="slide-tools-table" data-slide-label="Slide 3 · The three tools">
+    <div class="narrative-body wide">
+      <p class="section-kicker">One line each</p>
+      <h1>Cache a copy. Reroute the network. Move the data.</h1>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Tool</th><th>What it actually does</th><th>Applies to</th></tr></thead>
+          <tbody>
+            <tr><td><b>CloudFront</b></td><td>Caches a copy of content at edge locations near the user</td><td>Static assets</td></tr>
+            <tr><td><b>Global Accelerator</b></td><td>Routes traffic onto AWS's private backbone via the nearest entry point</td><td>EKS / API traffic</td></tr>
+            <tr><td><b>Aurora Global Database</b></td><td>Replicates the data itself to a region near the user</td><td>Database reads</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="section-intro" style="margin-top:18px">The common thread: each tool moves something closer to the user — a cached copy, a network path, or the data itself. None of them make the origin server itself faster; they all work around distance in a different way.</p>
+    </div>
+  </section>
+
   <!-- ============ OVERVIEW ============ -->
-  <section class="panel in-view" id="panel-overview" data-slide-label="Slide · Overview">
+  <section class="panel in-view" id="panel-overview" data-slide-label="Slide 4 · Overview">
     <div class="feature-head"><div><p class="section-kicker">Global latency POC</p><h1>Why this demo exists</h1><p class="section-intro">A single app split across two AWS regions, 6,800 km apart, used to show — with your own live measurements, not slides — what each AWS networking feature actually buys you, and what it costs.</p></div></div>
 
     <div class="overview-setup">
@@ -987,8 +1046,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <!-- ============ TOOL 1: CLOUDFRONT — WHAT IT IS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-intro" data-slide-label="Slide 5 · Tool 1, CloudFront">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 1 — for static assets</p>
+      <h1>CloudFront: cache a copy near the reader</h1>
+      <ul class="narrative-list">
+        <li><b>What it is:</b> a CDN. The first request for an object is a cache miss and still pays the full trip to the origin; every request after that is served from the nearest edge location, often in single-digit milliseconds.</li>
+        <li><b>Why it fits here:</b> your static assets (images, downloads, JS/CSS, public pages) are exactly the kind of content a CDN is built for — identical bytes served to many users, rarely changing.</li>
+        <li><b>How we'd wire it in:</b> keep the origin bucket/server private, put CloudFront in front of it with Origin Access Control (OAC) so the origin is never reachable directly — only through the CDN.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="static" data-goto-run="1">Try it live — race direct vs. CloudFront →</button>
+    </div>
+  </section>
+
   <!-- ============ STATIC ============ -->
-  <section class="panel" id="panel-static" data-slide-label="Slide · CloudFront">
+  <section class="panel" id="panel-static" data-slide-label="Slide 6 · CloudFront, live">
     <div class="feature-head"><div><p class="section-kicker">Content delivery</p><h1>Static assets</h1><p class="section-intro">Compare a direct origin fetch with cached delivery from a CloudFront edge.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
     <div class="slide-grid">
       <div class="slide-text">
@@ -1057,8 +1130,37 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <!-- ============ TOOL 1: CLOUDFRONT — TRADE-OFFS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-tradeoffs" data-slide-label="Slide 7 · CloudFront, trade-offs">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 1 — trade-offs, cost, maintainability</p>
+      <h1>CloudFront: close to a "yes, do this"</h1>
+      <ul class="narrative-list">
+        <li><b>Trade-off:</b> only helps <i>cacheable</i> content. Anything personalized or frequently changing still pays the origin round trip on every miss. Cache invalidation becomes a step in the deploy process.</li>
+        <li><b>Cost:</b> priced per request and per GB served, with a permanent 1 TB/month free tier. At real traffic volumes this is typically <b>far cheaper</b> than serving the same traffic directly from the origin, because most requests never reach the origin at all.</li>
+        <li><b>Maintainability:</b> low. Fully managed; the main ongoing task is cache-control headers / invalidations when content changes. No servers to patch.</li>
+        <li><b>Bottom line:</b> close to a "yes, do this" for any static content — the question is scope (which assets), not whether it's worth it.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="static" data-goto-focus="cost">See the live cost comparison →</button>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 2: GLOBAL ACCELERATOR — WHAT IT IS ============ -->
+  <section class="narrative-slide" id="slide-ga-intro" data-slide-label="Slide 8 · Tool 2, Global Accelerator">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 2 — for the EKS API layer</p>
+      <h1>Global Accelerator: ride AWS's private backbone</h1>
+      <ul class="narrative-list">
+        <li><b>What it is:</b> a set of static anycast IPs. A user's connection enters AWS's network at whichever edge location is physically closest to them, then rides AWS's own private backbone the rest of the way to the EKS ingress/load balancer — instead of the public internet's unpredictable routing.</li>
+        <li><b>Why it fits here:</b> API responses from an application are generated per request and usually <b>can't be cached</b> — CloudFront doesn't help there. Global Accelerator helps with the network path itself, not the content.</li>
+        <li><b>How we'd wire it in:</b> point Global Accelerator at the existing ALB/NLB in front of EKS. No application changes required — this is purely a network-layer change.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="api" data-goto-run="1">Try it live — race direct vs. Global Accelerator →</button>
+    </div>
+  </section>
+
   <!-- ============ API ============ -->
-  <section class="panel" id="panel-api" data-slide-label="Slide · Global Accelerator">
+  <section class="panel" id="panel-api" data-slide-label="Slide 9 · Global Accelerator, live">
     <div class="feature-head"><div><p class="section-kicker">Dynamic traffic</p><h1>API routing</h1><p class="section-intro">Race direct access against an anycast route into the AWS global network.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
     <div class="slide-grid">
       <div class="slide-text">
@@ -1125,8 +1227,37 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <!-- ============ TOOL 2: GLOBAL ACCELERATOR — TRADE-OFFS ============ -->
+  <section class="narrative-slide" id="slide-ga-tradeoffs" data-slide-label="Slide 10 · Global Accelerator, trade-offs">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 2 — trade-offs, cost, maintainability</p>
+      <h1>Global Accelerator: a consistency investment, not a cost saving</h1>
+      <ul class="narrative-list">
+        <li><b>Trade-off:</b> the win shows up mainly as <b>consistency</b> — fewer slow outliers caused by internet congestion or bad routing — more than a large average-latency drop. The benefit shrinks the closer a user already is to the origin region. It's a <b>fixed cost whether or not there's traffic.</b></li>
+        <li><b>Cost:</b> a flat per-accelerator hourly fee (≈&nbsp;$18/month) <b>plus</b> premium per-GB data transfer, on top of whatever the load balancer already costs. In our demo numbers, the direct path was actually <i>cheaper</i> than the accelerated one — speed and cost are not the same axis here.</li>
+        <li><b>Maintainability:</b> low — it's a managed service layered in front of infrastructure that already exists; no new servers, no code changes.</li>
+        <li><b>Bottom line:</b> worth it where <b>consistency under load/congestion</b> matters (e.g. transactional API calls, live interactions) more than raw cost — not a blanket "turn it on everywhere."</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="api" data-goto-focus="cost">See the live cost comparison →</button>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 3: AURORA GLOBAL DATABASE — WHAT IT IS ============ -->
+  <section class="narrative-slide" id="slide-aurora-intro" data-slide-label="Slide 11 · Tool 3, Aurora Global Database">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 3 — for the data layer</p>
+      <h1>Aurora Global Database: the only option that moves the data itself</h1>
+      <ul class="narrative-list">
+        <li><b>What it is:</b> one writer region, with read replicas kept in sync in other regions. Reads in a replica region are served locally; writes are automatically forwarded back to the writer, wherever they originate.</li>
+        <li><b>Why it fits here:</b> a database connection is "chatty" — every single query is its own round trip. No network-layer trick (not even Global Accelerator) can fix that, because the distance to the data itself hasn't changed. The only real fix is moving <b>the data</b>, not the network path.</li>
+        <li><b>How we'd wire it in:</b> this is the option that requires <b>part of the application to move</b> — specifically, the read path for a given region needs to run close to that region's replica to get the benefit. A read-only reporting service or a regional API tier are natural candidates; write-heavy paths don't benefit the same way.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="db" data-goto-run="1">Try it live — five ways to reach the database →</button>
+    </div>
+  </section>
+
   <!-- ============ DATABASE ============ -->
-  <section class="panel" id="panel-db" data-slide-label="Slide · Aurora Global Database">
+  <section class="panel" id="panel-db" data-slide-label="Slide 12 · Aurora Global Database, live">
     <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads, write forwarding, and batching.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
     <div class="slide-grid">
       <div class="slide-text">
@@ -1174,6 +1305,104 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="cost-table" id="db-cost-table"></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 3: AURORA GLOBAL DATABASE — TRADE-OFFS ============ -->
+  <section class="narrative-slide" id="slide-aurora-tradeoffs" data-slide-label="Slide 13 · Aurora Global Database, trade-offs">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 3 — trade-offs, cost, maintainability</p>
+      <h1>Aurora Global Database: the highest-commitment option</h1>
+      <ul class="narrative-list">
+        <li><b>Trade-off:</b> reads get fast once the application's read path runs near the replica — but that's an application/deployment change, not just infrastructure. Writes still always travel to the original writer region, no matter where they're issued from — there's no way around that with this architecture. Replicated data can be briefly stale (replication lag) — the application needs to tolerate that for the read path to be safe.</li>
+        <li><b>Cost:</b> roughly <b>doubles</b> the database compute bill (a second set of capacity units running in the replica region, in addition to the writer). There's no way to get the latency benefit without paying for that second copy of compute.</li>
+        <li><b>Maintainability:</b> the highest of the three tools — replication lag needs monitoring, and some application logic may need to be region-aware (which replica to read from, how to handle forwarded writes). This is an architecture decision, not a toggle.</li>
+        <li><b>Bottom line:</b> worth it only where there's a genuinely <b>read-heavy</b>, latency-sensitive workload in that other region — and only once the team is ready to also move the relevant part of the application there.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="db" data-goto-focus="cost">See the live cost comparison →</button>
+    </div>
+  </section>
+
+  <!-- ============ WHAT APPLIES TO WHAT ============ -->
+  <section class="narrative-slide" id="slide-mapping" data-slide-label="Slide 14 · What applies to what">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Putting it together</p>
+      <h1>What applies to what</h1>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Your workload</th><th>Recommended tool</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Static assets (images, downloads, public pages)</td><td><b>CloudFront</b></td><td>Cacheable, identical to every user, cheapest and fastest option</td></tr>
+            <tr><td>EKS API traffic (no app changes wanted)</td><td><b>Global Accelerator</b></td><td>Pure network-layer fix, no code or data changes</td></tr>
+            <tr><td>Database reads, if an app tier moves near the user</td><td><b>Aurora Global Database</b></td><td>Only option that actually shortens the data's travel distance</td></tr>
+            <tr><td>Database writes</td><td><i>(none of these fix it)</i></td><td>Writes always return to the writer region by design</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="section-intro" style="margin-top:18px">These three can be adopted <b>independently and incrementally</b> — they don't depend on each other. A natural order: CloudFront first (lowest cost, lowest risk, fastest win), Global Accelerator next (drop-in for EKS), Aurora Global Database last (requires the application-move decision).</p>
+      <button type="button" class="run-button slide-goto" data-goto="overview">Revisit the live summary cards →</button>
+    </div>
+  </section>
+
+  <!-- ============ COST SUMMARY ============ -->
+  <section class="narrative-slide" id="slide-cost-summary" data-slide-label="Slide 15 · Cost summary">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Ballpark, for comparison only</p>
+      <h1>Only one of these three tools saves you money</h1>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Tool</th><th>Approx. monthly cost driver</th><th>Where it saves</th></tr></thead>
+          <tbody>
+            <tr><td><b>CloudFront</b></td><td>Per-GB served + requests (1 TB/mo free)</td><td>Usually cheaper than direct origin traffic at scale</td></tr>
+            <tr><td><b>Global Accelerator</b></td><td>~$18/mo fixed + premium transfer</td><td>No cost saving — pure latency/consistency investment</td></tr>
+            <tr><td><b>Aurora Global Database</b></td><td>Roughly 2× database compute</td><td>No cost saving — pure latency investment, for read-heavy regional traffic</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="section-intro" style="margin-top:18px">Only CloudFront is likely to <b>reduce</b> cost while also improving latency. The other two are latency investments with a real, ongoing price tag — the decision is about value to the business (user experience, conversion, SLAs), not about saving money.</p>
+    </div>
+  </section>
+
+  <!-- ============ HONEST CAVEATS ============ -->
+  <section class="narrative-slide" id="slide-caveats" data-slide-label="Slide 16 · Honest caveats">
+    <div class="narrative-body">
+      <p class="section-kicker">Before you commit budget</p>
+      <h1>Honest caveats</h1>
+      <ul class="narrative-list">
+        <li>Global Accelerator and Aurora Global Database add <b>fixed, ongoing cost</b> regardless of traffic — they should be justified by a real latency problem, not adopted speculatively.</li>
+        <li>Aurora Global Database requires an <b>application change</b> (routing reads to the correct replica) to deliver its benefit — it is not a flip-a-switch improvement like the other two.</li>
+        <li>None of the three tools reduce <b>write</b> latency to a far-away database — that is a hard architectural limit, not a configuration gap.</li>
+        <li>This demo's numbers are illustrative (simulated or lab-measured); your actual gains depend on your real traffic patterns, payload sizes, and user geography — this review is the basis for a follow-up measurement against your real workload.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ LIVE DEMO PROOF ============ -->
+  <section class="narrative-slide" id="slide-demo-proof" data-slide-label="Slide 17 · What this demo proves">
+    <div class="narrative-body">
+      <p class="section-kicker">Why this wasn't just slides</p>
+      <h1>What the live demo proves</h1>
+      <ul class="narrative-list">
+        <li>A working, deployable Terraform setup with all three tools wired up exactly as described, between two real AWS regions.</li>
+        <li>An interactive page that <b>measures live</b>, from your own browser (static and API) or from a regional probe (database) — not canned numbers.</li>
+        <li>Real traceroutes from an actual client in the second region, so the network path claims are observable, not just asserted.</li>
+        <li>A cost simulator on each tab, so the price trade-off can be explored at your own traffic volumes, live, during this meeting.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ NEXT STEPS ============ -->
+  <section class="narrative-slide" id="slide-next-steps" data-slide-label="Slide 18 · Next steps">
+    <div class="narrative-body">
+      <p class="section-kicker">Recommended next steps</p>
+      <h1>Where we'd go from here</h1>
+      <ul class="narrative-list">
+        <li><span class="step-num-badge">1</span>Confirm which static assets, API endpoints, and database read paths are actually latency-sensitive for your real users (measure, don't assume).</li>
+        <li><span class="step-num-badge">2</span>Pilot <b>CloudFront</b> first — lowest cost, lowest risk, fastest to show value.</li>
+        <li><span class="step-num-badge">3</span>Pilot <b>Global Accelerator</b> in front of the existing EKS ingress — no application changes required.</li>
+        <li><span class="step-num-badge">4</span>Scope the <b>Aurora Global Database</b> option as a separate project once a specific read-heavy, region-local workload is identified, including the application changes it requires.</li>
+        <li><span class="step-num-badge">5</span>Re-run this same demo against your actual regions and traffic shapes before committing budget.</li>
+      </ul>
     </div>
   </section>
 
@@ -2346,22 +2575,25 @@ function updateScrollProgress() {
   if (bar) bar.style.width = (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0) + "%";
 }
 function setupScrollSpy() {
-  // Panels vary a lot in height (the Database slide carries 5 route-map
-  // cards, several times taller than Overview), so "largest intersection
-  // ratio" would favor short panels. Instead, on every scroll, compute each
-  // panel's position directly: fade in whichever ones are anywhere near the
-  // viewport, and make the one whose top edge is closest to just above a
-  // line near the top of the viewport the "active" slide for the tab bar —
-  // the classic scrollspy approach, independent of panel height.
-  const panels = Array.from(document.querySelectorAll(".panel"));
+  // Every section — the 4 feature panels and every narrative-only slide
+  // between them — fades in as it nears the viewport. They vary a lot in
+  // height (the Database slide carries 5 route-map cards, several times
+  // taller than a bullet-point narrative slide), so "largest intersection
+  // ratio" would favor short ones. Instead, on every scroll, compute each
+  // section's position directly: fade in whichever are anywhere near the
+  // viewport, and separately — among only the 4 feature panels, since only
+  // those have a matching tab — make the one whose top edge is closest to
+  // just above a line near the top of the viewport "active" for the tab bar.
+  const sections = Array.from(document.querySelectorAll(".panel, .narrative-slide"));
+  const tabbedPanels = sections.filter((s) => s.classList.contains("panel"));
   pickActivePanel = () => {
     const line = 140;                        // px from the top of the viewport
     const vh = window.innerHeight || document.documentElement.clientHeight;
-    let best = panels[0], bestDist = -Infinity;
-    for (const p of panels) {
-      const rect = p.getBoundingClientRect();
-      p.classList.toggle("in-view", rect.bottom > 0 && rect.top < vh);
-      if (rect.top <= line && rect.top > bestDist) { bestDist = rect.top; best = p; }
+    let best = tabbedPanels[0], bestDist = -Infinity;
+    for (const s of sections) {
+      const rect = s.getBoundingClientRect();
+      s.classList.toggle("in-view", rect.bottom > 0 && rect.top < vh);
+      if (s.classList.contains("panel") && rect.top <= line && rect.top > bestDist) { bestDist = rect.top; best = s; }
     }
     updateScrollProgress();
     if (scrollSpySuspended) return;
@@ -2462,6 +2694,25 @@ function init() {
   }
 
   document.querySelectorAll(".overview-goto").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.goto)));
+
+  // Presentation slide buttons: jump to a plain narrative slide by id
+  // (data-goto-id), or into a feature tab (data-goto), optionally landing on
+  // its cost section (data-goto-focus="cost") or auto-starting its test
+  // (data-goto-run="1") — the same deep-link vocabulary as #tab=...&run=1.
+  document.querySelectorAll(".slide-goto[data-goto-id]").forEach((b) => b.addEventListener("click", () => {
+    $(b.dataset.gotoId)?.scrollIntoView({ behavior: "auto", block: "start" });
+    pickActivePanel();
+  }));
+  document.querySelectorAll(".slide-goto[data-goto]").forEach((b) => b.addEventListener("click", () => {
+    const t = b.dataset.goto;
+    setTab(t, b.dataset.gotoFocus);
+    if (b.dataset.gotoRun === "1") {
+      setTimeout(() => {
+        if (t === "static" || t === "api") runRace(t);
+        else if (t === "db" && C.db) runDb();
+      }, 700);
+    }
+  }));
 
   bindFeatureActions();
   // Deep links for the companion presentation, e.g. index.html#tab=db&focus=cost&run=1.

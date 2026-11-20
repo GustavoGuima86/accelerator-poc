@@ -2,9 +2,15 @@
 
 Topics and talking points only, one `##` heading per slide. Written for a
 client with a worldwide user base, an existing EKS cluster, and static
-content, evaluating three AWS tools. The companion live demo (this
-repository) lets the client click through each option themselves instead of
-taking the trade-offs on faith.
+content, evaluating three AWS tools.
+
+**This same narrative is now built into the interactive page itself**
+(`site/index.html`): it opens on a title slide and scrolls through the exact
+sequence below, with each tool's live test sitting right where its slide
+would go in a deck — the client can scroll through the whole pitch and run
+every test inline, without switching between slides and a demo. Use this
+file to export the talking points into slide software, print a leave-behind,
+or rehearse; use the page itself to actually present and demo live.
 
 Each tool-specific slide below has a **Try it live** link that jumps the demo
 page straight to the matching tab (and, where noted, straight to the cost

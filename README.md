@@ -41,13 +41,22 @@ Open the automated report:
 terraform output -raw latest_report_url
 ```
 
-The interactive page opens on an **Overview** tab explaining the POC's goal,
-the two-region setup, and a summary card per feature with a link straight into
-its test. The **Static assets**, **API**, and **Database** tabs each start
-with a short "Why this matters" explainer, then link the AWS docs, show a
-route map per access path, and run their own test. Database measurements run
-from a Frankfurt probe function, while static/API races run from the
-visitor's browser.
+The interactive page is a scroll-driven presentation: a title slide, the
+consulting narrative (situation, the three tools, trade-offs/cost for each,
+a "what applies to what" mapping, a cost summary, honest caveats, and next
+steps) and the four live-test sections (**Overview**, **Static assets**,
+**API**, **Database**) are all stacked as full-height slides in the same
+page, in presenting order. Scrolling moves through the deck like a
+presentation; the tab bar jumps straight to a section and stays in sync as
+you scroll by hand. Each tool's narrative slide carries a "Try it live"
+button that jumps into its test and (for the "what it is" slide) starts it
+automatically; the matching "trade-offs" slide jumps straight to that
+section's cost simulator. The **Static assets**, **API**, and **Database**
+sections each also carry their own short "Why this matters" explainer, AWS
+doc links, a route map per access path, and their own live test. Database
+measurements run from a Frankfurt probe function, while static/API races run
+from the visitor's browser. `PRESENTATION.md` holds the same narrative as
+plain markdown, for turning into slides or printing as a leave-behind.
 
 The first report run starts during `terraform apply`; it may take several
 minutes while endpoints become ready. Rerun it later with:
