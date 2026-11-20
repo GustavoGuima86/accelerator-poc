@@ -2266,14 +2266,24 @@ function renderShared() {
 
 /* ---------- wiring ---------- */
 function renderAll() { renderRace("static"); renderRace("api"); renderDb(); }
-function setTab(t) {
+// Deep-link targets a presentation can jump straight to, e.g. #tab=db&focus=cost.
+// "maps" scrolls to the route-map grid, "cost" to the cost simulator; anything
+// else (or none) leaves the view at the top of the tab, as before.
+const FOCUS_TARGETS = {
+  static: { maps: "static-route-grid", cost: "static-cost-card" },
+  api: { maps: "api-route-grid", cost: "api-cost-card" },
+  db: { maps: "db-route-grid", cost: "db-cost-card" },
+};
+function setTab(t, focus) {
   state.tab = t;
   document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === t)));
   document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + t));
   const params = new URLSearchParams(location.hash.slice(1));
   params.set("tab", t);
+  if (focus) params.set("focus", focus); else params.delete("focus");
   history.replaceState(null, "", location.pathname + location.search + "#" + params.toString());
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  const focusId = FOCUS_TARGETS[t]?.[focus];
+  if (!focusId) window.scrollTo({ top: 0, behavior: "smooth" });
   renderAll();
   initFeatureMaps(t);
   setTimeout(() => {                       // settle each map's layout after its panel becomes visible
@@ -2281,6 +2291,7 @@ function setTab(t) {
     for (const M of Object.values(maps).filter((m) => m.kind === t)) {
       M.map.invalidateSize(); drawMap(M.key, true);
     }
+    if (focusId) $(focusId)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, 120);
 }
 
@@ -2374,8 +2385,17 @@ function init() {
   document.querySelectorAll(".overview-goto").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.goto)));
 
   bindFeatureActions();
-  const initialTab = new URLSearchParams(location.hash.slice(1)).get("tab");
-  setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview");
+  // Deep links for the companion presentation, e.g. index.html#tab=db&focus=cost&run=1
+  const initialParams = new URLSearchParams(location.hash.slice(1));
+  const initialTab = initialParams.get("tab");
+  const initialFocus = initialParams.get("focus");
+  setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview", initialFocus);
+  if (initialParams.get("run") === "1") {
+    setTimeout(() => {
+      if (initialTab === "static" || initialTab === "api") runRace(initialTab);
+      else if (initialTab === "db" && C.db) runDb();
+    }, 500);
+  }
 
   window.addEventListener("hashchange", renderShared);
   renderAll(); renderShared();
