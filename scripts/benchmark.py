@@ -150,7 +150,7 @@ def main():
     safe_config = dict(config)
     if isinstance(safe_config.get("db"), dict):
         safe_db = dict(safe_config["db"])
-        for secret_key in ("password", "batch_api_token", "probe_token"):
+        for secret_key in ("password", "probe_token"):
             safe_db.pop(secret_key, None)
         safe_config["db"] = safe_db
 

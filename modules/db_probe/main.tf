@@ -78,8 +78,6 @@ resource "aws_lambda_function" "this" {
       REPLICA_ENDPOINT = var.replica_endpoint
       GA_IP            = var.global_accelerator_ip
       GA_PORT          = tostring(var.global_accelerator_port)
-      BATCH_API_URL    = var.batch_api_url
-      BATCH_TOKEN      = var.batch_api_token
       BENCH_TOKEN      = random_password.token.result
     }
   }

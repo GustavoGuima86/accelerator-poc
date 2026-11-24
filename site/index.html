@@ -1165,7 +1165,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <article class="overview-card">
         <span class="overview-card-kicker">Regional data access</span>
         <h3>Database</h3>
-        <p>Five ways to reach the same <b>Aurora PostgreSQL Global Database</b>: direct, through Global Accelerator, over private VPC peering, against a local read replica, and batched through a nearby function. Shows that for chatty database traffic, moving the data (replication) beats moving the network (routing).</p>
+        <p>Four ways to reach the same <b>Aurora PostgreSQL Global Database</b>: direct, through Global Accelerator, over private VPC peering, and against a local read replica. Shows that for chatty database traffic, moving the data (replication) beats moving the network (routing).</p>
         <button type="button" class="overview-goto" data-goto="db">Open this test →</button>
       </article>
     </div>
@@ -1281,8 +1281,115 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <!-- ============ TOOL 1: CLOUDFRONT — CODE AT THE EDGE (explained, not deployed) ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-edge" data-slide-label="Slide 8 · CloudFront, code at the edge">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — optional add-on</p>
+      <h1>CloudFront can also run your code at the edge</h1>
+      <p class="section-intro">Two options. They change requests and responses; they don't make the origin faster.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>CloudFront Functions</th><th>Lambda@Edge</th></tr></thead>
+          <tbody>
+            <tr><td><b>Best for</b></td><td>Simple jobs: redirects, headers, cache keys, token checks</td><td>Heavy jobs: libraries or AWS SDK, several network calls, request body</td></tr>
+            <tr><td><b>Language</b></td><td>JavaScript</td><td>Node.js or Python</td></tr>
+            <tr><td><b>Runs on</b></td><td>Viewer request / response</td><td>Viewer and origin, request / response</td></tr>
+            <tr><td><b>Limits</b></td><td>Submillisecond &middot; 10 KB code &middot; 2 MB memory</td><td>Up to 30 s &middot; 50 MB code &middot; 128 MB memory (viewer events)</td></tr>
+            <tr><td><b>Network</b></td><td>One call, to an origin on the distribution</td><td>Any destination</td></tr>
+            <tr><td><b>Scale</b></td><td>Millions of requests/s</td><td>10,000 requests/s per Region</td></tr>
+            <tr><td><b>Price</b></td><td>$0.10 per million; 2 M free a month</td><td>$0.60 per million + duration; no free tier</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>In the request path:</b> viewer functions run on every request, even cache hits; origin functions only on a miss. Each adds latency.</li>
+        <li><b>Cost, 10 M requests a month (our arithmetic):</b> about $0.80 vs $6.30, at one 5 ms, 128 MB function per request.</li>
+        <li><b>Lambda@Edge strings:</b> create it in us-east-1, attach a numbered version; no environment variables, VPC, layers or arm64. Deleting it can wait hours (community reports).</li>
+        <li><b>Advice:</b> start with CloudFront Functions.</li>
+        <li><b>Not deployed here:</b> nothing on this slide is measured.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — FLAT-RATE PLANS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-flatrate" data-slide-label="Slide 9 · CloudFront, flat-rate plans">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — cost option</p>
+      <h1>Flat-rate plans: one monthly price, no overage charges</h1>
+      <p class="section-intro">The CDN bundled with WAF, DDoS protection, DNS, a TLS certificate and logging.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Plan</th><th>Per month</th><th>Requests</th><th>Transfer</th><th>S3 credit</th><th>Adds</th></tr></thead>
+          <tbody>
+            <tr><td><b>Free</b></td><td>$0</td><td>1 M</td><td>100 GB</td><td>5 GB</td><td>CDN, WAF (5 rules), DDoS, DNS, TLS, OAC</td></tr>
+            <tr><td><b>Pro</b></td><td>$15</td><td>10 M</td><td>50 TB</td><td>50 GB</td><td>Logs, tag invalidation, CAPTCHA, 25 rules</td></tr>
+            <tr><td><b>Business</b></td><td>$200</td><td>125 M</td><td>50 TB</td><td>1 TB</td><td>Custom caching and headers, VPC origins, bot control, SLA</td></tr>
+            <tr><td><b>Premium</b></td><td>$1,000</td><td>500 M</td><td>50 TB</td><td>5 TB</td><td>Origin Shield, failover, mutual TLS; larger allowances cost more</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Not unlimited:</b> a first spike up to 3&times; is fine. Sustained excess over 2&ndash;3 months can mean fewer or more distant edges. Blocked attacks don't count.</li>
+        <li><b>Example (our arithmetic):</b> 5 TB out and 8 M requests is about $340&ndash;350 pay-as-you-go vs $15 on Pro. At low volume the free tier makes pay-as-you-go cheap; a plan then buys the bundle.</li>
+        <li><b>Check fit:</b> WAF web ACL required; one apex domain; no legacy forwarded values, origin access identity, real-time logs, Shield Advanced or staging. Lambda@Edge stays pay-as-you-go.</li>
+        <li><b>This demo:</b> OAC yes, web ACL no; our custom CORS policy would need replacing on Free or Pro (our reading). The Static tab's cost simulator models pay-as-you-go only.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — PRICE CLASSES AND INVALIDATIONS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-levers" data-slide-label="Slide 10 · CloudFront, price classes and invalidations">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — two small cost levers</p>
+      <h1>Price classes and invalidations</h1>
+      <p class="section-intro">A price class trades delivery cost for fewer edge locations. Invalidations replace content that is already cached.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Class</th><th>Edge locations included</th><th>Left out</th></tr></thead>
+          <tbody>
+            <tr><td><b>All</b> (this demo)</td><td>Every region</td><td>Nothing</td></tr>
+            <tr><td><b>200</b></td><td>US, Canada, Mexico, Europe, Israel, T&uuml;rkiye, Middle East and parts of Africa, Japan, India, Hong Kong, Singapore and similar</td><td>South America, Australia, New Zealand</td></tr>
+            <tr><td><b>100</b></td><td>US, Canada, Mexico, Europe, Israel, T&uuml;rkiye</td><td>Everything else</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Why it saves:</b> delivery costs more in some regions (per GB, next 9 TB): $0.085 US and Europe, $0.110 South America, $0.114 Japan and Australia, $0.120 Singapore and similar. The Static tab's simulator uses $0.12, the top of that range, so it overstates CloudFront.</li>
+        <li><b>What it costs:</b> viewers in left-out regions get farther edges, so latency rises. Content may still come from outside your class; you pay the class's cheapest rate.</li>
+        <li><b>When:</b> a lower class for US and Europe audiences; keep All for global speed.</li>
+        <li><b>Invalidations:</b> first 1,000 paths a month free, then $0.005 each. A wildcard is one path (AWS example: 2,000 paths = $5).</li>
+        <li><b>Often avoidable:</b> versioned file names (<code>app.3f2a.js</code>) make a change a new URL.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — CUSTOM DOMAIN ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-domain" data-slide-label="Slide 11 · CloudFront, custom domain">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — going to production</p>
+      <h1>A custom domain: three pieces</h1>
+      <p class="section-intro">The default name looks like <code>d111111abcdef8.cloudfront.net</code>. Your own name, such as <code>cdn.example.com</code>, needs three things to line up.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Piece</th><th>What it is</th><th>Watch out</th></tr></thead>
+          <tbody>
+            <tr><td><b>Domain name</b></td><td>Your name added to the distribution</td><td>The certificate must cover it exactly, or by a same-level wildcard</td></tr>
+            <tr><td><b>TLS certificate</b></td><td>Public AWS Certificate Manager certificate, auto-renewed</td><td>For CloudFront it must be in <b>us-east-1</b>. A load-balancer origin's can be anywhere.</td></tr>
+            <tr><td><b>DNS record</b></td><td>Route 53 ALIAS to the distribution</td><td>A CNAME can't sit at the domain root; ALIAS can</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>This demo:</b> AWS-generated names and the default certificate; no DNS or certificate resources.</li>
+        <li><b>Adding one:</b> a us-east-1 provider alias (none today), a validated certificate, the name and certificate on the distribution, a Route 53 record.</li>
+        <li><b>With a flat-rate plan:</b> the hosted zone and queries are covered; ALIAS queries don't count against the allowance, CNAME queries do; one apex domain.</li>
+        <li><b>Imported certificates:</b> renew at least 24 h before expiry.</li>
+      </ul>
+    </div>
+  </section>
+
   <!-- ============ TOOL 2: GLOBAL ACCELERATOR — WHAT IT IS ============ -->
-  <section class="narrative-slide" id="slide-ga-intro" data-slide-label="Slide 8 · Tool 2, Global Accelerator">
+  <section class="narrative-slide" id="slide-ga-intro" data-slide-label="Slide 12 · Tool 2, Global Accelerator">
     <div class="narrative-body">
       <p class="section-kicker">Tool 2 — for the EKS API layer</p>
       <h1>Global Accelerator: ride AWS's private backbone</h1>
@@ -1296,7 +1403,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ API ============ -->
-  <section class="panel" id="panel-api" data-slide-label="Slide 9 · Global Accelerator, live">
+  <section class="panel" id="panel-api" data-slide-label="Slide 13 · Global Accelerator, live">
     <div class="feature-head"><div><p class="section-kicker">Dynamic traffic</p><h1>API routing</h1><p class="section-intro">Race direct access against an anycast route into the AWS global network.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
     <div class="slide-grid">
       <div class="slide-text">
@@ -1364,7 +1471,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ TOOL 2: GLOBAL ACCELERATOR — TRADE-OFFS ============ -->
-  <section class="narrative-slide" id="slide-ga-tradeoffs" data-slide-label="Slide 10 · Global Accelerator, trade-offs">
+  <section class="narrative-slide" id="slide-ga-tradeoffs" data-slide-label="Slide 14 · Global Accelerator, trade-offs">
     <div class="narrative-body">
       <p class="section-kicker">Tool 2 — trade-offs, cost, maintainability</p>
       <h1>Global Accelerator: a consistency investment, not a cost saving</h1>
@@ -1378,8 +1485,108 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <section class="narrative-slide" id="slide-ga-claims" data-slide-label="Slide 15 · Global Accelerator, AWS figures">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — what to expect</p>
+      <h1>What AWS says Global Accelerator delivers</h1>
+      <p class="section-intro">AWS's published figures, from real-user measurements by third-party tools, at the 90th percentile.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Measure</th><th>AWS figure</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td><b>First-byte latency</b></td><td>Up to 49% lower (TCP traffic)</td><td>AWS Global Accelerator FAQ</td></tr>
+            <tr><td><b>Jitter</b></td><td>Up to 58% lower</td><td>AWS Global Accelerator FAQ</td></tr>
+            <tr><td><b>Throughput</b></td><td>Up to 60% higher</td><td>AWS Global Accelerator FAQ</td></tr>
+            <tr><td><b>100 KB download from N. Virginia</b></td><td>About 60% better for clients in Australia; over 40% for clients in the US</td><td>AWS blog, 2020</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>How:</b> the connection ends at the nearest edge location, then travels the AWS backbone to your endpoint, with larger TCP windows and no slow start on that leg.</li>
+        <li><b>&ldquo;Up to&rdquo; at p90:</b> these are best-case figures at the 90th percentile, not averages.</li>
+        <li><b>What it depends on (AWS):</b> the amount of data transferred, and the quality, capacity and distance of the client's last-mile network.</li>
+        <li><b>Test it yourself:</b> AWS recommends at least 1,000 samples every hour for a day, to catch peak-hour congestion.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-resilience" data-slide-label="Slide 16 · Global Accelerator, resilience">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — beyond speed</p>
+      <h1>Resilience and failover</h1>
+      <p class="section-intro">Where Global Accelerator earns its cost when speed alone doesn't.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><b>Health-checked routing</b></td><td>Detects a failing endpoint and reroutes to the next closest Region</td></tr>
+            <tr><td><b>Traffic dials</b></td><td>Set the share of traffic per Region, for testing or updates</td></tr>
+            <tr><td><b>Blue/green and A/B</b></td><td>Add or remove endpoints without touching client IPs</td></tr>
+            <tr><td><b>No DNS caching</b></td><td>Clients keep the same two IPs; changes take effect in seconds</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Why it matters:</b> a rerouted client doesn't wait for DNS caches to expire.</li>
+        <li><b>Cross-Region failover needs a second Region;</b> within a Region it can also fail over between endpoints.</li>
+        <li><b>In this demo:</b> one Region (Ohio) only, so failover is explained, not shown.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-security" data-slide-label="Slide 17 · Global Accelerator, static IPs">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — beyond speed</p>
+      <h1>Static IPs and protection</h1>
+      <p class="section-intro">Two fixed entry points in front of your load balancer.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><b>Two static anycast IPs</b></td><td>Allow-list once in firewalls and clients; IPv4, or dual-stack with two IPv6</td></tr>
+            <tr><td><b>Stable when you move</b></td><td>Endpoints can move between Availability Zones or Regions; the IPs stay</td></tr>
+            <tr><td><b>Origin hidden</b></td><td>Clients see the accelerator IPs, not the load balancer</td></tr>
+            <tr><td><b>DDoS protection</b></td><td>On by default through AWS Shield</td></tr>
+            <tr><td><b>Private endpoints</b></td><td>Internal load balancers and private EC2 reachable over private IPs</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Good fit:</b> partners or devices that can only allow-list fixed addresses.</li>
+        <li><b>In this demo:</b> the ALB is still public, so the origin isn't hidden here.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-pricing" data-slide-label="Slide 18 · Global Accelerator, pricing">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — cost detail</p>
+      <h1>Global Accelerator pricing in detail</h1>
+      <p class="section-intro">Three charges, one of them easy to miss.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Endpoint in Europe, traffic to edge in</th><th>Premium per GB</th></tr></thead>
+          <tbody>
+            <tr><td>Europe, Israel, T&uuml;rkiye, or US, Canada, Mexico</td><td>$0.015</td></tr>
+            <tr><td>Asia Pacific (excluding India, Philippines, Thailand, South Korea)</td><td>$0.033</td></tr>
+            <tr><td>South America</td><td>$0.043</td></tr>
+            <tr><td>Australia and New Zealand</td><td>$0.105</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Fixed:</b> $0.025 per hour per accelerator, about $18 a month, even if it is disabled.</li>
+        <li><b>Data Transfer-Premium:</b> per GB, by source Region and edge location, billed only in the busier direction. Range across AWS's table: $0.007 to $0.105.</li>
+        <li><b>On top:</b> normal data-transfer-out fees and public IPv4 charges.</li>
+        <li><b>Example (our arithmetic from these rates, same shape as AWS's own):</b> 10,000 GB a month, 60% outbound, endpoint in Europe; 5,000 GB to European edges ($75) and 1,000 GB to Asia Pacific ($33): $18 + $108 = <b>$126 a month</b>.</li>
+        <li><b>Our simulator</b> on the API tab uses a flat $0.02 per GB.</li>
+      </ul>
+    </div>
+  </section>
+
+
   <!-- ============ TOOL 3: AURORA GLOBAL DATABASE — WHAT IT IS ============ -->
-  <section class="narrative-slide" id="slide-aurora-intro" data-slide-label="Slide 11 · Tool 3, Aurora Global Database">
+  <section class="narrative-slide" id="slide-aurora-intro" data-slide-label="Slide 19 · Tool 3, Aurora Global Database">
     <div class="narrative-body">
       <p class="section-kicker">Tool 3 — for the data layer</p>
       <h1>Aurora Global Database: the only option that moves the data itself</h1>
@@ -1388,22 +1595,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <li><b>Why it fits here:</b> a database connection is "chatty" — every single query is its own round trip. No network-layer trick (not even Global Accelerator) can fix that, because the distance to the data itself hasn't changed. The only real fix is moving <b>the data</b>, not the network path.</li>
         <li><b>How we'd wire it in:</b> this is the option that requires <b>part of the application to move</b> — specifically, the read path for a given region needs to run close to that region's replica to get the benefit. A read-only reporting service or a regional API tier are natural candidates; write-heavy paths don't benefit the same way.</li>
       </ul>
-      <button type="button" class="run-button slide-goto" data-goto="db" data-goto-run="1">Try it live — five ways to reach the database →</button>
+      <button type="button" class="run-button slide-goto" data-goto="db" data-goto-run="1">Try it live — four ways to reach the database →</button>
     </div>
   </section>
 
   <!-- ============ DATABASE ============ -->
-  <section class="panel" id="panel-db" data-slide-label="Slide 12 · Aurora Global Database, live">
-    <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads, write forwarding, and batching.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
+  <section class="panel" id="panel-db" data-slide-label="Slide 20 · Aurora Global Database, live">
+    <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads and write forwarding.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
     <div class="slide-grid">
       <div class="slide-text">
         <div class="why-card">
           <h3>Why this matters</h3>
-          <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the only two things that actually help are moving the <b>data</b> closer, or making fewer, bigger round trips. <b>Aurora Global Database</b> does the first with a read replica; application-level batching does the second.</p>
+          <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the thing that actually helps is moving the <b>data</b> closer. <b>Aurora Global Database</b> does that with a read replica.</p>
           <div class="why-steps">
             <div class="why-step"><span class="why-num">1</span><div><b>Routing fixes (direct / Global Accelerator / VPC peering)</b><p>These change <i>how</i> packets travel, not <i>how far</i>. The distance to Ohio is unchanged, so per-query latency barely moves.</p></div></div>
             <div class="why-step"><span class="why-num">2</span><div><b>Moving the data (Frankfurt replica)</b><p>Reads hit a local copy of the data in Frankfurt — the distance to query is now zero. Writes still have to reach the Ohio primary.</p></div></div>
-            <div class="why-step"><span class="why-num">3</span><div><b>Fewer round trips (batched API)</b><p>Packing many queries into one request pays the Ohio round trip exactly once, no matter how many statements it carries.</p></div></div>
           </div>
         </div>
         <div class="doc-links" id="db-docs"></div>
@@ -1433,10 +1639,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
         </div>
         <div class="card cost-card" id="db-cost-card">
           <h2>Simulated monthly cost</h2>
-          <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month, plus the per-session cost at a traffic volume you choose. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
+          <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
           <div class="row">
             <label class="field">Avg. Aurora ACUs<input type="text" inputmode="numeric" id="db-cost-acu" value="1"></label>
-            <label class="field">Sessions per month<input type="text" inputmode="numeric" id="db-cost-sessions" value="1,000,000"></label>
           </div>
           <div class="cost-table" id="db-cost-table"></div>
         </div>
@@ -1445,7 +1650,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ TOOL 3: AURORA GLOBAL DATABASE — TRADE-OFFS ============ -->
-  <section class="narrative-slide" id="slide-aurora-tradeoffs" data-slide-label="Slide 13 · Aurora Global Database, trade-offs">
+  <section class="narrative-slide" id="slide-aurora-tradeoffs" data-slide-label="Slide 21 · Aurora Global Database, trade-offs">
     <div class="narrative-body">
       <p class="section-kicker">Tool 3 — trade-offs, cost, maintainability</p>
       <h1>Aurora Global Database: the highest-commitment option</h1>
@@ -1459,8 +1664,107 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <section class="narrative-slide" id="slide-aurora-writefwd" data-slide-label="Slide 22 · Aurora, write forwarding">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — write forwarding</p>
+      <h1>Write forwarding: what works and what doesn't</h1>
+      <p class="section-intro">A replica can accept writes and pass them to the writer. Off by default; turning it on needs no downtime.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Works</th><th>Not supported</th></tr></thead>
+          <tbody>
+            <tr><td>INSERT, UPDATE, DELETE</td><td>DDL (CREATE, ALTER, DROP)</td></tr>
+            <tr><td>SELECT &hellip; FOR UPDATE / SHARE</td><td>Sequences: nextval, setval</td></tr>
+            <tr><td>PREPARE and EXECUTE</td><td>Cursors, SAVEPOINT, COPY</td></tr>
+            <tr><td>EXPLAIN of those statements</td><td>TRUNCATE, LOCK, VACUUM, ANALYZE</td></tr>
+            <tr><td>REPEATABLE READ, READ COMMITTED</td><td>SERIALIZABLE; user-defined functions and procedures</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Read consistency</b> (per session): SESSION (default) sees your own writes; EVENTUAL is fastest but may be stale; GLOBAL waits for everything committed.</li>
+        <li><b>Capacity:</b> forwarded sessions are capped at 25% of the writer's connection slots by default.</li>
+        <li><b>In this demo:</b> our probe uses UUID ids because sequences aren't forwarded, and the schema is created on the Ohio writer because DDL can't be.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-lag" data-slide-label="Slide 23 · Aurora, replication lag">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — staleness</p>
+      <h1>Replication lag and RPO</h1>
+      <p class="section-intro">A replica is a copy that is slightly behind. How far behind is measurable and can be bounded.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Item</th><th>What AWS says</th></tr></thead>
+          <tbody>
+            <tr><td><b>Typical lag</b></td><td>Under a second, replicated by dedicated storage-layer infrastructure</td></tr>
+            <tr><td><b>Metric</b></td><td>AuroraGlobalDBRPOLag in CloudWatch: milliseconds behind the writer</td></tr>
+            <tr><td><b>Bound (PostgreSQL)</b></td><td>rds.global_db_rpo, minimum 20 seconds</td></tr>
+            <tr><td><b>If every replica is behind it</b></td><td>Aurora pauses commits on the writer until one catches up</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Two-Region setups:</b> AWS advises keeping the default, or a failover could pause transactions.</li>
+        <li><b>The app must tolerate stale reads;</b> SESSION consistency gives read-your-own-writes.</li>
+        <li><b>Not measured here:</b> we did not measure replication lag in this demo.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-dr" data-slide-label="Slide 24 · Aurora, disaster recovery">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — second benefit</p>
+      <h1>Disaster recovery: switchover and failover</h1>
+      <p class="section-intro">The replica is also a way to survive losing a whole Region.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>Switchover (planned)</th><th>Failover (unplanned)</th></tr></thead>
+          <tbody>
+            <tr><td><b>Use for</b></td><td>Maintenance, Region rotation, follow-the-sun, failing back</td><td>A Region outage</td></tr>
+            <tr><td><b>Data loss</b></td><td>None (RPO 0)</td><td>Possible: unreplicated writes, typically seconds' worth</td></tr>
+            <tr><td><b>Time</b></td><td>Typically under 30 s on listed versions</td><td>A few minutes to promote; other replicas rebuild in minutes to hours</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Our version qualifies:</b> AWS's list includes Aurora PostgreSQL 16.8, this demo's default.</li>
+        <li><b>Use the global writer endpoint</b> so the app keeps one address, and set DNS caching to about 5 s.</li>
+        <li><b>Failover risk:</b> split-brain. Aurora tries to fence the old writer (best effort) and snapshots its volume.</li>
+        <li><b>Prerequisites:</b> same major and minor engine versions; parameter groups, alarms and integrations aren't inherited.</li>
+        <li><b>Not shown in this demo.</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-cost" data-slide-label="Slide 25 · Aurora, cost detail">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — cost detail</p>
+      <h1>What Aurora Global Database costs</h1>
+      <p class="section-intro">Everything in the primary Region, again in the secondary, plus replication.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Component</th><th>Charged</th></tr></thead>
+          <tbody>
+            <tr><td><b>Instances</b></td><td>In each Region</td></tr>
+            <tr><td><b>Storage and I/O</b></td><td>In each Region</td></tr>
+            <tr><td><b>Replicated writes</b></td><td>Per write I/O sent to each secondary, even on I/O-Optimized</td></tr>
+            <tr><td><b>Cross-Region data transfer</b></td><td>Per GB</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Two configurations:</b> Standard (pay per I/O) or I/O-Optimized (no I/O charge, higher instance and storage prices). AWS: up to 40% savings when I/O is over 25% of spend.</li>
+        <li><b>AWS example</b> (Standard; 2 instances primary, 1 secondary; 80 GB; 45 M writes): primary $438 + secondary $227 = about <b>$665 a month</b>.</li>
+        <li><b>Equal sizing</b> in both Regions roughly doubles the compute bill.</li>
+      </ul>
+    </div>
+  </section>
+
+
   <!-- ============ WHAT APPLIES TO WHAT ============ -->
-  <section class="narrative-slide" id="slide-mapping" data-slide-label="Slide 14 · What applies to what">
+  <section class="narrative-slide" id="slide-mapping" data-slide-label="Slide 26 · What applies to what">
     <div class="narrative-body wide">
       <p class="section-kicker">Putting it together</p>
       <h1>What applies to what</h1>
@@ -1481,7 +1785,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ COST SUMMARY ============ -->
-  <section class="narrative-slide" id="slide-cost-summary" data-slide-label="Slide 15 · Cost summary">
+  <section class="narrative-slide" id="slide-cost-summary" data-slide-label="Slide 27 · Cost summary">
     <div class="narrative-body wide">
       <p class="section-kicker">Ballpark, for comparison only</p>
       <h1>Only one of these three tools saves you money</h1>
@@ -1500,7 +1804,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ HONEST CAVEATS ============ -->
-  <section class="narrative-slide" id="slide-caveats" data-slide-label="Slide 16 · Honest caveats">
+  <section class="narrative-slide" id="slide-caveats" data-slide-label="Slide 28 · Honest caveats">
     <div class="narrative-body">
       <p class="section-kicker">Before you commit budget</p>
       <h1>Honest caveats</h1>
@@ -1508,13 +1812,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <li>Global Accelerator and Aurora Global Database add <b>fixed, ongoing cost</b> regardless of traffic — they should be justified by a real latency problem, not adopted speculatively.</li>
         <li>Aurora Global Database requires an <b>application change</b> (routing reads to the correct replica) to deliver its benefit — it is not a flip-a-switch improvement like the other two.</li>
         <li>None of the three tools reduce <b>write</b> latency to a far-away database — that is a hard architectural limit, not a configuration gap.</li>
-        <li>This demo's numbers are illustrative (simulated or lab-measured); your actual gains depend on your real traffic patterns, payload sizes, and user geography — this review is the basis for a follow-up measurement against your real workload.</li>
+        <li>This demo's numbers are lab-measured; your actual gains depend on your real traffic patterns, payload sizes, and user geography — this review is the basis for a follow-up measurement against your real workload.</li>
       </ul>
     </div>
   </section>
 
   <!-- ============ LIVE DEMO PROOF ============ -->
-  <section class="narrative-slide" id="slide-demo-proof" data-slide-label="Slide 17 · What this demo proves">
+  <section class="narrative-slide" id="slide-demo-proof" data-slide-label="Slide 29 · What this demo proves">
     <div class="narrative-body">
       <p class="section-kicker">Why this wasn't just slides</p>
       <h1>What the live demo proves</h1>
@@ -1528,7 +1832,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </section>
 
   <!-- ============ NEXT STEPS ============ -->
-  <section class="narrative-slide" id="slide-next-steps" data-slide-label="Slide 18 · Next steps">
+  <section class="narrative-slide" id="slide-next-steps" data-slide-label="Slide 30 · Next steps">
     <div class="narrative-body">
       <p class="section-kicker">Recommended next steps</p>
       <h1>Where we'd go from here</h1>
@@ -1817,15 +2121,6 @@ function routeDef(kind, lane) {
         { label: `Write forwarding → ${O} writer`, extra: 0, desc: `Writes are forwarded from the replica to the primary in ${O} (faded line), so they still pay the full distance.` },
       ], };
   }
-  const batch = [writer[0] + .7, writer[1] - 1.1];
-  return { color: MAPC.orange, from: probe, to: writer, via: [batch],
-    stops: [["browser", probe, "Probe Lambda · Frankfurt"], ["edge", batch, `Batch API Lambda · ${O}`], ["origin", writer, `Aurora writer · ${O}`]],
-    hops: [
-      { label: "Probe Lambda", node: 0, desc: "The probe packs all queries into one HTTPS request instead of N database round trips." },
-      { label: "One HTTPS batch request", seg: 0, desc: "A single request crosses the distance once, no matter how many queries it carries." },
-      { label: "Batch API Lambda", node: 1, desc: "A Lambda function next to the database runs the whole batch with near-local latency." },
-      { label: "Aurora writer", node: 2, desc: "Only the batch result crosses the distance back to Frankfurt." },
-    ], };
 }
 function hopMarkup(hops) {
   return hops.map((hop, i) => {
@@ -1979,7 +2274,6 @@ function installTraceControls(kind, lane) {
     note.textContent = {
       vpc_peering: "This path stays inside private VPCs, so traceroute can only observe the public-internet path.",
       replica_local: "The replica sits next to the probe in Frankfurt; there is no long-haul path to trace.",
-      batched_api: `One HTTPS call to a function next to the database; the database hop itself stays inside the ${originRegion.name} region.`,
     }[lane] || "This path is not traceable from the benchmark client in this deployment.";
     card.appendChild(note);
   }
@@ -2108,7 +2402,7 @@ function buildMapInfo() {
     public_direct: {
       impl: `Aurora PostgreSQL (Serverless v2) writer in ${O} with a public endpoint, security group locked to the benchmark client's address. The probe opens a PostgreSQL connection over the public internet.`,
       drawbacks: "Every statement pays the full cross-region round-trip time, so chatty applications are orders of magnitude slower; a public database endpoint (even CIDR-restricted) is a wider attack surface than a private one.",
-      price: `${PRICE_NOTE} Aurora Serverless v2 ~$0.13/ACU-hour (0.5 ACU minimum ≈ $47/month) + storage + data-transfer-out. The latency itself is free but usually costs more in compute and UX than the infra.`,
+      price: `${PRICE_NOTE} Aurora Serverless v2: $0.12/ACU-hour in Ohio, $0.14/ACU-hour in Frankfurt (AWS price list, Nov 2026). A 0.5-ACU minimum ≈ $44/month in Ohio. The latency itself is free but usually costs more in compute and UX than the infra plus storage and data-transfer-out.`,
       links: [["Aurora Global Database", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"], ["Aurora pricing", "https://aws.amazon.com/rds/aurora/pricing/"]],
     },
     global_accelerator: {
@@ -2129,12 +2423,6 @@ function buildMapInfo() {
       price: `${PRICE_NOTE} Roughly doubles the Aurora compute bill (a second set of Serverless v2 ACUs) + storage in the second region; write forwarding itself has no separate fee.`,
       links: [["Write forwarding", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding-apg.html"], ["Aurora pricing", "https://aws.amazon.com/rds/aurora/pricing/"]],
     },
-    batched_api: {
-      impl: `The Frankfurt probe packs all queries into a single HTTPS call to a Lambda that runs next to the database in ${O}; the batch executes with near-local latency and only the result crosses the distance.`,
-      drawbacks: "Requires application-level batching, which does not fit every access pattern (transaction boundaries, ORMs); adds a small service to deploy and maintain.",
-      price: `${PRICE_NOTE} Lambda is per-request/per-millisecond — negligible at POC scale; Aurora remains the dominant cost.`,
-      links: [["Lambda Function URLs", "https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html"], ["Lambda pricing", "https://aws.amazon.com/lambda/pricing/"]],
-    },
   },
   };
 }
@@ -2149,8 +2437,7 @@ const PRICING = {
   cloudfrontPerGb: 0.12, cloudfrontPer10kReq: 0.01,
   albHourly: 0.0252, albLcuHourly: 0.008, albTransferPerGb: 0.114,
   gaHourly: 0.025, gaTransferPerGb: 0.02,
-  auroraAcuHour: 0.13, natHourly: 0.052, natPerGb: 0.052,
-  lambdaPer1mReq: 0.20, lambdaGbSecond: 0.0000166667,
+  auroraAcuHourWriter: 0.12, auroraAcuHourReplica: 0.14, natHourly: 0.052, natPerGb: 0.052,
   hoursPerMonth: 730,
 };
 function parseLocaleNumber(id, fallback) {
@@ -2231,15 +2518,14 @@ function renderApiCost() {
 function renderDbCost() {
   if (!C.db?.paths || !$("db-cost-table")) return;
   const acus = Math.max(0.5, parseLocaleNumber("db-cost-acu", 1));
-  const sessions = parseLocaleNumber("db-cost-sessions", 1000000);
-  const writerMonthly = acus * PRICING.auroraAcuHour * PRICING.hoursPerMonth;
+  const writerMonthly = acus * PRICING.auroraAcuHourWriter * PRICING.hoursPerMonth;
+  const replicaMonthly = acus * PRICING.auroraAcuHourReplica * PRICING.hoursPerMonth;
   const natMonthly = PRICING.natHourly * PRICING.hoursPerMonth;
   const rows = [
-    { id: "public_direct", label: "Direct, public internet", monthly: writerMonthly, drivers: `${acus} ACU writer, 24/7 — no extra fee for the public endpoint` },
+    { id: "public_direct", label: "Direct, public internet", monthly: writerMonthly, drivers: `${acus} ACU writer in Ohio ($0.12/ACU-hour) — no extra fee for the public endpoint` },
     { id: "global_accelerator", label: "Global Accelerator", monthly: writerMonthly + PRICING.gaHourly * PRICING.hoursPerMonth + 0.0084 * PRICING.hoursPerMonth, drivers: `Writer + accelerator (≈$18/mo) + a tiny forwarder EC2 (≈$6/mo)` },
     { id: "vpc_peering", label: "VPC peering (private)", monthly: writerMonthly + natMonthly, drivers: `Writer + a NAT gateway for egress (peering itself is free)` },
-    { id: "replica_local", label: "Frankfurt replica", monthly: writerMonthly * 2, drivers: `A second ${acus}-ACU instance in Frankfurt — roughly doubles compute` },
-    { id: "batched_api", label: "One call to API next to DB", monthly: writerMonthly + sessions / 1e6 * PRICING.lambdaPer1mReq, drivers: `Writer + ${(sessions / 1e6).toFixed(2)}M Lambda invocations (compute is negligible)` },
+    { id: "replica_local", label: "Frankfurt replica", monthly: writerMonthly + replicaMonthly, drivers: `Ohio writer (${acus} ACU) + Frankfurt replica (${acus} ACU at $0.14/ACU-hour) — total` },
   ];
   renderCostTable("db-cost-table", rows.filter((r) => C.db.paths.some((p) => p.id === r.id)));
 }
@@ -2540,8 +2826,7 @@ async function runDb() {
       const r = await probe({ path: p.id, workload, queries });
       const sample = { ts: new Date().toISOString(), suite: "db", target: p.id, label: p.label, round: s + 1, queries, ok: !r.error && r.total_ms != null, error: r.error, warning: r.warning };
       if (sample.ok) {
-        if (p.id === "batched_api") { sample.total = r.total_ms; sample.connect = Math.max(0, r.total_ms - (r.inner_queries_ms || 0)); sample.perQuery = (r.inner_queries_ms || 0) / queries; }
-        else {
+        {
           const queryTimes = Array.isArray(r.query_ms) ? r.query_ms : [];
           if (!Number.isFinite(r.connect_ms) || queryTimes.length === 0) {
             sample.ok = false;
@@ -2587,7 +2872,7 @@ function renderDb() {
     data.map((d) => laneHtml(d.lane.label, d.lane.color,
       d.total != null ? [{ v: d.connect, color: d.lane.color }, { v: d.total - d.connect, color: d.lane.color }] : [], max,
       d.total != null ? fmt(d.total) : (d.fail ? "failed" : "..."),
-      d.total != null ? `${d.lane.id === "batched_api" ? "HTTPS call + connect" : "connect"} ${fmt(d.connect)} · per query ${fmt(d.perQuery)} · n=${d.n}` : esc(d.err || ""), d.warn ? "caveat: " + esc(d.warn) : "")).join("");
+      d.total != null ? `connect ${fmt(d.connect)} · per query ${fmt(d.perQuery)} · n=${d.n}` : esc(d.err || ""), d.warn ? "caveat: " + esc(d.warn) : "")).join("");
   const direct = data.find((d) => d.lane.id === "public_direct" && d.total);
   const best = data.filter((d) => d.total && d.lane.id !== "public_direct").sort((a, b) => a.total - b.total)[0];
   $("db-speed").innerHTML = direct && best
@@ -2790,7 +3075,6 @@ function init() {
     ["Aurora Serverless v2", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html"],
     ["VPC peering", "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"],
     ["Global Accelerator endpoints", "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"],
-    ["Lambda Function URLs", "https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html"],
   ]);
   if (C.db && C.db.paths.length) setMapRoute("db", C.db.paths[0].id);
 
@@ -2812,7 +3096,7 @@ function init() {
   for (const [id, fn] of [
     ["static-cost-reqs", renderStaticCost], ["static-cost-hit", renderStaticCost],
     ["api-cost-reqs", renderApiCost], ["api-cost-kb", renderApiCost],
-    ["db-cost-acu", renderDbCost], ["db-cost-sessions", renderDbCost],
+    ["db-cost-acu", renderDbCost],
   ]) { $(id)?.addEventListener("input", fn); }
   renderAllCosts();
 

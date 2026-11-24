@@ -5,6 +5,10 @@ dnf install -y socat
 
 # socat resolves the Aurora hostname each time it forks for a new connection,
 # so a failover (new writer IP) is picked up without restarting anything.
+#
+# nodelay (TCP_NODELAY) on BOTH sockets: without it Nagle's algorithm holds the
+# small pieces of each Postgres reply until the previous one is ACKed, which
+# adds a recurring ~140 ms stall per query across the Frankfurt-Ohio RTT.
 cat > /etc/systemd/system/db-forwarder.service <<'UNIT'
 [Unit]
 Description=TCP forwarder to Aurora writer
@@ -12,7 +16,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/socat TCP-LISTEN:5432,reuseaddr,fork TCP:${aurora_endpoint}:${aurora_port}
+ExecStart=/usr/bin/socat TCP-LISTEN:5432,reuseaddr,fork,nodelay TCP:${aurora_endpoint}:${aurora_port},nodelay
 Restart=always
 
 [Install]

@@ -111,16 +111,6 @@ output "aurora_global_accelerator_endpoint" {
   value       = local.aurora_enabled ? "${module.api_endpoint.global_accelerator_ip[0]}:5432" : null
 }
 
-output "aurora_batch_api_url" {
-  description = "Function URL of the batched-queries API next to the database. The handler requires the x-bench-token header; the token output is POC-only and the function is public."
-  value       = local.aurora_enabled ? module.db_batch_api[0].function_url : null
-}
-
-output "aurora_batch_api_token" {
-  value     = local.aurora_enabled ? module.db_batch_api[0].token : null
-  sensitive = true
-}
-
 output "aurora_master_username" {
   value = local.aurora_enabled ? module.aurora[0].master_username : null
 }

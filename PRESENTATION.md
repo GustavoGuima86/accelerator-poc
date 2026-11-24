@@ -27,9 +27,9 @@ local walkthrough before that, use the preview server
 | `DEMO_URL/#tab=api` | API tab, top |
 | `DEMO_URL/#tab=api&focus=cost` | API tab, scrolled to the cost comparison |
 | `DEMO_URL/#tab=api&run=1` | API tab, race starts automatically |
-| `DEMO_URL/#tab=db` | Database tab, top (all five route maps) |
+| `DEMO_URL/#tab=db` | Database tab, top (all four route maps) |
 | `DEMO_URL/#tab=db&focus=cost` | Database tab, scrolled to the cost comparison |
-| `DEMO_URL/#tab=db&run=1` | Database tab, all five paths start automatically |
+| `DEMO_URL/#tab=db&run=1` | Database tab, all four paths start automatically |
 
 ---
 
@@ -107,7 +107,104 @@ server itself faster; they all work around distance in a different way.
 
 ---
 
-## 6. Tool 2 — Global Accelerator, for the EKS API layer
+## 6. CloudFront — code at the edge (optional add-on)
+
+- **What it is:** CloudFront can run your code on requests and responses as
+  they pass through. Two options: **CloudFront Functions** (lightweight
+  JavaScript, runs at the edge location) and **Lambda@Edge** (Node.js or
+  Python, full Lambda features).
+- **Use CloudFront Functions for:** cache-key normalization, header changes,
+  redirects and rewrites, token checks. Submillisecond, 10 KB of code, one
+  network call to an origin on the same distribution, millions of requests
+  per second.
+- **Use Lambda@Edge for:** third-party libraries or the AWS SDK, more than
+  one network call, request body or file system access. Up to 30 s, up to
+  50 MB of code, any network destination, up to 10,000 requests per second
+  per Region.
+- **It sits in the request path:** viewer-side functions run on every
+  request, including cache hits; origin-side ones run only on a miss.
+  CloudFront waits for the function, so each one adds latency.
+- **Cost (AWS list prices):** CloudFront Functions $0.10 per million
+  invocations, 2 million free per month. Lambda@Edge $0.60 per million
+  requests plus duration, no free tier. Example, 10 million requests with one
+  5 ms / 128 MB function each: about $0.80 vs about $6.30 (our arithmetic).
+- **Operational strings on Lambda@Edge:** must be created in us-east-1 and
+  attached as a numbered version; no environment variables, VPC access,
+  layers or arm64; it can't be deleted until CloudFront removes its replicas,
+  which community reports put at up to several hours.
+- **Our advice:** start with CloudFront Functions; move to Lambda@Edge only
+  when the job needs something the lighter option can't do.
+- **Not part of this demo:** no edge function is deployed, so nothing here is
+  measured. The slide reflects AWS's published behavior and pricing.
+
+---
+
+## 7. CloudFront — flat-rate plans (cost option)
+
+- **What it is:** a distribution can subscribe to a monthly plan that bundles
+  the CDN with WAF and DDoS protection, Route 53 DNS, a TLS certificate and
+  logging, with no overage charges.
+- **Plans (per distribution per month):** Free $0 (1 M requests, 100 GB),
+  Pro $15 (10 M, 50 TB), Business $200 (125 M, 50 TB), Premium $1,000
+  (500 M, 50 TB; larger allowances at higher prices). S3 storage credit of
+  5 GB, 50 GB, 1 TB and 5 TB.
+- **What each tier adds:** Pro adds logs, cache-tag invalidation, 25 WAF
+  rules and CAPTCHA. Business adds custom caching and response-header rules,
+  VPC origins, bot management, advanced DDoS protection and an uptime SLA.
+  Premium adds Origin Shield, origin failover and mutual TLS.
+- **Not unlimited:** allowances are not hard limits. A first spike up to 3x
+  doesn't affect service that month; sustained excess, judged over 2-3 months
+  or more, can lead AWS to adjust delivery. Blocked attacks never count.
+- **Cost example (our arithmetic from AWS list prices):** 5 TB out and
+  8 million requests a month is about $340-350 pay-as-you-go versus $15 on
+  Pro. At low volume the free tier makes pay-as-you-go cheap, so a plan buys
+  the bundle more than cheaper delivery.
+- **Check fit first:** a WAF web ACL is required, one apex domain per plan,
+  and some features are unsupported (legacy forwarded values, origin access
+  identity, real-time logs, Shield Advanced, staging distributions).
+  Lambda@Edge is still billed pay-as-you-go.
+
+---
+
+## 8. CloudFront — price classes and invalidations
+
+- **Price classes:** All (this demo) uses every edge location. Class 200
+  leaves out South America, Australia and New Zealand. Class 100 keeps only
+  the US, Canada, Mexico, Europe, Israel and Turkiye.
+- **Why it saves money:** delivery costs more in some regions (next 9 TB:
+  $0.085/GB US and Europe, $0.110 South America, $0.114 Japan and Australia,
+  $0.120 Singapore and similar). **What it costs you:** viewers in left-out
+  regions are served from farther edges, so latency rises. Use a lower class
+  for an audience concentrated in the US and Europe; keep All for global
+  speed.
+- **Invalidations:** the first 1,000 paths a month are free, then $0.005 per
+  path. A wildcard path counts as one. AWS's example: 2,000 paths a month
+  costs $5.
+- **Often avoidable:** versioned file names (for example `app.3f2a.js`)
+  make a changed file a new URL, so nothing needs invalidating.
+
+---
+
+## 9. CloudFront — custom domain
+
+- **Three pieces:** an alternate domain name on the distribution, a TLS
+  certificate that covers it, and a Route 53 ALIAS record pointing at the
+  distribution.
+- **Certificate region:** for CloudFront the ACM certificate must be
+  requested or imported in us-east-1, wherever the rest of the stack runs.
+  A load-balancer origin's certificate can be in any region. ACM renews its
+  own certificates; imported ones must be renewed at least 24 hours early.
+- **ALIAS vs CNAME:** a plain CNAME can't sit at a domain's root; an ALIAS
+  record can. With a flat-rate plan, ALIAS queries to CloudFront don't count
+  against the DNS allowance and CNAME queries do.
+- **In this demo:** everything uses AWS-generated names and CloudFront's
+  default certificate. Adding a domain would need a us-east-1 provider alias
+  (the project has none), a validated ACM certificate, the alias and
+  certificate on the distribution, and a Route 53 record.
+
+---
+
+## 10. Tool 2 — Global Accelerator, for the EKS API layer
 
 **Try it live:** `DEMO_URL/#tab=api&run=1`
 
@@ -127,7 +224,7 @@ server itself faster; they all work around distance in a different way.
 
 ---
 
-## 7. Global Accelerator — trade-offs, cost, maintainability
+## 11. Global Accelerator — trade-offs, cost, maintainability
 
 **Try it live:** `DEMO_URL/#tab=api&focus=cost`
 
@@ -147,7 +244,7 @@ server itself faster; they all work around distance in a different way.
 
 ---
 
-## 8. Tool 3 — Aurora Global Database, for the data layer
+## 12. Tool 3 — Aurora Global Database, for the data layer
 
 **Try it live:** `DEMO_URL/#tab=db&run=1`
 
@@ -163,14 +260,14 @@ server itself faster; they all work around distance in a different way.
   needs to run close to that region's replica to get the benefit. A
   read-only reporting service or a regional API tier are natural
   candidates; write-heavy paths don't benefit the same way.
-- **In the live demo:** the *Database* tab shows five ways to reach the same
-  database — direct, Global Accelerator, private peering, a local replica,
-  and request batching — so you can see directly that only the replica and
-  batching actually move the needle on latency.
+- **In the live demo:** the *Database* tab shows four ways to reach the same
+  database — direct, Global Accelerator, private peering, and a local
+  replica — so you can see directly that only the replica actually moves the
+  needle on latency.
 
 ---
 
-## 9. Aurora Global Database — trade-offs, cost, maintainability
+## 13. Aurora Global Database — trade-offs, cost, maintainability
 
 **Try it live:** `DEMO_URL/#tab=db&focus=cost`
 
@@ -196,7 +293,7 @@ server itself faster; they all work around distance in a different way.
 
 ---
 
-## 10. Putting it together — what applies to what
+## 14. Putting it together — what applies to what
 
 **Try it live:** `DEMO_URL/#tab=overview` (the summary cards link straight
 into each tool's own test)
@@ -215,7 +312,7 @@ Global Database last (requires the application-move decision).
 
 ---
 
-## 11. Cost summary (ballpark, for comparison only)
+## 15. Cost summary (ballpark, for comparison only)
 
 | Tool | Approx. monthly cost driver | Where it saves |
 | --- | --- | --- |
@@ -230,7 +327,7 @@ SLAs), not about saving money.
 
 ---
 
-## 12. Honest caveats
+## 16. Honest caveats
 
 - Global Accelerator and Aurora Global Database add **fixed, ongoing cost**
   regardless of traffic — they should be justified by a real latency
@@ -240,14 +337,14 @@ SLAs), not about saving money.
   flip-a-switch improvement like the other two.
 - None of the three tools reduce **write** latency to a far-away database —
   that is a hard architectural limit, not a configuration gap.
-- The live demo's numbers are illustrative (simulated or lab-measured); the
+- The live demo's numbers are lab-measured; the
   client's actual gains depend on their real traffic patterns, payload
   sizes, and user geography — this review is the basis for a follow-up
   measurement against their real workload.
 
 ---
 
-## 13. The live demo — what it proves
+## 17. The live demo — what it proves
 
 - A working, deployable Terraform setup with all three tools wired up
   exactly as described, between two real AWS regions.
@@ -260,7 +357,7 @@ SLAs), not about saving money.
 
 ---
 
-## 14. Recommended next steps
+## 18. Recommended next steps
 
 1. Confirm which static assets, API endpoints, and database read paths are
    actually latency-sensitive for [Client]'s real users (measure, don't

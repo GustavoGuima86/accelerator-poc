@@ -9,7 +9,7 @@ resources. Simulated latencies are loosely modelled on Frankfurt -> Ohio:
   /cdn/<key>      fast "CloudFront edge" download (adds x-cache / x-amz-cf-pop)
   /api-direct     slow API round trip
   /api-ga         faster API round trip (Global Accelerator stand-in)
-  /probe          simulated Aurora database probe sessions (all 5 paths)
+  /probe          simulated Aurora database probe sessions (all 4 paths)
 
 Usage:  python3 site/preview_server.py  [port]     (default port 8751)
 """
@@ -39,7 +39,6 @@ DB_PATHS = [
     {"id": "global_accelerator", "label": "Global Accelerator", "optimized": True, "writes": True},
     {"id": "vpc_peering", "label": "VPC peering (private)", "optimized": True, "writes": True},
     {"id": "replica_local", "label": "Frankfurt replica", "optimized": True, "writes": True},
-    {"id": "batched_api", "label": "One call to API next to DB", "optimized": True, "writes": False},
 ]
 
 # Simulated traceroute used ONLY by the local preview. Real deployments run an
@@ -97,7 +96,6 @@ DB_PROFILES = {
         "write_query": (48, 4),
         "write_warning": "Writes are forwarded to the Ohio writer; only reads stay local.",
     },
-    "batched_api": {"https": (115, 8), "query": (2.3, 0.5)},
 }
 
 
@@ -126,25 +124,18 @@ def db_probe_result(params):
         return 400, {"error": f"unknown path '{path}'"}
 
     result = {"path": path, "workload": workload, "queries": queries}
-    if path == "batched_api":
-        inner = sum(jitter(*prof["query"]) for _ in range(queries))
-        https = jitter(*prof["https"])
-        result["inner_queries_ms"] = round(inner, 1)
-        result["total_ms"] = round(https + inner, 1)
-        wait = result["total_ms"]
+    connect = jitter(*prof["connect"])
+    if path == "replica_local":
+        qmean, qspread = prof["read_query"] if workload == "read" else prof["write_query"]
+        if workload != "read":
+            result["warning"] = prof["write_warning"]
     else:
-        connect = jitter(*prof["connect"])
-        if path == "replica_local":
-            qmean, qspread = prof["read_query"] if workload == "read" else prof["write_query"]
-            if workload != "read":
-                result["warning"] = prof["write_warning"]
-        else:
-            qmean, qspread = prof["query"]
-        query_ms = [round(jitter(qmean, qspread), 2) for _ in range(queries)]
-        result["connect_ms"] = round(connect, 1)
-        result["query_ms"] = query_ms
-        result["total_ms"] = round(connect + sum(query_ms), 1)
-        wait = result["total_ms"]
+        qmean, qspread = prof["query"]
+    query_ms = [round(jitter(qmean, qspread), 2) for _ in range(queries)]
+    result["connect_ms"] = round(connect, 1)
+    result["query_ms"] = query_ms
+    result["total_ms"] = round(connect + sum(query_ms), 1)
+    wait = result["total_ms"]
     delay = min(wait * TIME_SCALE / 1000.0, MAX_WAIT_S)
     time.sleep(delay)
     return 200, result

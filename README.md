@@ -11,7 +11,7 @@ browser-based interactive benchmark and an automated Frankfurt report.
 - **API:** fixed-response ALB vs. AWS Global Accelerator in front of the ALB.
 - **Database (optional):** Aurora PostgreSQL Global Database with an Ohio
   writer and Frankfurt replica, plus direct, Global Accelerator, VPC peering,
-  replica/write-forwarding, and batched-API tests.
+  and replica/write-forwarding tests.
 - **Interactive page:** static/API requests run from the visitor's browser;
   database tests run from Frankfurt because browsers cannot speak PostgreSQL.
 - **Automated report:** a Frankfurt EC2 client runs repeatable tests and
@@ -167,8 +167,8 @@ needed. Useful variables:
 - `modules/`: S3/CloudFront, ALB/Global Accelerator, Aurora, networking,
   benchmark client, and interactive site modules.
 - `site/index.html`: interactive benchmark UI.
-- `lambda_src/`: PostgreSQL probe and batched-query functions with vendored
-  Python dependencies.
+- `lambda_src/`: PostgreSQL probe function with vendored Python
+  dependencies.
 - `scripts/`: automated benchmarks, HTML report generation, and SSM trigger.
 - `files/`: sample web page and test payloads.
 

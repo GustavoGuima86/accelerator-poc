@@ -8,8 +8,6 @@ PostgreSQL global database whose writer lives in Ohio:
   vpc_peering         private path over inter-region VPC peering
   replica_local       the Frankfurt secondary cluster (reads are local;
                       writes are forwarded to Ohio by write forwarding)
-  batch_api           ONE HTTPS call to a Lambda next to the writer that
-                      runs the same N queries locally
 
 Each database path is measured with two workloads, each repeated over several
 fresh sessions:
@@ -202,32 +200,6 @@ def run_session(cfg, host, port, workload, queries, source):
     return record
 
 
-def curl_batch_api(url, token):
-    """One HTTPS request that makes the Lambda run all N queries next to the DB."""
-    fmt = '\n%{http_code} %{time_connect} %{time_appconnect} %{time_starttransfer} %{time_total}'
-    proc = subprocess.run(
-        ["curl", "-s", "--max-time", "60", "-H", f"x-bench-token: {token}", "-w", fmt, url],
-        capture_output=True, text=True, timeout=70,
-    )
-    body, _, timing = proc.stdout.rpartition("\n")
-    record = {"workload": "batched"}
-    try:
-        code, t_conn, t_app, t_first, t_total = timing.split()
-        record["http_code"] = int(code) if code != "000" else None
-        record["time_starttransfer_ms"] = float(t_first) * 1000
-        record["total_ms"] = float(t_total) * 1000
-        if record["http_code"] == 200:
-            inner = json.loads(body)
-            record["lambda_connect_ms"] = inner.get("connect_ms")
-            record["lambda_queries_ms"] = inner.get("queries_ms")
-            record["queries"] = inner.get("queries")
-        else:
-            record["error"] = f"HTTP {record['http_code']}: {body[:200]}"
-    except Exception as exc:  # noqa: BLE001
-        record["error"] = f"{type(exc).__name__}: {exc} ({proc.stderr.strip()})"
-    return record
-
-
 # --------------------------------------------------------------------------
 def build_paths(cfg):
     paths = {}
@@ -322,15 +294,6 @@ def main():
                 entry[workload].append(
                     run_session(cfg, p["host"], p["port"], workload, queries, source=f"bench-{name}")
                 )
-
-    batch = {"meta": {"label": "One call to an API next to the DB", "optimized": True,
-                      "note": f"HTTPS to a Lambda in Ohio that runs the same {queries} reads locally"},
-             "runs": []}
-    if cfg.get("batch_api_url"):
-        log(f"[batch_api] {sessions * 3} calls")
-        for _ in range(sessions * 3):
-            batch["runs"].append(curl_batch_api(cfg["batch_api_url"], cfg["batch_api_token"]))
-    results["batch_api"] = batch
 
     with open(sys.argv[2], "w") as fh:
         json.dump(results, fh, indent=2)
