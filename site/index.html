@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Latency benchmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <style>
 /* required styles */
 
@@ -678,61 +681,114 @@ svg.leaflet-image-layer.leaflet-interactive path {
 <style>
   :root {
     color-scheme: light;
-    --bg: #f5f7fb; --fg: #172033; --muted: #6c7890; --card: #fff; --line: #e5eaf2;
+    --bg: #f4f6fb; --fg: #14172e; --muted: #5c6482; --card: #fff; --line: #e3e6f0;
     --track: #edf1f7; --red: #ed6a70; --green: #13a985; --blue: #5278f6;
-    --orange: #e6a43d; --accent: #4f6ff2; --teal: #19b99a; --radius: 18px;
-    --shadow: 0 12px 34px rgba(28, 45, 84, .07);
+    --orange: #e6a43d; --accent: #1f274b; --teal: #19b99a; --radius: 18px;
+    --shadow: 0 12px 34px rgba(20, 23, 46, .08);
+    /* PCG brand: deep navy, bright yellow accent, sky-blue highlight. */
+    --navy: #1f274b; --navy-deep: #14172e; --navy-light: #888da0; --yellow: #ffea24;
+    --yellow-ink: #1a1500; --sky: #b7e1f2; --font-head: "Sora", ui-sans-serif, sans-serif;
+    --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 5% 0%, #e9efff 0, transparent 34rem), radial-gradient(ellipse at 98% 4%, #e5f8f3 0, transparent 30rem), var(--bg); color: var(--fg); line-height: 1.55; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  html { font-size: 112.5%; }
+  body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 5% 0%, #e9efff 0, transparent 34rem), radial-gradient(ellipse at 98% 4%, #e5f8f3 0, transparent 30rem), var(--bg); color: var(--fg); line-height: 1.6; font-family: var(--font-body); font-size: 1rem; }
   button, input, select { font: inherit; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 26px 80px; }
-  .page-intro { margin:0 0 16px; padding:13px 16px; border:1px solid #d9e2ff; border-radius:13px; background:#f2f5ff; color:#3c4a73; font-size:.88rem; line-height:1.55; }
+  h1, h2, h3, h4, .font-head { font-family: var(--font-head); font-weight: 700; letter-spacing: -.015em; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 28px 26px 80px; }
+  .page-intro { margin:0 0 16px; padding:13px 16px; border:1px solid #d9e2ff; border-radius:13px; background:#f2f5ff; color:#3c4a73; font-size:.95rem; line-height:1.55; }
   .page-intro b { color:#2a3a63; }
-  .legend-chip { display:inline-flex; align-items:center; padding:2px 7px; border-radius:999px; background:#e9eef6; color:#607089; font-size:.72rem; font-weight:800; white-space:nowrap; }
-  .legend-chip.legend-first { background:#dcf7e9; color:#087947; }
-  h2 { margin:0; font-size:1.14rem; letter-spacing:-.025em; }
+  .legend-chip { display:inline-flex; align-items:center; padding:2px 9px; border-radius:999px; background:#e9eef6; color:#607089; font-size:.78rem; font-weight:800; white-space:nowrap; }
+  .legend-chip.legend-first { background:#1f274b; color:var(--yellow); }
+  h2 { margin:0; font-size:1.28rem; letter-spacing:-.02em; }
   p { margin:6px 0; }
   .muted { color:var(--muted); }
-  .small { font-size:.84rem; }
-  label.field { display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:.75rem; font-weight:700; }
-  input[type=text],select { min-height:42px; width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:10px; outline:0; background:#fff; color:var(--fg); transition:border-color .18s,box-shadow .18s; }
+  .small { font-size:.92rem; }
+  label.field { display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:.82rem; font-weight:700; }
+  input[type=text],select { min-height:46px; width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; outline:0; background:#fff; color:var(--fg); font-size:1rem; transition:border-color .18s,box-shadow .18s; }
   select { min-width:180px; }
-  input[type=text]:focus,select:focus { border-color:#8da3fa; box-shadow:0 0 0 4px #5278f61a; }
-  .card { margin:17px 0; padding:24px 26px; border:1px solid #e6ebf3; border-radius:var(--radius); background:var(--card); box-shadow:var(--shadow); }
-  .card p { line-height:1.6; }
+  input[type=text]:focus,select:focus { border-color:#7ec8e3; box-shadow:0 0 0 4px #b7e1f255; }
+  .card { margin:18px 0; padding:26px 28px; border:1px solid #e6ebf3; border-radius:var(--radius); background:var(--card); box-shadow:var(--shadow); }
+  .card p { line-height:1.65; }
   .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
   .grow { flex:1 1 auto; }
-  button { cursor:pointer; border:1px solid #dfe5ef; border-radius:10px; background:#fff; color:#38445d; padding:9px 14px; font-weight:700; transition:transform .16s,border-color .16s,box-shadow .16s,background .16s; }
-  button:hover:not(:disabled) { transform:translateY(-1px); border-color:#a9b8f6; box-shadow:0 5px 15px #314c9b14; }
+  button { cursor:pointer; border:1px solid #dfe5ef; border-radius:10px; background:#fff; color:#262c48; padding:10px 16px; font-size:.96rem; font-weight:700; transition:transform .16s,border-color .16s,box-shadow .16s,background .16s; }
+  button:hover:not(:disabled) { transform:translateY(-1px); border-color:#b7e1f2; box-shadow:0 5px 15px #1f274b14; }
   button:active:not(:disabled) { transform:translateY(0); }
   button:disabled { cursor:default; opacity:.48; }
-  button.primary { color:white; border-color:#4f6ff2; background:linear-gradient(135deg,#6684ff,#4a63e6); box-shadow:0 7px 16px #5278f638; }
-  button.primary:hover:not(:disabled) { box-shadow:0 9px 20px #5278f650; }
+  button.primary { color:var(--yellow-ink); border-color:var(--yellow); background:var(--yellow); box-shadow:0 7px 16px #ffea2440; }
+  button.primary:hover:not(:disabled) { box-shadow:0 9px 20px #ffea2460; }
   button.primary:before { content:"▶"; margin-right:8px; font-size:.75em; }
-  button.run-button { min-height:48px; padding:12px 24px; border:1px solid #0b8155; border-radius:12px; color:#fff; background:linear-gradient(135deg,#20bd78,#0d925c); box-shadow:0 8px 20px #0d925c35; font-size:1rem; font-weight:800; letter-spacing:.01em; transition:transform .15s,box-shadow .15s,filter .15s; }
+  button.run-button { min-height:52px; padding:13px 26px; border:1px solid var(--yellow); border-radius:10px; color:var(--yellow-ink); background:var(--yellow); box-shadow:0 8px 20px #ffea2440; font-size:1.05rem; font-weight:800; letter-spacing:.01em; transition:transform .15s,box-shadow .15s,filter .15s; }
   button.run-button:before { content:"▶"; margin-right:9px; font-size:.78em; }
-  button.run-button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 25px #0d925c45; filter:saturate(1.08); }
+  button.run-button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 25px #ffea2460; filter:saturate(1.08); }
   button.run-button:active:not(:disabled) { transform:translateY(0); }
   button.run-button:disabled { opacity:.6; cursor:wait; }
   .seg { display:inline-flex; gap:3px; padding:3px; border:1px solid #e7ebf3; border-radius:11px; background:#f4f6fa; }
-  .seg button { padding:7px 11px; border:0; border-radius:8px; background:transparent; box-shadow:none; color:var(--muted); font-size:.82rem; }
+  .seg button { padding:8px 12px; border:0; border-radius:8px; background:transparent; box-shadow:none; color:var(--muted); font-size:.9rem; }
   .seg button:hover:not(:disabled) { transform:none; background:#fff; box-shadow:none; }
-  .seg button[aria-pressed=true] { background:#fff; color:#344db7; box-shadow:0 2px 7px #263a7917; }
-  input[type=range] { width:160px; accent-color:var(--accent); cursor:pointer; }
-  nav.tabs { position:sticky; top:10px; z-index:5; margin:22px 0 20px; padding:6px; border:1px solid #e4e9f1; border-radius:15px; background:#ffffffed; box-shadow:0 8px 26px #263a7912; backdrop-filter:blur(14px); }
+  .seg button[aria-pressed=true] { background:var(--navy); color:var(--yellow); box-shadow:none; }
+  input[type=range] { width:160px; accent-color:var(--navy); cursor:pointer; }
+  nav.tabs { position:sticky; top:10px; z-index:5; margin:22px 0 20px; padding:6px; border:1px solid var(--navy); border-radius:15px; background:var(--navy); box-shadow:0 8px 26px #14172e2e; }
   nav.tabs .seg { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; width:100%; padding:0; border:0; background:transparent; }
   nav.tabs .seg.seg-4 { grid-template-columns:repeat(4,1fr); }
-  nav.tabs .seg button { padding:11px 8px; border-radius:10px; color:#6e7a91; font-size:.84rem; }
-  nav.tabs .seg button[aria-pressed=true] { color:#354fb6; background:#eef2ff; box-shadow:none; }
-  .panel { display:none; }
-  .panel.active { display:block; animation:panel-in .42s cubic-bezier(.2,.7,.2,1) both; }
-  @keyframes panel-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-  .panel > .card { animation:card-in .55s both; }
-  .panel > .card:nth-child(2) { animation-delay:.05s; }
-  .panel > .card:nth-child(3) { animation-delay:.1s; }
+  nav.tabs .seg button { padding:12px 8px; border:1px solid var(--yellow); border-radius:10px; color:var(--navy-deep); background:var(--yellow); font-size:.92rem; font-family:var(--font-head); font-weight:700; box-shadow:none; }
+  nav.tabs .seg button:hover:not(:disabled) { background:#fff27a; border-color:#fff27a; box-shadow:none; }
+  nav.tabs .seg button[aria-pressed=true] { color:var(--navy-deep); background:var(--yellow); border-color:#fff; box-shadow:inset 0 0 0 2px var(--navy); font-weight:800; }
+  /* ---- presentation / slide mode: every panel, and every narrative-only
+     slide between them, is a full "page" the user scrolls to. ---- */
+  .panel, .narrative-slide {
+    position: relative; display: block; min-height: calc(100vh - 20px);
+    padding: 36px 0 60px; margin: 0; border-top: 1px solid #e7ecf5;
+    scroll-margin-top: 92px;
+    opacity: .4; transform: translateY(18px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .panel.in-view, .narrative-slide.in-view { opacity: 1; transform: translateY(0); }
+  .wrap > section:first-of-type { border-top: 0; }
+  .panel::before, .narrative-slide::before {
+    content: attr(data-slide-label); position: absolute; top: 10px; right: 2px;
+    color: #c4cce3; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .panel > .card, .narrative-slide > .card { animation: card-in .55s both; }
+  .panel > .card:nth-child(2), .narrative-slide > .card:nth-child(2) { animation-delay: .05s; }
+  .panel > .card:nth-child(3), .narrative-slide > .card:nth-child(3) { animation-delay: .1s; }
   @keyframes card-in { from { opacity:0; transform:translateY(12px) scale(.995); } to { opacity:1; transform:translateY(0) scale(1); } }
+  /* Narrative-only slides: the talking-points side of the presentation,
+     carrying the consulting pitch between the live-test panels. */
+  .narrative-slide { display: flex; flex-direction: column; justify-content: center; }
+  .narrative-slide .narrative-body { max-width: 780px; }
+  .narrative-slide .narrative-body.wide { max-width: 960px; }
+  .narrative-list { margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .narrative-list li { position: relative; padding-left: 30px; color: #2b3356; font-size: 1.05rem; line-height: 1.65; }
+  .narrative-list li::before { content: "→"; position: absolute; left: 0; top: 0; color: var(--navy); font-weight: 800; }
+  .narrative-list li b { color: var(--navy-deep); font-weight: 800; }
+  .narrative-list.compact li { font-size: .98rem; }
+  .slide-goto { margin-top: 24px; }
+  /* Title slide: PCG-style hero — deep navy, yellow accent bar, bold Sora headline. */
+  .title-slide {
+    align-items: center; text-align: center; border-top: 0; margin: -36px -26px 0; padding: 70px 26px 60px;
+    border-radius: 0 0 28px 28px; color: #fff;
+    background: radial-gradient(ellipse at 15% 0%, #2a3566 0, transparent 60%), radial-gradient(ellipse at 95% 10%, #253066 0, transparent 55%), linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
+  }
+  .title-slide::before { display: none; }
+  .title-slide .yellow-bar { display: inline-block; width: 64px; height: 10px; margin-bottom: 26px; background: var(--yellow); border-radius: 2px; }
+  .title-slide .section-kicker { text-align: center; color: var(--sky); }
+  .title-slide h1 { font-size: clamp(2.1rem, 4.4vw, 3.6rem); max-width: 920px; margin: 0 auto 20px; letter-spacing: -.02em; line-height: 1.12; color: #fff; }
+  .title-slide h1 .accent { color: var(--yellow); }
+  .title-slide .title-sub { max-width: 660px; margin: 0 auto 32px; color: #c7cce4; font-size: 1.14rem; line-height: 1.65; }
+  .title-slide .run-button { color: var(--yellow-ink); }
+  .title-slide .scroll-cue { margin-top: 40px; color: #8d96c0; font-size: .82rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; animation: cue-bounce 1.8s ease-in-out infinite; }
+  @keyframes cue-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+  .step-num-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: 10px; border-radius: 50%; background: var(--navy); color: var(--yellow); font-size: .8rem; font-weight: 800; vertical-align: -6px; }
+  #scroll-progress { position:fixed; top:0; left:0; z-index:20; height:4px; width:0%; background:var(--yellow); transition:width .08s linear; }
+  .slide-grid { display:grid; grid-template-columns:minmax(300px,0.95fr) minmax(340px,1.25fr); gap:22px; align-items:start; }
+  .slide-text { position:sticky; top:96px; }
+  .slide-live > .route-grid:last-child { margin-bottom:4px; }
+  @media (max-width:900px) {
+    .slide-grid { grid-template-columns:1fr; }
+    .slide-text { position:static; }
+  }
   .banner { margin:12px 0; padding:11px 14px; border:1px solid #f3d9a7; border-radius:12px; background:#fff9ec; color:#81612c; font-size:.88rem; }
   .banner.info { border-color:#d9e2ff; background:#f2f5ff; color:#465c9b; }
   .chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
@@ -756,17 +812,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
   body[class*="running-"] .track .fill { background-size:200% 100%; animation:shine 1.7s linear infinite; }
   @keyframes pulse { 70% { box-shadow:0 0 0 8px #19b99a00; } 100% { box-shadow:0 0 0 0 #19b99a00; } }
   @keyframes shine { from { background-position:120% 0; } to { background-position:-120% 0; } }
-  table { width:100%; border-collapse:collapse; font-size:.84rem; }
-  th,td { padding:10px 11px; border-bottom:1px solid #edf0f5; text-align:left; }
-  th { position:sticky; top:0; background:#f8f9fc; color:#78839a; font-size:.72rem; font-weight:750; letter-spacing:.06em; text-transform:uppercase; }
+  table { width:100%; border-collapse:collapse; font-size:.94rem; }
+  th,td { padding:11px 13px; border-bottom:1px solid #edf0f5; text-align:left; }
+  th { position:sticky; top:0; background:#f8f9fc; color:#78839a; font-size:.78rem; font-weight:750; letter-spacing:.06em; text-transform:uppercase; }
   tr:hover td { background:#f9faff; }
   td.num,th.num { text-align:right; font-variant-numeric:tabular-nums; }
   .scroll { overflow:auto; border:1px solid #edf0f5; border-radius:12px; }
   .scroll table { min-width:640px; }
-  .section-kicker { margin:0 0 6px; color:#6a7fe0; font-size:.7rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
-  .section-intro { max-width:760px; margin:0 0 17px; color:var(--muted); font-size:.91rem; }
-  .doc-links { display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 16px; }
-  .doc-link { display:inline-flex; align-items:center; gap:5px; padding:6px 10px; border:1px solid #e1e7f1; border-radius:9px; background:#fff; color:#5266a8; font-size:.75rem; font-weight:700; text-decoration:none; transition:background .15s,border-color .15s,transform .15s; }
+  .section-kicker { margin:0 0 8px; color:var(--navy); font-size:.8rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; font-family: var(--font-head); }
+  .section-intro { max-width:780px; margin:0 0 18px; color:var(--muted); font-size:1.02rem; }
+  .doc-links { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 16px; }
+  .doc-link { display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border:1px solid #e1e7f1; border-radius:9px; background:#fff; color:var(--navy); font-size:.85rem; font-weight:700; text-decoration:none; transition:background .15s,border-color .15s,transform .15s; }
   .doc-link:hover { transform:translateY(-1px); border-color:#aebcf2; background:#f5f7ff; }
   .route-card { margin:15px 0 18px; padding:17px 20px; border:1px solid #e4eaf3; border-radius:16px; background:linear-gradient(145deg,#fff,#f8faff); box-shadow:0 8px 24px #263a7908; }
   .route-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -862,7 +918,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .feature-actions { margin-top:15px; padding-top:14px; border-top:1px solid #edf0f5; }
   [data-feature-status] { min-height:1.3em; color:#138b70; }
   .feature-docs summary { color:#5266a8; cursor:pointer; font-size:.8rem; font-weight:750; }
-  .badge { padding:4px 8px; border-radius:7px; background:#eef2ff; color:#5065bd; font-size:.7rem; font-weight:750; }
+  .badge { padding:5px 10px; border-radius:7px; background:var(--navy); color:var(--sky); font-size:.78rem; font-weight:750; }
   #db-workload { flex:0 0 auto; }
   #static-race,#api-race { margin-top:15px; }
   .overview-setup { display:grid; grid-template-columns:1.1fr 1fr; gap:20px; margin:4px 0 20px; align-items:stretch; }
@@ -872,21 +928,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .overview-setup-text p { color:var(--muted); font-size:.9rem; line-height:1.6; }
   .overview-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:14px; margin:0 0 20px; }
   .overview-card { padding:18px 20px; border:1px solid #e4eaf3; border-radius:16px; background:linear-gradient(145deg,#fff,#f8faff); box-shadow:0 8px 24px #263a7908; display:flex; flex-direction:column; }
-  .overview-card-kicker { color:#6a7fe0; font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
-  .overview-card h3 { margin:6px 0 8px; font-size:1.05rem; }
-  .overview-card p { flex:1; color:var(--muted); font-size:.87rem; line-height:1.55; margin:0 0 14px; }
-  .overview-goto { align-self:flex-start; color:#4a63e6; border-color:#c7d4fb; background:#f5f7ff; font-size:.83rem; }
-  .overview-goto:hover:not(:disabled) { background:#eef2ff; }
-  .overview-steps { margin:0; padding-left:22px; display:flex; flex-direction:column; gap:10px; color:#39445c; font-size:.9rem; line-height:1.55; }
-  .overview-steps li::marker { color:#6a7fe0; font-weight:700; }
-  .why-card { margin:14px 0 18px; padding:18px 20px; border:1px solid #d9e2ff; border-radius:16px; background:linear-gradient(145deg,#f5f7ff,#eef2ff); }
-  .why-card h3 { margin:0 0 7px; font-size:.95rem; color:#2a3a63; }
-  .why-card > p { margin:0 0 14px; color:#3c4a73; font-size:.89rem; line-height:1.6; max-width:820px; }
-  .why-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:12px; }
+  .overview-card-kicker { color:var(--navy); font-size:.76rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; font-family: var(--font-head); }
+  .overview-card h3 { margin:8px 0 8px; font-size:1.2rem; }
+  .overview-card p { flex:1; color:var(--muted); font-size:.96rem; line-height:1.6; margin:0 0 14px; }
+  .overview-goto { align-self:flex-start; color:var(--navy-deep); border-color:var(--sky); background:#eaf6fc; font-size:.9rem; }
+  .overview-goto:hover:not(:disabled) { background:var(--sky); }
+  .overview-steps { margin:0; padding-left:24px; display:flex; flex-direction:column; gap:12px; color:#2b3356; font-size:.99rem; line-height:1.6; }
+  .overview-steps li::marker { color:var(--navy); font-weight:700; }
+  .why-card { margin:14px 0 18px; padding:20px 22px; border:1px solid var(--sky); border-radius:16px; background:linear-gradient(145deg,#f3fafd,#eaf6fc); }
+  .why-card h3 { margin:0 0 8px; font-size:1.08rem; color:var(--navy-deep); }
+  .why-card > p { margin:0 0 16px; color:#334066; font-size:.98rem; line-height:1.65; max-width:840px; }
+  .why-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); gap:14px; }
   .why-step { display:flex; gap:10px; align-items:flex-start; }
-  .why-num { flex:none; display:grid; place-items:center; width:24px; height:24px; margin-top:1px; border-radius:50%; background:#4a63e6; color:#fff; font-size:.76rem; font-weight:800; }
-  .why-step b { display:block; font-size:.86rem; color:#2a3a63; margin-bottom:3px; }
-  .why-step p { margin:0; color:#4e5c82; font-size:.81rem; line-height:1.5; }
+  .why-num { flex:none; display:grid; place-items:center; width:26px; height:26px; margin-top:1px; border-radius:50%; background:var(--navy); color:var(--yellow); font-size:.82rem; font-weight:800; }
+  .why-step b { display:block; font-size:.94rem; color:var(--navy-deep); margin-bottom:3px; }
+  .why-step p { margin:0; color:#4e5c82; font-size:.89rem; line-height:1.55; }
   @media (max-width:720px) {
     .wrap { padding:16px 14px 52px; }
     nav.tabs { top:5px; }
@@ -907,11 +963,128 @@ svg.leaflet-image-layer.leaflet-interactive path {
   @media (prefers-reduced-motion:reduce) {
     *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
   }
+  /* Consistent PCG navy surfaces throughout the presentation. Keep map
+     canvases and form controls light so routes and editable values remain
+     clear; all presentation and content cards use the same navy as the hero. */
+  .panel, .narrative-slide:not(.title-slide) { background:var(--navy); color:#fff; }
+  .card, .overview-card, .why-card, .route-card, .route-map-card,
+  .test-controls, .cost-card {
+    background:var(--navy) !important;
+    color:#fff;
+    border-color:#485276;
+    box-shadow:0 10px 28px rgba(8, 11, 30, .18);
+  }
+  .panel h1, .panel h2, .panel h3, .panel h4,
+  .narrative-slide:not(.title-slide) h1,
+  .narrative-slide:not(.title-slide) h2,
+  .narrative-slide:not(.title-slide) h3,
+  .card h1, .card h2, .card h3, .card h4,
+  .overview-card h3, .why-card h3, .route-map-card h3 { color:#fff; }
+  .panel p, .panel li, .panel .section-intro, .panel .small,
+  .narrative-slide:not(.title-slide) p,
+  .narrative-slide:not(.title-slide) li,
+  .narrative-list li, .overview-card p, .overview-steps,
+  .why-card > p, .why-step p, .why-step b,
+  .card p, .card .muted, .route-caption, .route-hops,
+  .cost-note, .cost-bar-sub { color:#d4daed; }
+  .narrative-list li::before, .section-kicker { color:var(--yellow); }
+  .narrative-list li b, .overview-steps b { color:#fff; }
+  .why-card { background:var(--navy) !important; }
+  .why-num, .step-num-badge { background:var(--yellow); color:var(--navy-deep); }
+  .doc-link { background:var(--navy); border-color:#596487; color:var(--sky); }
+  .doc-link:hover { background:#29345f; border-color:var(--sky); }
+  .overview-goto { background:var(--yellow); border-color:var(--yellow); color:var(--navy-deep); }
+  .overview-goto:hover:not(:disabled) { background:#fff27a; }
+  .scroll, .cost-table { border-color:#485276; background:var(--navy); }
+  table { color:#f5f6fb; }
+  th, td { border-bottom-color:#485276; }
+  th, .cost-table th, .trace-table th { background:#29345f; color:#d4daed; }
+  tr:hover td { background:#29345f; }
+  .route-result { background:#29345f; border-color:#596487; color:#fff; }
+  .route-hop, .chip { background:#29345f; border-color:#596487; color:#e5e9f5; }
+  .map-expand { background:#fff; color:var(--navy); }
+  .route-map-card.current { border-color:var(--yellow); box-shadow:0 0 0 3px #ffea2430,0 8px 22px #080b1e44; }
+  .panel::before, .narrative-slide:not(.title-slide)::before { color:#9da7c7; }
+  .feature-docs { border-top-color:#485276; }
+  .feature-docs summary { color:var(--sky); }
+  .feature-actions { border-top-color:#485276; }
+  .lane .name, .cost-bar-name, .cost-bar-value, .val { color:#f5f6fb; }
+  .cost-bar-track, .track { background:#303b66; }
+  .cost-callout, .speed { background:#173c3c; border-color:#39736b; color:#d8f2ec; }
+  .cost-callout strong, .speed strong { color:#8de5cd; }
+  .speed.bad { background:#473920; border-color:#8d6b32; color:#fff0c8; }
+  .trace-note, .map-tile-note { color:#543f12; }
+  /* Traceroute hop tables sit inside navy route cards, so use PCG sky blue
+     for the whole table surface and navy ink for readable contrast. */
+  .trace-table { background:#eaf6fc; border-color:var(--sky); }
+  .trace-table table { color:var(--navy-deep); }
+  .trace-table th { background:#b7e1f2; color:var(--navy-deep); border-bottom-color:#91cce4; }
+  .trace-table td { background:#eaf6fc; color:var(--navy-deep); border-bottom-color:#c6e5f1; }
+  .trace-table td.silent { color:#58627e; }
+  .trace-table tr:hover td { background:#d9eff9; }
+  .badge { background:var(--yellow); color:var(--navy-deep); }
+  .banner { background:#473920; border-color:#8d6b32; color:#fff0c8; }
+  .banner.info { background:#29345f; border-color:#596487; color:#d4daed; }
+  /* Rounded, padded presentation cards with visible page-colored gutters. */
+  html { scroll-behavior:smooth; scroll-snap-type:y proximity; scroll-padding-top:100px; }
+  body { background:#fff; }
+  .wrap { max-width:1220px; padding:28px 38px 88px; }
+  .panel, .narrative-slide {
+    min-height:calc(100vh - 120px);
+    margin:34px 0;
+    padding:clamp(24px, 4.5vw, 58px);
+    border:1px solid #485276;
+    border-radius:28px;
+    scroll-margin-top:100px;
+    scroll-snap-align:start;
+    opacity:.62;
+    transform:translateY(14px) scale(.992);
+    transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1), box-shadow .7s ease;
+    box-shadow:0 12px 32px rgba(20,23,46,.10);
+  }
+  .panel.in-view, .narrative-slide.in-view {
+    opacity:1;
+    transform:translateY(0) scale(1);
+    box-shadow:0 18px 44px rgba(20,23,46,.18);
+  }
+  .panel::before, .narrative-slide:not(.title-slide)::before { top:20px; right:24px; }
+  .title-slide {
+    margin:34px 0;
+    padding:clamp(48px, 7vw, 88px) clamp(24px, 5vw, 64px);
+    border:1px solid #485276;
+    border-radius:28px;
+  }
+  .card { padding:clamp(22px, 3vw, 34px); border-radius:24px; }
+  .overview-card, .why-card { padding:clamp(22px, 3vw, 32px); border-radius:24px; }
+  .route-card, .route-map-card, .cost-card { border-radius:22px; }
+  .route-map-card { padding:20px; }
+  .test-controls { padding:22px 24px; }
+  .map-modal-panel { border-radius:24px; padding:24px; }
+  .back-to-top {
+    position:absolute; right:clamp(16px, 3vw, 30px); bottom:20px; z-index:4;
+    display:inline-flex; align-items:center; gap:7px;
+    padding:7px 12px; border:1px solid #596487; border-radius:999px;
+    background:var(--navy); color:var(--yellow); box-shadow:0 4px 12px #080b1e35;
+    font-family:var(--font-head); font-size:.76rem; font-weight:700; line-height:1.2;
+  }
+  .back-to-top:hover:not(:disabled) { background:#29345f; border-color:var(--yellow); box-shadow:0 6px 16px #080b1e45; }
+  .back-to-top .arrow { font-size:1rem; line-height:1; }
+  @media (max-width:720px) {
+    .wrap { padding:16px 14px 56px; }
+    .panel, .narrative-slide { margin:22px 0; padding:28px 20px; border-radius:22px; }
+    .title-slide { margin:22px 0; padding:48px 20px; }
+    .back-to-top { right:14px; bottom:14px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    html { scroll-behavior:auto; scroll-snap-type:none; }
+    .panel, .narrative-slide { opacity:1; transform:none; }
+  }
 </style>
 </head>
 <body>
+<div id="scroll-progress"></div>
 <div class="wrap">
-  <nav class="tabs"><div class="seg seg-4" id="tabs" role="tablist" aria-label="Benchmark features">
+  <nav class="tabs"><div class="seg seg-4" id="tabs" role="tablist" aria-label="Benchmark features — also the scroll progress for this slide deck">
     <button data-tab="overview" aria-pressed="true">Overview</button>
     <button data-tab="static" aria-pressed="false">Static assets</button>
     <button data-tab="api" aria-pressed="false">API</button>
@@ -919,8 +1092,50 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div></nav>
   <div id="banners"></div>
 
+  <!-- ============ TITLE ============ -->
+  <section class="narrative-slide title-slide in-view" id="slide-title" data-slide-label="Slide 1 · Title">
+    <span class="yellow-bar" aria-hidden="true"></span>
+    <p class="section-kicker">Making your application faster for a global user base</p>
+    <h1>Three AWS tools, three different trade-offs<span class="accent">.</span> Demonstrated live, not just described.</h1>
+    <p class="title-sub">A working Terraform deployment and an interactive page that measures real latency between two AWS regions, right here, right now — so every claim in this review can be checked instead of taken on faith.</p>
+    <button type="button" class="run-button slide-goto" data-goto-id="slide-situation">Start the walkthrough ↓</button>
+    <p class="scroll-cue">Scroll to continue</p>
+  </section>
+
+  <!-- ============ SITUATION ============ -->
+  <section class="narrative-slide" id="slide-situation" data-slide-label="Slide 2 · The situation">
+    <div class="narrative-body">
+      <p class="section-kicker">The situation today</p>
+      <h1>Your users are global. Your application isn't — yet.</h1>
+      <ul class="narrative-list">
+        <li><b>Users are spread around the world</b>, but the application and its data currently sit in one region. Every user far from that region pays the physical distance in latency — no amount of server tuning removes that.</li>
+        <li>You run an <b>EKS cluster</b> for the API/application layer, and you have <b>static assets</b> (web content, downloads, media) served from the same region.</li>
+        <li>Three AWS tools are on the table, each solving a <b>different part</b> of the distance problem. They are not interchangeable, and not all of them apply to every workload — that's the core message of this review.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ THREE TOOLS ============ -->
+  <section class="narrative-slide" id="slide-tools-table" data-slide-label="Slide 3 · The three tools">
+    <div class="narrative-body wide">
+      <p class="section-kicker">One line each</p>
+      <h1>Cache a copy. Reroute the network. Move the data.</h1>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Tool</th><th>What it actually does</th><th>Applies to</th></tr></thead>
+          <tbody>
+            <tr><td><b>CloudFront</b></td><td>Caches a copy of content at edge locations near the user</td><td>Static assets</td></tr>
+            <tr><td><b>Global Accelerator</b></td><td>Routes traffic onto AWS's private backbone via the nearest entry point</td><td>EKS / API traffic</td></tr>
+            <tr><td><b>Aurora Global Database</b></td><td>Replicates the data itself to a region near the user</td><td>Database reads</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="section-intro" style="margin-top:18px">The common thread: each tool moves something closer to the user — a cached copy, a network path, or the data itself. None of them make the origin server itself faster; they all work around distance in a different way.</p>
+    </div>
+  </section>
+
   <!-- ============ OVERVIEW ============ -->
-  <section class="panel active" id="panel-overview">
+  <section class="panel in-view" id="panel-overview" data-slide-label="Slide 4 · Overview">
     <div class="feature-head"><div><p class="section-kicker">Global latency POC</p><h1>Why this demo exists</h1><p class="section-intro">A single app split across two AWS regions, 6,800 km apart, used to show — with your own live measurements, not slides — what each AWS networking feature actually buys you, and what it costs.</p></div></div>
 
     <div class="overview-setup">
@@ -950,7 +1165,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <article class="overview-card">
         <span class="overview-card-kicker">Regional data access</span>
         <h3>Database</h3>
-        <p>Five ways to reach the same <b>Aurora PostgreSQL Global Database</b>: direct, through Global Accelerator, over private VPC peering, against a local read replica, and batched through a nearby function. Shows that for chatty database traffic, moving the data (replication) beats moving the network (routing).</p>
+        <p>Four ways to reach the same <b>Aurora PostgreSQL Global Database</b>: direct, through Global Accelerator, over private VPC peering, and against a local read replica. Shows that for chatty database traffic, moving the data (replication) beats moving the network (routing).</p>
         <button type="button" class="overview-goto" data-goto="db">Open this test →</button>
       </article>
     </div>
@@ -967,175 +1182,667 @@ svg.leaflet-image-layer.leaflet-interactive path {
     </div>
   </section>
 
+  <!-- ============ TOOL 1: CLOUDFRONT — WHAT IT IS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-intro" data-slide-label="Slide 5 · Tool 1, CloudFront">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 1 — for static assets</p>
+      <h1>CloudFront: cache a copy near the reader</h1>
+      <ul class="narrative-list">
+        <li><b>What it is:</b> a CDN. The first request for an object is a cache miss and still pays the full trip to the origin; every request after that is served from the nearest edge location, often in single-digit milliseconds.</li>
+        <li><b>Why it fits here:</b> your static assets (images, downloads, JS/CSS, public pages) are exactly the kind of content a CDN is built for — identical bytes served to many users, rarely changing.</li>
+        <li><b>How we'd wire it in:</b> keep the origin bucket/server private, put CloudFront in front of it with Origin Access Control (OAC) so the origin is never reachable directly — only through the CDN.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="static" data-goto-run="1">Try it live — race direct vs. CloudFront →</button>
+    </div>
+  </section>
+
   <!-- ============ STATIC ============ -->
-  <section class="panel" id="panel-static">
+  <section class="panel" id="panel-static" data-slide-label="Slide 6 · CloudFront, live">
     <div class="feature-head"><div><p class="section-kicker">Content delivery</p><h1>Static assets</h1><p class="section-intro">Compare a direct origin fetch with cached delivery from a CloudFront edge.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
-    <div class="why-card">
-      <h3>Why this matters</h3>
-      <p>Physics sets a floor on latency: a round trip across the Atlantic to Ohio takes roughly 90–110&nbsp;ms no matter how good the server is. A <b>CDN</b> works around that floor instead of fighting it — it keeps a copy of the file at an edge location near the reader, so most requests never leave the reader's region at all.</p>
-      <div class="why-steps">
-        <div class="why-step"><span class="why-num">1</span><div><b>Without a CDN</b><p>Every request travels the full distance to the origin and back, every time, for every visitor.</p></div></div>
-        <div class="why-step"><span class="why-num">2</span><div><b>With CloudFront</b><p>The first visitor's request still reaches the origin (a cache miss); CloudFront then serves every later request from the nearby edge.</p></div></div>
-        <div class="why-step"><span class="why-num">3</span><div><b>Run it below</b><p>Compare the two side by side with the same file — the gap you see is the round trip to Ohio you just avoided.</p></div></div>
+    <div class="slide-grid">
+      <div class="slide-text">
+        <div class="why-card">
+          <h3>Why this matters</h3>
+          <p>Physics sets a floor on latency: a round trip across the Atlantic to Ohio takes roughly 90–110&nbsp;ms no matter how good the server is. A <b>CDN</b> works around that floor instead of fighting it — it keeps a copy of the file at an edge location near the reader, so most requests never leave the reader's region at all.</p>
+          <div class="why-steps">
+            <div class="why-step"><span class="why-num">1</span><div><b>Without a CDN</b><p>Every request travels the full distance to the origin and back, every time, for every visitor.</p></div></div>
+            <div class="why-step"><span class="why-num">2</span><div><b>With CloudFront</b><p>The first visitor's request still reaches the origin (a cache miss); CloudFront then serves every later request from the nearby edge.</p></div></div>
+            <div class="why-step"><span class="why-num">3</span><div><b>Run it alongside</b><p>Compare the two side by side with the same file — the gap you see is the round trip to Ohio you just avoided.</p></div></div>
+          </div>
+        </div>
+        <div class="doc-links" id="static-docs"></div>
+      </div>
+      <div class="slide-live">
+        <div class="card test-controls">
+          <div class="row">
+            <label class="field">Payload <select id="static-size"></select></label>
+            <label class="field">Rounds: <b id="static-rounds-v">10</b><input type="range" id="static-rounds" min="1" max="30" value="10"></label>
+            <div class="seg" id="static-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
+            <button class="run-button" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
+          </div>
+        </div>
+        <div class="route-grid" id="static-route-grid" aria-label="Separate route maps for static asset paths">
+          <article class="route-map-card" id="static-map-card-direct">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Direct · public S3 website</h3>
+            <p class="route-result" id="static-result-direct">No results yet — press Run.</p>
+            <p class="route-caption" id="static-map-caption-direct">Browser → origin region</p>
+            <div class="leaflet-map" id="static-map-direct" role="img" aria-label="Direct request route from the example client to the public S3 origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="static-hops-direct" aria-label="Illustrated request path"></div>
+          </article>
+          <article class="route-map-card" id="static-map-card-optimized">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Optimized · CloudFront + OAC</h3>
+            <p class="route-result" id="static-result-optimized">No results yet — press Run.</p>
+            <p class="route-caption" id="static-map-caption-optimized">Browser → CloudFront edge → private S3 origin</p>
+            <div class="leaflet-map" id="static-map-optimized" role="img" aria-label="CloudFront request route from the example client to the private origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="static-hops-optimized" aria-label="Illustrated request path"></div>
+          </article>
+        </div>
+        <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Hop labels show known service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (for CloudFront/Global Accelerator the trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
+        <div class="card">
+          <h2>Results</h2>
+          <p class="section-intro">Fetch the same payload from this browser, alternating lanes each round so neither path has a network-warmup advantage.</p>
+          <div class="status" id="static-status"></div>
+          <div id="static-lanes"></div>
+          <div id="static-speed"></div>
+          <div id="static-chips" class="chips"></div>
+          <div id="static-strip"></div>
+          <div class="row" style="margin-top:8px"><button id="static-replay" disabled>▶ Replay last round</button><span class="small muted">Animation of the last measured round, time-scaled. Measurements run one at a time so they don't compete for your bandwidth.</span></div>
+          <div id="static-race" class="race"></div>
+          <div class="row feature-actions"><button data-export-csv="static">CSV</button><button data-share="static">Share results</button><button data-copy-summary="static">Copy summary</button><span data-feature-status="static" class="small muted"></span></div>
+          <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The direct bucket uses S3 static website hosting with public read access, purely as a baseline. The production-style bucket stays private and is only reachable through CloudFront via Origin Access Control (OAC). A cache hit is served entirely from the edge; a cache miss still pays one trip to the origin region, then caches the result for the next visitor.</p></details>
+        </div>
+        <div class="card cost-card" id="static-cost-card">
+          <h2>Simulated monthly cost</h2>
+          <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths. Uses the payload size from above.</p>
+          <div class="row">
+            <label class="field">Requests per month<input type="text" inputmode="numeric" id="static-cost-reqs" value="1,000,000"></label>
+            <label class="field">Cache hit rate <b id="static-cost-hit-v">90%</b><input type="range" id="static-cost-hit" min="0" max="100" value="90"></label>
+          </div>
+          <div class="cost-table" id="static-cost-table"></div>
+        </div>
       </div>
     </div>
-    <div class="doc-links" id="static-docs"></div>
-    <div class="card test-controls">
-      <div class="row">
-        <label class="field">Payload <select id="static-size"></select></label>
-        <label class="field">Rounds: <b id="static-rounds-v">10</b><input type="range" id="static-rounds" min="1" max="30" value="10"></label>
-        <div class="seg" id="static-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
-        <button class="run-button" id="static-run">Run race</button><button id="static-stop" disabled>Stop</button>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — TRADE-OFFS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-tradeoffs" data-slide-label="Slide 7 · CloudFront, trade-offs">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 1 — trade-offs, cost, maintainability</p>
+      <h1>CloudFront: close to a "yes, do this"</h1>
+      <ul class="narrative-list">
+        <li><b>Trade-off:</b> only helps <i>cacheable</i> content. Anything personalized or frequently changing still pays the origin round trip on every miss. Cache invalidation becomes a step in the deploy process.</li>
+        <li><b>Cost:</b> priced per request and per GB served, with a permanent 1 TB/month free tier. At real traffic volumes this is typically <b>far cheaper</b> than serving the same traffic directly from the origin, because most requests never reach the origin at all.</li>
+        <li><b>Maintainability:</b> low. Fully managed; the main ongoing task is cache-control headers / invalidations when content changes. No servers to patch.</li>
+        <li><b>Bottom line:</b> close to a "yes, do this" for any static content — the question is scope (which assets), not whether it's worth it.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="static" data-goto-focus="cost">See the live cost comparison →</button>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — CODE AT THE EDGE (explained, not deployed) ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-edge" data-slide-label="Slide 8 · CloudFront, code at the edge">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — optional add-on</p>
+      <h1>CloudFront can also run your code at the edge</h1>
+      <p class="section-intro">Two options. They change requests and responses; they don't make the origin faster.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>CloudFront Functions</th><th>Lambda@Edge</th></tr></thead>
+          <tbody>
+            <tr><td><b>Best for</b></td><td>Simple jobs: redirects, headers, cache keys, token checks</td><td>Heavy jobs: libraries or AWS SDK, several network calls, request body</td></tr>
+            <tr><td><b>Language</b></td><td>JavaScript</td><td>Node.js or Python</td></tr>
+            <tr><td><b>Runs on</b></td><td>Viewer request / response</td><td>Viewer and origin, request / response</td></tr>
+            <tr><td><b>Limits</b></td><td>Submillisecond &middot; 10 KB code &middot; 2 MB memory</td><td>Up to 30 s &middot; 50 MB code &middot; 128 MB memory (viewer events)</td></tr>
+            <tr><td><b>Network</b></td><td>One call, to an origin on the distribution</td><td>Any destination</td></tr>
+            <tr><td><b>Scale</b></td><td>Millions of requests/s</td><td>10,000 requests/s per Region</td></tr>
+            <tr><td><b>Price</b></td><td>$0.10 per million; 2 M free a month</td><td>$0.60 per million + duration; no free tier</td></tr>
+          </tbody>
+        </table></div>
       </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>In the request path:</b> viewer functions run on every request, even cache hits; origin functions only on a miss. Each adds latency.</li>
+        <li><b>Cost, 10 M requests a month (our arithmetic):</b> about $0.80 vs $6.30, at one 5 ms, 128 MB function per request.</li>
+        <li><b>Lambda@Edge strings:</b> create it in us-east-1, attach a numbered version; no environment variables, VPC, layers or arm64. Deleting it can wait hours (community reports).</li>
+        <li><b>Advice:</b> start with CloudFront Functions.</li>
+        <li><b>Not deployed here:</b> nothing on this slide is measured.</li>
+      </ul>
     </div>
-    <div class="route-grid" id="static-route-grid" aria-label="Separate route maps for static asset paths">
-      <article class="route-map-card" id="static-map-card-direct">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Direct · public S3 website</h3>
-        <p class="route-result" id="static-result-direct">No results yet — press Run.</p>
-        <p class="route-caption" id="static-map-caption-direct">Browser → origin region</p>
-        <div class="leaflet-map" id="static-map-direct" role="img" aria-label="Direct request route from the example client to the public S3 origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="static-hops-direct" aria-label="Illustrated request path"></div>
-      </article>
-      <article class="route-map-card" id="static-map-card-optimized">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Optimized · CloudFront + OAC</h3>
-        <p class="route-result" id="static-result-optimized">No results yet — press Run.</p>
-        <p class="route-caption" id="static-map-caption-optimized">Browser → CloudFront edge → private S3 origin</p>
-        <div class="leaflet-map" id="static-map-optimized" role="img" aria-label="CloudFront request route from the example client to the private origin">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="static-hops-optimized" aria-label="Illustrated request path"></div>
-      </article>
-    </div>
-    <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location, not the visitor's detected location. Hop labels show known service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (for CloudFront/Global Accelerator the trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
-    <div class="card">
-      <h2>Results</h2>
-      <p class="section-intro">Fetch the same payload from this browser, alternating lanes each round so neither path has a network-warmup advantage.</p>
-      <div class="status" id="static-status"></div>
-      <div id="static-lanes"></div>
-      <div id="static-speed"></div>
-      <div id="static-chips" class="chips"></div>
-      <div id="static-strip"></div>
-      <div class="row" style="margin-top:8px"><button id="static-replay" disabled>▶ Replay last round</button><span class="small muted">Animation of the last measured round, time-scaled. Measurements run one at a time so they don't compete for your bandwidth.</span></div>
-      <div id="static-race" class="race"></div>
-      <div class="row feature-actions"><button data-export-csv="static">CSV</button><button data-share="static">Share results</button><button data-copy-summary="static">Copy summary</button><span data-feature-status="static" class="small muted"></span></div>
-      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The direct bucket uses S3 static website hosting with public read access, purely as a baseline. The production-style bucket stays private and is only reachable through CloudFront via Origin Access Control (OAC). A cache hit is served entirely from the edge; a cache miss still pays one trip to the origin region, then caches the result for the next visitor.</p></details>
-    </div>
-    <div class="card cost-card" id="static-cost-card">
-      <h2>Simulated monthly cost</h2>
-      <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths. Uses the payload size from above.</p>
-      <div class="row">
-        <label class="field">Requests per month<input type="text" inputmode="numeric" id="static-cost-reqs" value="1,000,000"></label>
-        <label class="field">Cache hit rate <b id="static-cost-hit-v">90%</b><input type="range" id="static-cost-hit" min="0" max="100" value="90"></label>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — FLAT-RATE PLANS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-flatrate" data-slide-label="Slide 9 · CloudFront, flat-rate plans">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — cost option</p>
+      <h1>Flat-rate plans: one monthly price, no overage charges</h1>
+      <p class="section-intro">The CDN bundled with WAF, DDoS protection, DNS, a TLS certificate and logging.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Plan</th><th>Per month</th><th>Requests</th><th>Transfer</th><th>S3 credit</th><th>Adds</th></tr></thead>
+          <tbody>
+            <tr><td><b>Free</b></td><td>$0</td><td>1 M</td><td>100 GB</td><td>5 GB</td><td>CDN, WAF (5 rules), DDoS, DNS, TLS, OAC</td></tr>
+            <tr><td><b>Pro</b></td><td>$15</td><td>10 M</td><td>50 TB</td><td>50 GB</td><td>Logs, tag invalidation, CAPTCHA, 25 rules</td></tr>
+            <tr><td><b>Business</b></td><td>$200</td><td>125 M</td><td>50 TB</td><td>1 TB</td><td>Custom caching and headers, VPC origins, bot control, SLA</td></tr>
+            <tr><td><b>Premium</b></td><td>$1,000</td><td>500 M</td><td>50 TB</td><td>5 TB</td><td>Origin Shield, failover, mutual TLS; larger allowances cost more</td></tr>
+          </tbody>
+        </table></div>
       </div>
-      <div class="cost-table" id="static-cost-table"></div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Not unlimited:</b> a first spike up to 3&times; is fine. Sustained excess over 2&ndash;3 months can mean fewer or more distant edges. Blocked attacks don't count.</li>
+        <li><b>Example (our arithmetic):</b> 5 TB out and 8 M requests is about $340&ndash;350 pay-as-you-go vs $15 on Pro. At low volume the free tier makes pay-as-you-go cheap; a plan then buys the bundle.</li>
+        <li><b>Check fit:</b> WAF web ACL required; one apex domain; no legacy forwarded values, origin access identity, real-time logs, Shield Advanced or staging. Lambda@Edge stays pay-as-you-go.</li>
+        <li><b>This demo:</b> OAC yes, web ACL no; our custom CORS policy would need replacing on Free or Pro (our reading). The Static tab's cost simulator models pay-as-you-go only.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — PRICE CLASSES AND INVALIDATIONS ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-levers" data-slide-label="Slide 10 · CloudFront, price classes and invalidations">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — two small cost levers</p>
+      <h1>Price classes and invalidations</h1>
+      <p class="section-intro">A price class trades delivery cost for fewer edge locations. Invalidations replace content that is already cached.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Class</th><th>Edge locations included</th><th>Left out</th></tr></thead>
+          <tbody>
+            <tr><td><b>All</b> (this demo)</td><td>Every region</td><td>Nothing</td></tr>
+            <tr><td><b>200</b></td><td>US, Canada, Mexico, Europe, Israel, T&uuml;rkiye, Middle East and parts of Africa, Japan, India, Hong Kong, Singapore and similar</td><td>South America, Australia, New Zealand</td></tr>
+            <tr><td><b>100</b></td><td>US, Canada, Mexico, Europe, Israel, T&uuml;rkiye</td><td>Everything else</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Why it saves:</b> delivery costs more in some regions (per GB, next 9 TB): $0.085 US and Europe, $0.110 South America, $0.114 Japan and Australia, $0.120 Singapore and similar. The Static tab's simulator uses $0.12, the top of that range, so it overstates CloudFront.</li>
+        <li><b>What it costs:</b> viewers in left-out regions get farther edges, so latency rises. Content may still come from outside your class; you pay the class's cheapest rate.</li>
+        <li><b>When:</b> a lower class for US and Europe audiences; keep All for global speed.</li>
+        <li><b>Invalidations:</b> first 1,000 paths a month free, then $0.005 each. A wildcard is one path (AWS example: 2,000 paths = $5).</li>
+        <li><b>Often avoidable:</b> versioned file names (<code>app.3f2a.js</code>) make a change a new URL.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 1: CLOUDFRONT — CUSTOM DOMAIN ============ -->
+  <section class="narrative-slide" id="slide-cloudfront-domain" data-slide-label="Slide 11 · CloudFront, custom domain">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 1 — going to production</p>
+      <h1>A custom domain: three pieces</h1>
+      <p class="section-intro">The default name looks like <code>d111111abcdef8.cloudfront.net</code>. Your own name, such as <code>cdn.example.com</code>, needs three things to line up.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Piece</th><th>What it is</th><th>Watch out</th></tr></thead>
+          <tbody>
+            <tr><td><b>Domain name</b></td><td>Your name added to the distribution</td><td>The certificate must cover it exactly, or by a same-level wildcard</td></tr>
+            <tr><td><b>TLS certificate</b></td><td>Public AWS Certificate Manager certificate, auto-renewed</td><td>For CloudFront it must be in <b>us-east-1</b>. A load-balancer origin's can be anywhere.</td></tr>
+            <tr><td><b>DNS record</b></td><td>Route 53 ALIAS to the distribution</td><td>A CNAME can't sit at the domain root; ALIAS can</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>This demo:</b> AWS-generated names and the default certificate; no DNS or certificate resources.</li>
+        <li><b>Adding one:</b> a us-east-1 provider alias (none today), a validated certificate, the name and certificate on the distribution, a Route 53 record.</li>
+        <li><b>With a flat-rate plan:</b> the hosted zone and queries are covered; ALIAS queries don't count against the allowance, CNAME queries do; one apex domain.</li>
+        <li><b>Imported certificates:</b> renew at least 24 h before expiry.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ TOOL 2: GLOBAL ACCELERATOR — WHAT IT IS ============ -->
+  <section class="narrative-slide" id="slide-ga-intro" data-slide-label="Slide 12 · Tool 2, Global Accelerator">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 2 — for the EKS API layer</p>
+      <h1>Global Accelerator: ride AWS's private backbone</h1>
+      <ul class="narrative-list">
+        <li><b>What it is:</b> a set of static anycast IPs. A user's connection enters AWS's network at whichever edge location is physically closest to them, then rides AWS's own private backbone the rest of the way to the EKS ingress/load balancer — instead of the public internet's unpredictable routing.</li>
+        <li><b>Why it fits here:</b> API responses from an application are generated per request and usually <b>can't be cached</b> — CloudFront doesn't help there. Global Accelerator helps with the network path itself, not the content.</li>
+        <li><b>How we'd wire it in:</b> point Global Accelerator at the existing ALB/NLB in front of EKS. No application changes required — this is purely a network-layer change.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="api" data-goto-run="1">Try it live — race direct vs. Global Accelerator →</button>
     </div>
   </section>
 
   <!-- ============ API ============ -->
-  <section class="panel" id="panel-api">
+  <section class="panel" id="panel-api" data-slide-label="Slide 13 · Global Accelerator, live">
     <div class="feature-head"><div><p class="section-kicker">Dynamic traffic</p><h1>API routing</h1><p class="section-intro">Race direct access against an anycast route into the AWS global network.</p></div><span class="badge" title="Timed directly in your browser, from wherever you are right now">Browser-measured</span></div>
-    <div class="why-card">
-      <h3>Why this matters</h3>
-      <p>API responses are generated per request, so they usually can't be cached at the edge the way a static file can — a CDN doesn't help here. What <b>Global Accelerator</b> helps with instead is the network itself: once a connection enters the AWS backbone at the nearest edge, it rides AWS's own private fiber the rest of the way to Ohio, instead of the public internet's unpredictable, congested routing.</p>
-      <div class="why-steps">
-        <div class="why-step"><span class="why-num">1</span><div><b>Direct (public internet)</b><p>Every packet takes whatever route the public internet's routers pick that moment — consistent in theory, variable in practice.</p></div></div>
-        <div class="why-step"><span class="why-num">2</span><div><b>Through Global Accelerator</b><p>The connection enters AWS's network at the nearest anycast edge and travels on a private, consistently-routed backbone from there.</p></div></div>
-        <div class="why-step"><span class="why-num">3</span><div><b>Run it below</b><p>The win here is usually in consistency (fewer slow outliers) as much as raw average speed — watch the spread, not just the average.</p></div></div>
+    <div class="slide-grid">
+      <div class="slide-text">
+        <div class="why-card">
+          <h3>Why this matters</h3>
+          <p>API responses are generated per request, so they usually can't be cached at the edge the way a static file can — a CDN doesn't help here. What <b>Global Accelerator</b> helps with instead is the network itself: once a connection enters the AWS backbone at the nearest edge, it rides AWS's own private fiber the rest of the way to Ohio, instead of the public internet's unpredictable, congested routing.</p>
+          <div class="why-steps">
+            <div class="why-step"><span class="why-num">1</span><div><b>Direct (public internet)</b><p>Every packet takes whatever route the public internet's routers pick that moment — consistent in theory, variable in practice.</p></div></div>
+            <div class="why-step"><span class="why-num">2</span><div><b>Through Global Accelerator</b><p>The connection enters AWS's network at the nearest anycast edge and travels on a private, consistently-routed backbone from there.</p></div></div>
+            <div class="why-step"><span class="why-num">3</span><div><b>Run it alongside</b><p>The win here is usually in consistency (fewer slow outliers) as much as raw average speed — watch the spread, not just the average.</p></div></div>
+          </div>
+        </div>
+        <div class="doc-links" id="api-docs"></div>
+      </div>
+      <div class="slide-live">
+        <div class="card test-controls">
+          <div class="row">
+            <label class="field">Rounds: <b id="api-rounds-v">15</b><input type="range" id="api-rounds" min="1" max="40" value="15"></label>
+            <div class="seg" id="api-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
+            <button class="run-button" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
+          </div>
+        </div>
+        <div class="route-grid" id="api-route-grid" aria-label="Separate route maps for API paths">
+          <article class="route-map-card" id="api-map-card-direct">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Direct · public ALB</h3>
+            <p class="route-result" id="api-result-direct">No results yet — press Run.</p>
+            <p class="route-caption" id="api-map-caption-direct">Browser → origin region ALB</p>
+            <div class="leaflet-map" id="api-map-direct" role="img" aria-label="Direct API route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="api-hops-direct" aria-label="Illustrated request path"></div>
+          </article>
+          <article class="route-map-card" id="api-map-card-optimized">
+            <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
+            <h3>Optimized · Global Accelerator</h3>
+            <p class="route-result" id="api-result-optimized">No results yet — press Run.</p>
+            <p class="route-caption" id="api-map-caption-optimized">Browser → nearest anycast entry → AWS network → origin region ALB</p>
+            <div class="leaflet-map" id="api-map-optimized" role="img" aria-label="Global Accelerator route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
+            <div class="route-hops" id="api-hops-optimized" aria-label="Illustrated request path"></div>
+          </article>
+        </div>
+        <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location. Hop labels show architecture/service boundaries. The browser measures the complete request round trip, and Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
+        <div class="card">
+          <h2>Results</h2>
+          <p class="section-intro">A small, uncacheable JSON response isolates connection and network time rather than payload size.</p>
+          <div class="status" id="api-status"></div>
+          <div id="api-lanes"></div>
+          <div id="api-speed"></div>
+          <div id="api-strip"></div>
+          <div class="row" style="margin-top:8px"><button id="api-replay" disabled>▶ Replay last round</button></div>
+          <div id="api-race" class="race"></div>
+          <div class="row feature-actions"><button data-export-csv="api">CSV</button><button data-share="api">Share results</button><button data-copy-summary="api">Copy summary</button><span data-feature-status="api" class="small muted"></span></div>
+          <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The ALB returns a fixed JSON response. Global Accelerator provides anycast entry IPs and routes connections to the regional ALB. It does not cache API responses.</p></details>
+        </div>
+        <div class="card cost-card" id="api-cost-card">
+          <h2>Simulated monthly cost</h2>
+          <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths.</p>
+          <div class="row">
+            <label class="field">Requests per month<input type="text" inputmode="numeric" id="api-cost-reqs" value="1,000,000"></label>
+            <label class="field">Avg. response size (KB)<input type="text" inputmode="numeric" id="api-cost-kb" value="5"></label>
+          </div>
+          <div class="cost-table" id="api-cost-table"></div>
+        </div>
       </div>
     </div>
-    <div class="doc-links" id="api-docs"></div>
-    <div class="card test-controls">
-      <div class="row">
-        <label class="field">Rounds: <b id="api-rounds-v">15</b><input type="range" id="api-rounds" min="1" max="40" value="15"></label>
-        <div class="seg" id="api-metric"><button data-m="total" aria-pressed="true">Total time</button><button data-m="ttfb" aria-pressed="false">First byte</button></div>
-        <button class="run-button" id="api-run">Run race</button><button id="api-stop" disabled>Stop</button>
+  </section>
+
+  <!-- ============ TOOL 2: GLOBAL ACCELERATOR — TRADE-OFFS ============ -->
+  <section class="narrative-slide" id="slide-ga-tradeoffs" data-slide-label="Slide 14 · Global Accelerator, trade-offs">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 2 — trade-offs, cost, maintainability</p>
+      <h1>Global Accelerator: a consistency investment, not a cost saving</h1>
+      <ul class="narrative-list">
+        <li><b>Trade-off:</b> the win shows up mainly as <b>consistency</b> — fewer slow outliers caused by internet congestion or bad routing — more than a large average-latency drop. The benefit shrinks the closer a user already is to the origin region. It's a <b>fixed cost whether or not there's traffic.</b></li>
+        <li><b>Cost:</b> a flat per-accelerator hourly fee (≈&nbsp;$18/month) <b>plus</b> premium per-GB data transfer, on top of whatever the load balancer already costs. In our demo numbers, the direct path was actually <i>cheaper</i> than the accelerated one — speed and cost are not the same axis here.</li>
+        <li><b>Maintainability:</b> low — it's a managed service layered in front of infrastructure that already exists; no new servers, no code changes.</li>
+        <li><b>Bottom line:</b> worth it where <b>consistency under load/congestion</b> matters (e.g. transactional API calls, live interactions) more than raw cost — not a blanket "turn it on everywhere."</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="api" data-goto-focus="cost">See the live cost comparison →</button>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-claims" data-slide-label="Slide 15 · Global Accelerator, AWS figures">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — what to expect</p>
+      <h1>What AWS says Global Accelerator delivers</h1>
+      <p class="section-intro">AWS's published figures, from real-user measurements by third-party tools, at the 90th percentile.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Measure</th><th>AWS figure</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td><b>First-byte latency</b></td><td>Up to 49% lower (TCP traffic)</td><td>AWS Global Accelerator FAQ</td></tr>
+            <tr><td><b>Jitter</b></td><td>Up to 58% lower</td><td>AWS Global Accelerator FAQ</td></tr>
+            <tr><td><b>Throughput</b></td><td>Up to 60% higher</td><td>AWS Global Accelerator FAQ</td></tr>
+            <tr><td><b>100 KB download from N. Virginia</b></td><td>About 60% better for clients in Australia; over 40% for clients in the US</td><td>AWS blog, 2020</td></tr>
+          </tbody>
+        </table></div>
       </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>How:</b> the connection ends at the nearest edge location, then travels the AWS backbone to your endpoint, with larger TCP windows and no slow start on that leg.</li>
+        <li><b>&ldquo;Up to&rdquo; at p90:</b> these are best-case figures at the 90th percentile, not averages.</li>
+        <li><b>What it depends on (AWS):</b> the amount of data transferred, and the quality, capacity and distance of the client's last-mile network.</li>
+        <li><b>Test it yourself:</b> AWS recommends at least 1,000 samples every hour for a day, to catch peak-hour congestion.</li>
+      </ul>
     </div>
-    <div class="route-grid" id="api-route-grid" aria-label="Separate route maps for API paths">
-      <article class="route-map-card" id="api-map-card-direct">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Direct · public ALB</h3>
-        <p class="route-result" id="api-result-direct">No results yet — press Run.</p>
-        <p class="route-caption" id="api-map-caption-direct">Browser → origin region ALB</p>
-        <div class="leaflet-map" id="api-map-direct" role="img" aria-label="Direct API route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="api-hops-direct" aria-label="Illustrated request path"></div>
-      </article>
-      <article class="route-map-card" id="api-map-card-optimized">
-        <button type="button" class="map-expand" aria-label="Enlarge map and details">⤢</button>
-        <h3>Optimized · Global Accelerator</h3>
-        <p class="route-result" id="api-result-optimized">No results yet — press Run.</p>
-        <p class="route-caption" id="api-map-caption-optimized">Browser → nearest anycast entry → AWS network → origin region ALB</p>
-        <div class="leaflet-map" id="api-map-optimized" role="img" aria-label="Global Accelerator route from the example client to the origin region's load balancer">Map tiles load from OpenStreetMap; lines show the route design.</div>
-        <div class="route-hops" id="api-hops-optimized" aria-label="Illustrated request path"></div>
-      </article>
-    </div>
-    <p class="small muted">Map tiles © OpenStreetMap contributors. Frankfurt is an example client location. Hop labels show architecture/service boundaries. The browser measures the complete request round trip, and Run also starts real traceroutes from the Frankfurt benchmark client; when one arrives, its map switches to the observed hops (the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation).</p>
-    <div class="card">
-      <h2>Results</h2>
-      <p class="section-intro">A small, uncacheable JSON response isolates connection and network time rather than payload size.</p>
-      <div class="status" id="api-status"></div>
-      <div id="api-lanes"></div>
-      <div id="api-speed"></div>
-      <div id="api-strip"></div>
-      <div class="row" style="margin-top:8px"><button id="api-replay" disabled>▶ Replay last round</button></div>
-      <div id="api-race" class="race"></div>
-      <div class="row feature-actions"><button data-export-csv="api">CSV</button><button data-share="api">Share results</button><button data-copy-summary="api">Copy summary</button><span data-feature-status="api" class="small muted"></span></div>
-      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">The ALB returns a fixed JSON response. Global Accelerator provides anycast entry IPs and routes connections to the regional ALB. It does not cache API responses.</p></details>
-    </div>
-    <div class="card cost-card" id="api-cost-card">
-      <h2>Simulated monthly cost</h2>
-      <p class="section-intro">Rough list-price estimate, scaled to a traffic volume you choose — not AWS's bill, just a ballpark for comparing the two paths.</p>
-      <div class="row">
-        <label class="field">Requests per month<input type="text" inputmode="numeric" id="api-cost-reqs" value="1,000,000"></label>
-        <label class="field">Avg. response size (KB)<input type="text" inputmode="numeric" id="api-cost-kb" value="5"></label>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-resilience" data-slide-label="Slide 16 · Global Accelerator, resilience">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — beyond speed</p>
+      <h1>Resilience and failover</h1>
+      <p class="section-intro">Where Global Accelerator earns its cost when speed alone doesn't.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><b>Health-checked routing</b></td><td>Detects a failing endpoint and reroutes to the next closest Region</td></tr>
+            <tr><td><b>Traffic dials</b></td><td>Set the share of traffic per Region, for testing or updates</td></tr>
+            <tr><td><b>Blue/green and A/B</b></td><td>Add or remove endpoints without touching client IPs</td></tr>
+            <tr><td><b>No DNS caching</b></td><td>Clients keep the same two IPs; changes take effect in seconds</td></tr>
+          </tbody>
+        </table></div>
       </div>
-      <div class="cost-table" id="api-cost-table"></div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Why it matters:</b> a rerouted client doesn't wait for DNS caches to expire.</li>
+        <li><b>Cross-Region failover needs a second Region;</b> within a Region it can also fail over between endpoints.</li>
+        <li><b>In this demo:</b> one Region (Ohio) only, so failover is explained, not shown.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-security" data-slide-label="Slide 17 · Global Accelerator, static IPs">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — beyond speed</p>
+      <h1>Static IPs and protection</h1>
+      <p class="section-intro">Two fixed entry points in front of your load balancer.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><b>Two static anycast IPs</b></td><td>Allow-list once in firewalls and clients; IPv4, or dual-stack with two IPv6</td></tr>
+            <tr><td><b>Stable when you move</b></td><td>Endpoints can move between Availability Zones or Regions; the IPs stay</td></tr>
+            <tr><td><b>Origin hidden</b></td><td>Clients see the accelerator IPs, not the load balancer</td></tr>
+            <tr><td><b>DDoS protection</b></td><td>On by default through AWS Shield</td></tr>
+            <tr><td><b>Private endpoints</b></td><td>Internal load balancers and private EC2 reachable over private IPs</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Good fit:</b> partners or devices that can only allow-list fixed addresses.</li>
+        <li><b>In this demo:</b> the ALB is still public, so the origin isn't hidden here.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-ga-pricing" data-slide-label="Slide 18 · Global Accelerator, pricing">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 2 — cost detail</p>
+      <h1>Global Accelerator pricing in detail</h1>
+      <p class="section-intro">Three charges, one of them easy to miss.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Endpoint in Europe, traffic to edge in</th><th>Premium per GB</th></tr></thead>
+          <tbody>
+            <tr><td>Europe, Israel, T&uuml;rkiye, or US, Canada, Mexico</td><td>$0.015</td></tr>
+            <tr><td>Asia Pacific (excluding India, Philippines, Thailand, South Korea)</td><td>$0.033</td></tr>
+            <tr><td>South America</td><td>$0.043</td></tr>
+            <tr><td>Australia and New Zealand</td><td>$0.105</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Fixed:</b> $0.025 per hour per accelerator, about $18 a month, even if it is disabled.</li>
+        <li><b>Data Transfer-Premium:</b> per GB, by source Region and edge location, billed only in the busier direction. Range across AWS's table: $0.007 to $0.105.</li>
+        <li><b>On top:</b> normal data-transfer-out fees and public IPv4 charges.</li>
+        <li><b>Example (our arithmetic from these rates, same shape as AWS's own):</b> 10,000 GB a month, 60% outbound, endpoint in Europe; 5,000 GB to European edges ($75) and 1,000 GB to Asia Pacific ($33): $18 + $108 = <b>$126 a month</b>.</li>
+        <li><b>Our simulator</b> on the API tab uses a flat $0.02 per GB.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ============ TOOL 3: AURORA GLOBAL DATABASE — WHAT IT IS ============ -->
+  <section class="narrative-slide" id="slide-aurora-intro" data-slide-label="Slide 19 · Tool 3, Aurora Global Database">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 3 — for the data layer</p>
+      <h1>Aurora Global Database: the only option that moves the data itself</h1>
+      <ul class="narrative-list">
+        <li><b>What it is:</b> one writer region, with read replicas kept in sync in other regions. Reads in a replica region are served locally; writes are automatically forwarded back to the writer, wherever they originate.</li>
+        <li><b>Why it fits here:</b> a database connection is "chatty" — every single query is its own round trip. No network-layer trick (not even Global Accelerator) can fix that, because the distance to the data itself hasn't changed. The only real fix is moving <b>the data</b>, not the network path.</li>
+        <li><b>How we'd wire it in:</b> this is the option that requires <b>part of the application to move</b> — specifically, the read path for a given region needs to run close to that region's replica to get the benefit. A read-only reporting service or a regional API tier are natural candidates; write-heavy paths don't benefit the same way.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="db" data-goto-run="1">Try it live — four ways to reach the database →</button>
     </div>
   </section>
 
   <!-- ============ DATABASE ============ -->
-  <section class="panel" id="panel-db">
-    <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads, write forwarding, and batching.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
-    <div class="why-card">
-      <h3>Why this matters</h3>
-      <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the only two things that actually help are moving the <b>data</b> closer, or making fewer, bigger round trips. <b>Aurora Global Database</b> does the first with a read replica; application-level batching does the second.</p>
-      <div class="why-steps">
-        <div class="why-step"><span class="why-num">1</span><div><b>Routing fixes (direct / Global Accelerator / VPC peering)</b><p>These change <i>how</i> packets travel, not <i>how far</i>. The distance to Ohio is unchanged, so per-query latency barely moves.</p></div></div>
-        <div class="why-step"><span class="why-num">2</span><div><b>Moving the data (Frankfurt replica)</b><p>Reads hit a local copy of the data in Frankfurt — the distance to query is now zero. Writes still have to reach the Ohio primary.</p></div></div>
-        <div class="why-step"><span class="why-num">3</span><div><b>Fewer round trips (batched API)</b><p>Packing many queries into one request pays the Ohio round trip exactly once, no matter how many statements it carries.</p></div></div>
+  <section class="panel" id="panel-db" data-slide-label="Slide 20 · Aurora Global Database, live">
+    <div class="feature-head"><div><p class="section-kicker">Regional data access</p><h1>Aurora PostgreSQL</h1><p class="section-intro">Compare remote database access with local replica reads and write forwarding.</p></div><span class="badge" title="A browser cannot speak PostgreSQL, so this runs in a Lambda function in Frankfurt instead">Timed from Frankfurt, not your browser</span></div>
+    <div class="slide-grid">
+      <div class="slide-text">
+        <div class="why-card">
+          <h3>Why this matters</h3>
+          <p>A database connection is "chatty": a typical request makes many small round trips (connect, then one per query), and each one pays the full network distance. Neither a CDN nor a faster network route can undo that — the thing that actually helps is moving the <b>data</b> closer. <b>Aurora Global Database</b> does that with a read replica.</p>
+          <div class="why-steps">
+            <div class="why-step"><span class="why-num">1</span><div><b>Routing fixes (direct / Global Accelerator / VPC peering)</b><p>These change <i>how</i> packets travel, not <i>how far</i>. The distance to Ohio is unchanged, so per-query latency barely moves.</p></div></div>
+            <div class="why-step"><span class="why-num">2</span><div><b>Moving the data (Frankfurt replica)</b><p>Reads hit a local copy of the data in Frankfurt — the distance to query is now zero. Writes still have to reach the Ohio primary.</p></div></div>
+          </div>
+        </div>
+        <div class="doc-links" id="db-docs"></div>
+      </div>
+      <div class="slide-live">
+        <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
+        <div id="db-controls" class="card test-controls">
+          <div class="row">
+            <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
+            <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
+            <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
+            <button class="run-button" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
+          </div>
+        </div>
+        <div class="route-grid" id="db-route-grid" aria-label="Separate route maps for database access paths"></div>
+        <p class="small muted">Map tiles © OpenStreetMap contributors. Database timings start at the Frankfurt probe function. Hop labels show configured service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client for the traceable paths; the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation.</p>
+        <div class="card">
+          <h2>Results</h2>
+          <p class="section-intro">A browser cannot speak PostgreSQL, so these runs execute in a function in <b id="db-client-region">the near region</b>, not the visitor's own network.</p>
+          <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Ohio; the replica forwards them there.</p>
+          <div class="status" id="db-status"></div>
+          <div id="db-lanes"></div>
+          <div id="db-speed"></div>
+          <div id="db-table" class="scroll"></div>
+          <div class="row feature-actions"><button data-export-csv="db">CSV</button><button data-share="db">Share results</button><button data-copy-summary="db">Copy summary</button><span data-feature-status="db" class="small muted"></span></div>
+          <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">Global Database replicates storage to the near-region secondary. Reads can be local; forwarded writes still reach the primary. The Global Accelerator comparison uses a TCP forwarder because Aurora is not an Accelerator endpoint type.</p></details>
+        </div>
+        <div class="card cost-card" id="db-cost-card">
+          <h2>Simulated monthly cost</h2>
+          <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
+          <div class="row">
+            <label class="field">Avg. Aurora ACUs<input type="text" inputmode="numeric" id="db-cost-acu" value="1"></label>
+          </div>
+          <div class="cost-table" id="db-cost-table"></div>
+        </div>
       </div>
     </div>
-    <div class="doc-links" id="db-docs"></div>
-    <div id="db-disabled" class="banner" style="display:none">The database paths are not deployed (<code>enable_aurora = false</code>).</div>
-    <div id="db-controls" class="card test-controls">
-      <div class="row">
-        <div class="seg" id="db-workload"><button data-w="read" aria-pressed="true">Reads</button><button data-w="write" aria-pressed="false">Writes</button></div>
-        <label class="field">Queries per session: <b id="db-queries-v">20</b><input type="range" id="db-queries" min="1" max="50" value="20"></label>
-        <label class="field">Sessions: <b id="db-sessions-v">3</b><input type="range" id="db-sessions" min="1" max="5" value="3"></label>
-        <button class="run-button" id="db-run">Run</button><button id="db-stop" disabled>Stop</button>
-      </div>
+  </section>
+
+  <!-- ============ TOOL 3: AURORA GLOBAL DATABASE — TRADE-OFFS ============ -->
+  <section class="narrative-slide" id="slide-aurora-tradeoffs" data-slide-label="Slide 21 · Aurora Global Database, trade-offs">
+    <div class="narrative-body">
+      <p class="section-kicker">Tool 3 — trade-offs, cost, maintainability</p>
+      <h1>Aurora Global Database: the highest-commitment option</h1>
+      <ul class="narrative-list">
+        <li><b>Trade-off:</b> reads get fast once the application's read path runs near the replica — but that's an application/deployment change, not just infrastructure. Writes still always travel to the original writer region, no matter where they're issued from — there's no way around that with this architecture. Replicated data can be briefly stale (replication lag) — the application needs to tolerate that for the read path to be safe.</li>
+        <li><b>Cost:</b> roughly <b>doubles</b> the database compute bill (a second set of capacity units running in the replica region, in addition to the writer). There's no way to get the latency benefit without paying for that second copy of compute.</li>
+        <li><b>Maintainability:</b> the highest of the three tools — replication lag needs monitoring, and some application logic may need to be region-aware (which replica to read from, how to handle forwarded writes). This is an architecture decision, not a toggle.</li>
+        <li><b>Bottom line:</b> worth it only where there's a genuinely <b>read-heavy</b>, latency-sensitive workload in that other region — and only once the team is ready to also move the relevant part of the application there.</li>
+      </ul>
+      <button type="button" class="run-button slide-goto" data-goto="db" data-goto-focus="cost">See the live cost comparison →</button>
     </div>
-    <div class="route-grid" id="db-route-grid" aria-label="Separate route maps for database access paths"></div>
-    <p class="small muted">Map tiles © OpenStreetMap contributors. Database timings start at the Frankfurt probe function. Hop labels show configured service boundaries. Run also starts real traceroutes from the Frankfurt benchmark client for the traceable paths; the Global Accelerator trace stops at the AWS edge and the backbone segment is shown as an approximation.</p>
-    <div class="card">
-      <h2>Results</h2>
-      <p class="section-intro">A browser cannot speak PostgreSQL, so these runs execute in a function in <b id="db-client-region">the near region</b>, not the visitor's own network.</p>
-      <p class="small muted">A session is one fresh connection followed by N sequential statements, like a chatty application. Writes always reach Ohio; the replica forwards them there.</p>
-      <div class="status" id="db-status"></div>
-      <div id="db-lanes"></div>
-      <div id="db-speed"></div>
-      <div id="db-table" class="scroll"></div>
-      <div class="row feature-actions"><button data-export-csv="db">CSV</button><button data-share="db">Share results</button><button data-copy-summary="db">Copy summary</button><span data-feature-status="db" class="small muted"></span></div>
-      <details class="feature-docs"><summary>Implementation notes</summary><p class="section-intro">Global Database replicates storage to the near-region secondary. Reads can be local; forwarded writes still reach the primary. The Global Accelerator comparison uses a TCP forwarder because Aurora is not an Accelerator endpoint type.</p></details>
-    </div>
-    <div class="card cost-card" id="db-cost-card">
-      <h2>Simulated monthly cost</h2>
-      <p class="section-intro">Rough list-price estimate for running each path 24/7 for a month, plus the per-session cost at a traffic volume you choose. Aurora's compute (ACUs) usually dominates and is shared by every path except the replica, which needs its own.</p>
-      <div class="row">
-        <label class="field">Avg. Aurora ACUs<input type="text" inputmode="numeric" id="db-cost-acu" value="1"></label>
-        <label class="field">Sessions per month<input type="text" inputmode="numeric" id="db-cost-sessions" value="1,000,000"></label>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-writefwd" data-slide-label="Slide 22 · Aurora, write forwarding">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — write forwarding</p>
+      <h1>Write forwarding: what works and what doesn't</h1>
+      <p class="section-intro">A replica can accept writes and pass them to the writer. Off by default; turning it on needs no downtime.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Works</th><th>Not supported</th></tr></thead>
+          <tbody>
+            <tr><td>INSERT, UPDATE, DELETE</td><td>DDL (CREATE, ALTER, DROP)</td></tr>
+            <tr><td>SELECT &hellip; FOR UPDATE / SHARE</td><td>Sequences: nextval, setval</td></tr>
+            <tr><td>PREPARE and EXECUTE</td><td>Cursors, SAVEPOINT, COPY</td></tr>
+            <tr><td>EXPLAIN of those statements</td><td>TRUNCATE, LOCK, VACUUM, ANALYZE</td></tr>
+            <tr><td>REPEATABLE READ, READ COMMITTED</td><td>SERIALIZABLE; user-defined functions and procedures</td></tr>
+          </tbody>
+        </table></div>
       </div>
-      <div class="cost-table" id="db-cost-table"></div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Read consistency</b> (per session): SESSION (default) sees your own writes; EVENTUAL is fastest but may be stale; GLOBAL waits for everything committed.</li>
+        <li><b>Capacity:</b> forwarded sessions are capped at 25% of the writer's connection slots by default.</li>
+        <li><b>In this demo:</b> our probe uses UUID ids because sequences aren't forwarded, and the schema is created on the Ohio writer because DDL can't be.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-lag" data-slide-label="Slide 23 · Aurora, replication lag">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — staleness</p>
+      <h1>Replication lag and RPO</h1>
+      <p class="section-intro">A replica is a copy that is slightly behind. How far behind is measurable and can be bounded.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Item</th><th>What AWS says</th></tr></thead>
+          <tbody>
+            <tr><td><b>Typical lag</b></td><td>Under a second, replicated by dedicated storage-layer infrastructure</td></tr>
+            <tr><td><b>Metric</b></td><td>AuroraGlobalDBRPOLag in CloudWatch: milliseconds behind the writer</td></tr>
+            <tr><td><b>Bound (PostgreSQL)</b></td><td>rds.global_db_rpo, minimum 20 seconds</td></tr>
+            <tr><td><b>If every replica is behind it</b></td><td>Aurora pauses commits on the writer until one catches up</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Two-Region setups:</b> AWS advises keeping the default, or a failover could pause transactions.</li>
+        <li><b>The app must tolerate stale reads;</b> SESSION consistency gives read-your-own-writes.</li>
+        <li><b>Not measured here:</b> we did not measure replication lag in this demo.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-dr" data-slide-label="Slide 24 · Aurora, disaster recovery">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — second benefit</p>
+      <h1>Disaster recovery: switchover and failover</h1>
+      <p class="section-intro">The replica is also a way to survive losing a whole Region.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>Switchover (planned)</th><th>Failover (unplanned)</th></tr></thead>
+          <tbody>
+            <tr><td><b>Use for</b></td><td>Maintenance, Region rotation, follow-the-sun, failing back</td><td>A Region outage</td></tr>
+            <tr><td><b>Data loss</b></td><td>None (RPO 0)</td><td>Possible: unreplicated writes, typically seconds' worth</td></tr>
+            <tr><td><b>Time</b></td><td>Typically under 30 s on listed versions</td><td>A few minutes to promote; other replicas rebuild in minutes to hours</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Our version qualifies:</b> AWS's list includes Aurora PostgreSQL 16.8, this demo's default.</li>
+        <li><b>Use the global writer endpoint</b> so the app keeps one address, and set DNS caching to about 5 s.</li>
+        <li><b>Failover risk:</b> split-brain. Aurora tries to fence the old writer (best effort) and snapshots its volume.</li>
+        <li><b>Prerequisites:</b> same major and minor engine versions; parameter groups, alarms and integrations aren't inherited.</li>
+        <li><b>Not shown in this demo.</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="narrative-slide" id="slide-aurora-cost" data-slide-label="Slide 25 · Aurora, cost detail">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Tool 3 — cost detail</p>
+      <h1>What Aurora Global Database costs</h1>
+      <p class="section-intro">Everything in the primary Region, again in the secondary, plus replication.</p>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Component</th><th>Charged</th></tr></thead>
+          <tbody>
+            <tr><td><b>Instances</b></td><td>In each Region</td></tr>
+            <tr><td><b>Storage and I/O</b></td><td>In each Region</td></tr>
+            <tr><td><b>Replicated writes</b></td><td>Per write I/O sent to each secondary, even on I/O-Optimized</td></tr>
+            <tr><td><b>Cross-Region data transfer</b></td><td>Per GB</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <ul class="narrative-list compact" style="margin-top:22px">
+        <li><b>Two configurations:</b> Standard (pay per I/O) or I/O-Optimized (no I/O charge, higher instance and storage prices). AWS: up to 40% savings when I/O is over 25% of spend.</li>
+        <li><b>AWS example</b> (Standard; 2 instances primary, 1 secondary; 80 GB; 45 M writes): primary $438 + secondary $227 = about <b>$665 a month</b>.</li>
+        <li><b>Equal sizing</b> in both Regions roughly doubles the compute bill.</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ============ WHAT APPLIES TO WHAT ============ -->
+  <section class="narrative-slide" id="slide-mapping" data-slide-label="Slide 26 · What applies to what">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Putting it together</p>
+      <h1>What applies to what</h1>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Your workload</th><th>Recommended tool</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Static assets (images, downloads, public pages)</td><td><b>CloudFront</b></td><td>Cacheable, identical to every user, cheapest and fastest option</td></tr>
+            <tr><td>EKS API traffic (no app changes wanted)</td><td><b>Global Accelerator</b></td><td>Pure network-layer fix, no code or data changes</td></tr>
+            <tr><td>Database reads, if an app tier moves near the user</td><td><b>Aurora Global Database</b></td><td>Only option that actually shortens the data's travel distance</td></tr>
+            <tr><td>Database writes</td><td><i>(none of these fix it)</i></td><td>Writes always return to the writer region by design</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="section-intro" style="margin-top:18px">These three can be adopted <b>independently and incrementally</b> — they don't depend on each other. A natural order: CloudFront first (lowest cost, lowest risk, fastest win), Global Accelerator next (drop-in for EKS), Aurora Global Database last (requires the application-move decision).</p>
+      <button type="button" class="run-button slide-goto" data-goto="overview">Revisit the live summary cards →</button>
+    </div>
+  </section>
+
+  <!-- ============ COST SUMMARY ============ -->
+  <section class="narrative-slide" id="slide-cost-summary" data-slide-label="Slide 27 · Cost summary">
+    <div class="narrative-body wide">
+      <p class="section-kicker">Ballpark, for comparison only</p>
+      <h1>Only one of these three tools saves you money</h1>
+      <div class="card" style="margin-top:20px">
+        <div class="scroll"><table>
+          <thead><tr><th>Tool</th><th>Approx. monthly cost driver</th><th>Where it saves</th></tr></thead>
+          <tbody>
+            <tr><td><b>CloudFront</b></td><td>Per-GB served + requests (1 TB/mo free)</td><td>Usually cheaper than direct origin traffic at scale</td></tr>
+            <tr><td><b>Global Accelerator</b></td><td>~$18/mo fixed + premium transfer</td><td>No cost saving — pure latency/consistency investment</td></tr>
+            <tr><td><b>Aurora Global Database</b></td><td>Roughly 2× database compute</td><td>No cost saving — pure latency investment, for read-heavy regional traffic</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <p class="section-intro" style="margin-top:18px">Only CloudFront is likely to <b>reduce</b> cost while also improving latency. The other two are latency investments with a real, ongoing price tag — the decision is about value to the business (user experience, conversion, SLAs), not about saving money.</p>
+    </div>
+  </section>
+
+  <!-- ============ HONEST CAVEATS ============ -->
+  <section class="narrative-slide" id="slide-caveats" data-slide-label="Slide 28 · Honest caveats">
+    <div class="narrative-body">
+      <p class="section-kicker">Before you commit budget</p>
+      <h1>Honest caveats</h1>
+      <ul class="narrative-list">
+        <li>Global Accelerator and Aurora Global Database add <b>fixed, ongoing cost</b> regardless of traffic — they should be justified by a real latency problem, not adopted speculatively.</li>
+        <li>Aurora Global Database requires an <b>application change</b> (routing reads to the correct replica) to deliver its benefit — it is not a flip-a-switch improvement like the other two.</li>
+        <li>None of the three tools reduce <b>write</b> latency to a far-away database — that is a hard architectural limit, not a configuration gap.</li>
+        <li>This demo's numbers are lab-measured; your actual gains depend on your real traffic patterns, payload sizes, and user geography — this review is the basis for a follow-up measurement against your real workload.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ LIVE DEMO PROOF ============ -->
+  <section class="narrative-slide" id="slide-demo-proof" data-slide-label="Slide 29 · What this demo proves">
+    <div class="narrative-body">
+      <p class="section-kicker">Why this wasn't just slides</p>
+      <h1>What the live demo proves</h1>
+      <ul class="narrative-list">
+        <li>A working, deployable Terraform setup with all three tools wired up exactly as described, between two real AWS regions.</li>
+        <li>An interactive page that <b>measures live</b>, from your own browser (static and API) or from a regional probe (database) — not canned numbers.</li>
+        <li>Real traceroutes from an actual client in the second region, so the network path claims are observable, not just asserted.</li>
+        <li>A cost simulator on each tab, so the price trade-off can be explored at your own traffic volumes, live, during this meeting.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ NEXT STEPS ============ -->
+  <section class="narrative-slide" id="slide-next-steps" data-slide-label="Slide 30 · Next steps">
+    <div class="narrative-body">
+      <p class="section-kicker">Recommended next steps</p>
+      <h1>Where we'd go from here</h1>
+      <ul class="narrative-list">
+        <li><span class="step-num-badge">1</span>Confirm which static assets, API endpoints, and database read paths are actually latency-sensitive for your real users (measure, don't assume).</li>
+        <li><span class="step-num-badge">2</span>Pilot <b>CloudFront</b> first — lowest cost, lowest risk, fastest to show value.</li>
+        <li><span class="step-num-badge">3</span>Pilot <b>Global Accelerator</b> in front of the existing EKS ingress — no application changes required.</li>
+        <li><span class="step-num-badge">4</span>Scope the <b>Aurora Global Database</b> option as a separate project once a specific read-heavy, region-local workload is identified, including the application changes it requires.</li>
+        <li><span class="step-num-badge">5</span>Re-run this same demo against your actual regions and traffic shapes before committing budget.</li>
+      </ul>
     </div>
   </section>
 
@@ -1414,15 +2121,6 @@ function routeDef(kind, lane) {
         { label: `Write forwarding → ${O} writer`, extra: 0, desc: `Writes are forwarded from the replica to the primary in ${O} (faded line), so they still pay the full distance.` },
       ], };
   }
-  const batch = [writer[0] + .7, writer[1] - 1.1];
-  return { color: MAPC.orange, from: probe, to: writer, via: [batch],
-    stops: [["browser", probe, "Probe Lambda · Frankfurt"], ["edge", batch, `Batch API Lambda · ${O}`], ["origin", writer, `Aurora writer · ${O}`]],
-    hops: [
-      { label: "Probe Lambda", node: 0, desc: "The probe packs all queries into one HTTPS request instead of N database round trips." },
-      { label: "One HTTPS batch request", seg: 0, desc: "A single request crosses the distance once, no matter how many queries it carries." },
-      { label: "Batch API Lambda", node: 1, desc: "A Lambda function next to the database runs the whole batch with near-local latency." },
-      { label: "Aurora writer", node: 2, desc: "Only the batch result crosses the distance back to Frankfurt." },
-    ], };
 }
 function hopMarkup(hops) {
   return hops.map((hop, i) => {
@@ -1576,7 +2274,6 @@ function installTraceControls(kind, lane) {
     note.textContent = {
       vpc_peering: "This path stays inside private VPCs, so traceroute can only observe the public-internet path.",
       replica_local: "The replica sits next to the probe in Frankfurt; there is no long-haul path to trace.",
-      batched_api: `One HTTPS call to a function next to the database; the database hop itself stays inside the ${originRegion.name} region.`,
     }[lane] || "This path is not traceable from the benchmark client in this deployment.";
     card.appendChild(note);
   }
@@ -1705,7 +2402,7 @@ function buildMapInfo() {
     public_direct: {
       impl: `Aurora PostgreSQL (Serverless v2) writer in ${O} with a public endpoint, security group locked to the benchmark client's address. The probe opens a PostgreSQL connection over the public internet.`,
       drawbacks: "Every statement pays the full cross-region round-trip time, so chatty applications are orders of magnitude slower; a public database endpoint (even CIDR-restricted) is a wider attack surface than a private one.",
-      price: `${PRICE_NOTE} Aurora Serverless v2 ~$0.13/ACU-hour (0.5 ACU minimum ≈ $47/month) + storage + data-transfer-out. The latency itself is free but usually costs more in compute and UX than the infra.`,
+      price: `${PRICE_NOTE} Aurora Serverless v2: $0.12/ACU-hour in Ohio, $0.14/ACU-hour in Frankfurt (AWS price list, Nov 2026). A 0.5-ACU minimum ≈ $44/month in Ohio. The latency itself is free but usually costs more in compute and UX than the infra plus storage and data-transfer-out.`,
       links: [["Aurora Global Database", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"], ["Aurora pricing", "https://aws.amazon.com/rds/aurora/pricing/"]],
     },
     global_accelerator: {
@@ -1726,12 +2423,6 @@ function buildMapInfo() {
       price: `${PRICE_NOTE} Roughly doubles the Aurora compute bill (a second set of Serverless v2 ACUs) + storage in the second region; write forwarding itself has no separate fee.`,
       links: [["Write forwarding", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-write-forwarding-apg.html"], ["Aurora pricing", "https://aws.amazon.com/rds/aurora/pricing/"]],
     },
-    batched_api: {
-      impl: `The Frankfurt probe packs all queries into a single HTTPS call to a Lambda that runs next to the database in ${O}; the batch executes with near-local latency and only the result crosses the distance.`,
-      drawbacks: "Requires application-level batching, which does not fit every access pattern (transaction boundaries, ORMs); adds a small service to deploy and maintain.",
-      price: `${PRICE_NOTE} Lambda is per-request/per-millisecond — negligible at POC scale; Aurora remains the dominant cost.`,
-      links: [["Lambda Function URLs", "https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html"], ["Lambda pricing", "https://aws.amazon.com/lambda/pricing/"]],
-    },
   },
   };
 }
@@ -1746,8 +2437,7 @@ const PRICING = {
   cloudfrontPerGb: 0.12, cloudfrontPer10kReq: 0.01,
   albHourly: 0.0252, albLcuHourly: 0.008, albTransferPerGb: 0.114,
   gaHourly: 0.025, gaTransferPerGb: 0.02,
-  auroraAcuHour: 0.13, natHourly: 0.052, natPerGb: 0.052,
-  lambdaPer1mReq: 0.20, lambdaGbSecond: 0.0000166667,
+  auroraAcuHourWriter: 0.12, auroraAcuHourReplica: 0.14, natHourly: 0.052, natPerGb: 0.052,
   hoursPerMonth: 730,
 };
 function parseLocaleNumber(id, fallback) {
@@ -1828,15 +2518,14 @@ function renderApiCost() {
 function renderDbCost() {
   if (!C.db?.paths || !$("db-cost-table")) return;
   const acus = Math.max(0.5, parseLocaleNumber("db-cost-acu", 1));
-  const sessions = parseLocaleNumber("db-cost-sessions", 1000000);
-  const writerMonthly = acus * PRICING.auroraAcuHour * PRICING.hoursPerMonth;
+  const writerMonthly = acus * PRICING.auroraAcuHourWriter * PRICING.hoursPerMonth;
+  const replicaMonthly = acus * PRICING.auroraAcuHourReplica * PRICING.hoursPerMonth;
   const natMonthly = PRICING.natHourly * PRICING.hoursPerMonth;
   const rows = [
-    { id: "public_direct", label: "Direct, public internet", monthly: writerMonthly, drivers: `${acus} ACU writer, 24/7 — no extra fee for the public endpoint` },
+    { id: "public_direct", label: "Direct, public internet", monthly: writerMonthly, drivers: `${acus} ACU writer in Ohio ($0.12/ACU-hour) — no extra fee for the public endpoint` },
     { id: "global_accelerator", label: "Global Accelerator", monthly: writerMonthly + PRICING.gaHourly * PRICING.hoursPerMonth + 0.0084 * PRICING.hoursPerMonth, drivers: `Writer + accelerator (≈$18/mo) + a tiny forwarder EC2 (≈$6/mo)` },
     { id: "vpc_peering", label: "VPC peering (private)", monthly: writerMonthly + natMonthly, drivers: `Writer + a NAT gateway for egress (peering itself is free)` },
-    { id: "replica_local", label: "Frankfurt replica", monthly: writerMonthly * 2, drivers: `A second ${acus}-ACU instance in Frankfurt — roughly doubles compute` },
-    { id: "batched_api", label: "One call to API next to DB", monthly: writerMonthly + sessions / 1e6 * PRICING.lambdaPer1mReq, drivers: `Writer + ${(sessions / 1e6).toFixed(2)}M Lambda invocations (compute is negligible)` },
+    { id: "replica_local", label: "Frankfurt replica", monthly: writerMonthly + replicaMonthly, drivers: `Ohio writer (${acus} ACU) + Frankfurt replica (${acus} ACU at $0.14/ACU-hour) — total` },
   ];
   renderCostTable("db-cost-table", rows.filter((r) => C.db.paths.some((p) => p.id === r.id)));
 }
@@ -2137,8 +2826,7 @@ async function runDb() {
       const r = await probe({ path: p.id, workload, queries });
       const sample = { ts: new Date().toISOString(), suite: "db", target: p.id, label: p.label, round: s + 1, queries, ok: !r.error && r.total_ms != null, error: r.error, warning: r.warning };
       if (sample.ok) {
-        if (p.id === "batched_api") { sample.total = r.total_ms; sample.connect = Math.max(0, r.total_ms - (r.inner_queries_ms || 0)); sample.perQuery = (r.inner_queries_ms || 0) / queries; }
-        else {
+        {
           const queryTimes = Array.isArray(r.query_ms) ? r.query_ms : [];
           if (!Number.isFinite(r.connect_ms) || queryTimes.length === 0) {
             sample.ok = false;
@@ -2184,7 +2872,7 @@ function renderDb() {
     data.map((d) => laneHtml(d.lane.label, d.lane.color,
       d.total != null ? [{ v: d.connect, color: d.lane.color }, { v: d.total - d.connect, color: d.lane.color }] : [], max,
       d.total != null ? fmt(d.total) : (d.fail ? "failed" : "..."),
-      d.total != null ? `${d.lane.id === "batched_api" ? "HTTPS call + connect" : "connect"} ${fmt(d.connect)} · per query ${fmt(d.perQuery)} · n=${d.n}` : esc(d.err || ""), d.warn ? "caveat: " + esc(d.warn) : "")).join("");
+      d.total != null ? `connect ${fmt(d.connect)} · per query ${fmt(d.perQuery)} · n=${d.n}` : esc(d.err || ""), d.warn ? "caveat: " + esc(d.warn) : "")).join("");
   const direct = data.find((d) => d.lane.id === "public_direct" && d.total);
   const best = data.filter((d) => d.total && d.lane.id !== "public_direct").sort((a, b) => a.total - b.total)[0];
   $("db-speed").innerHTML = direct && best
@@ -2266,23 +2954,93 @@ function renderShared() {
 
 /* ---------- wiring ---------- */
 function renderAll() { renderRace("static"); renderRace("api"); renderDb(); }
-function setTab(t) {
+
+/* ---- presentation / slide mode ----
+   Every panel is a full "slide" stacked in the page and always in the DOM
+   (no display:none), so it scrolls into view like a presentation. The tab
+   bar becomes a jump-to-slide + "where am I" indicator: clicking a tab
+   smooth-scrolls to that slide, and scrolling by hand keeps the tabs (and
+   the URL hash) in sync via IntersectionObserver, like a scrollspy. */
+const FOCUS_TARGETS = {
+  static: { maps: "static-route-grid", cost: "static-cost-card" },
+  api: { maps: "api-route-grid", cost: "api-cost-card" },
+  db: { maps: "db-route-grid", cost: "db-cost-card" },
+};
+let scrollSpySuspended = false;              // true while an explicit setTab() scroll is in flight
+let pickActivePanel = () => {};              // replaced by setupScrollSpy(); called directly after setTab's jump
+function setActiveTabUI(t, focus) {
   state.tab = t;
   document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === t)));
-  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + t));
   const params = new URLSearchParams(location.hash.slice(1));
   params.set("tab", t);
+  if (focus) params.set("focus", focus); else params.delete("focus");
   history.replaceState(null, "", location.pathname + location.search + "#" + params.toString());
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  renderAll();
-  initFeatureMaps(t);
-  setTimeout(() => {                       // settle each map's layout after its panel becomes visible
-    if (t === "overview") { overviewMap?.invalidateSize(); return; }
-    for (const M of Object.values(maps).filter((m) => m.kind === t)) {
-      M.map.invalidateSize(); drawMap(M.key, true);
-    }
-  }, 120);
 }
+function setTab(t, focus) {
+  scrollSpySuspended = true;
+  setActiveTabUI(t, focus);
+  const focusId = FOCUS_TARGETS[t]?.[focus];
+  const targetEl = (focusId && $(focusId)) || $("panel-" + t);
+  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+  pickActivePanel();                       // update fade-in state immediately, don't wait on a scroll event
+  setTimeout(() => {                       // let maps settle, then let the scrollspy take over again
+    if (t === "overview") overviewMap?.invalidateSize();
+    for (const M of Object.values(maps).filter((m) => m.kind === t)) M.map.invalidateSize();
+    scrollSpySuspended = false;
+  }, 650);
+}
+function updateScrollProgress() {
+  const doc = document.documentElement;
+  const max = doc.scrollHeight - doc.clientHeight;
+  const bar = $("scroll-progress");
+  if (bar) bar.style.width = (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0) + "%";
+}
+function setupScrollSpy() {
+  // Every section — the 4 feature panels and every narrative-only slide
+  // between them — fades in as it nears the viewport. They vary a lot in
+  // height (the Database slide carries 5 route-map cards, several times
+  // taller than a bullet-point narrative slide), so "largest intersection
+  // ratio" would favor short ones. Instead, on every scroll, compute each
+  // section's position directly: fade in whichever are anywhere near the
+  // viewport, and separately — among only the 4 feature panels, since only
+  // those have a matching tab — make the one whose top edge is closest to
+  // just above a line near the top of the viewport "active" for the tab bar.
+  const sections = Array.from(document.querySelectorAll(".panel, .narrative-slide"));
+  const tabbedPanels = sections.filter((s) => s.classList.contains("panel"));
+  pickActivePanel = () => {
+    const line = 140;                        // px from the top of the viewport
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    let best = tabbedPanels[0], bestDist = -Infinity;
+    for (const s of sections) {
+      const rect = s.getBoundingClientRect();
+      s.classList.toggle("in-view", rect.bottom > 0 && rect.top < vh);
+      if (s.classList.contains("panel") && rect.top <= line && rect.top > bestDist) { bestDist = rect.top; best = s; }
+    }
+    updateScrollProgress();
+    if (scrollSpySuspended) return;
+    const t = best.id.replace("panel-", "");
+    if (t !== state.tab) setActiveTabUI(t);
+  };
+  window.addEventListener("scroll", pickActivePanel, { passive: true });
+  window.addEventListener("resize", pickActivePanel);
+  pickActivePanel();
+}
+
+function installBackToTopButtons() {
+  const title = $("slide-title");
+  if (!title) return;
+  document.querySelectorAll(".panel, .narrative-slide").forEach((slide) => {
+    if (slide.querySelector(":scope > .back-to-top")) return;
+    const link = document.createElement("a");
+    link.href = "#slide-title";
+    link.className = "back-to-top";
+    link.setAttribute("aria-label", "Back to the top of the presentation");
+    link.innerHTML = '<span class="arrow" aria-hidden="true">↑</span><span>Top</span>';
+    slide.appendChild(link);
+  });
+}
+
+function initAllFeatureMaps() { for (const t of ["overview", "static", "api", "db"]) initFeatureMaps(t); }
 
 function addDocLinks(kind, links) {
   const target = $(kind + "-docs");
@@ -2292,6 +3050,10 @@ function addDocLinks(kind, links) {
 
 function init() {
   document.title = C.title || "Network feature benchmark";
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  const navigationEntry = performance.getEntriesByType?.("navigation")?.[0];
+  const reloaded = navigationEntry?.type === "reload";
+  if (reloaded) history.replaceState(null, "", location.pathname + location.search);
   $("db-client-region").textContent = clientRegion.name;
   buildDbMapCards();
 
@@ -2313,7 +3075,6 @@ function init() {
     ["Aurora Serverless v2", "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html"],
     ["VPC peering", "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"],
     ["Global Accelerator endpoints", "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"],
-    ["Lambda Function URLs", "https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html"],
   ]);
   if (C.db && C.db.paths.length) setMapRoute("db", C.db.paths[0].id);
 
@@ -2335,7 +3096,7 @@ function init() {
   for (const [id, fn] of [
     ["static-cost-reqs", renderStaticCost], ["static-cost-hit", renderStaticCost],
     ["api-cost-reqs", renderApiCost], ["api-cost-kb", renderApiCost],
-    ["db-cost-acu", renderDbCost], ["db-cost-sessions", renderDbCost],
+    ["db-cost-acu", renderDbCost],
   ]) { $(id)?.addEventListener("input", fn); }
   renderAllCosts();
 
@@ -2373,9 +3134,60 @@ function init() {
 
   document.querySelectorAll(".overview-goto").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.goto)));
 
+  // Presentation slide buttons: jump to a plain narrative slide by id
+  // (data-goto-id), or into a feature tab (data-goto), optionally landing on
+  // its cost section (data-goto-focus="cost") or auto-starting its test
+  // (data-goto-run="1") — the same deep-link vocabulary as #tab=...&run=1.
+  document.querySelectorAll(".slide-goto[data-goto-id]").forEach((b) => b.addEventListener("click", () => {
+    $(b.dataset.gotoId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    pickActivePanel();
+  }));
+  document.querySelectorAll(".slide-goto[data-goto]").forEach((b) => b.addEventListener("click", () => {
+    const t = b.dataset.goto;
+    setTab(t, b.dataset.gotoFocus);
+    if (b.dataset.gotoRun === "1") {
+      setTimeout(() => {
+        if (t === "static" || t === "api") runRace(t);
+        else if (t === "db" && C.db) runDb();
+      }, 700);
+    }
+  }));
+
   bindFeatureActions();
-  const initialTab = new URLSearchParams(location.hash.slice(1)).get("tab");
-  setTab(["overview", "static", "api", "db"].includes(initialTab) ? initialTab : "overview");
+  // Deep links for the companion presentation, e.g. index.html#tab=db&focus=cost&run=1.
+  // Read before setupScrollSpy() runs, because its first pass (at scrollY 0,
+  // before setTab below has scrolled anywhere) would otherwise rewrite the
+  // hash to #tab=overview and lose this.
+  const initialParams = new URLSearchParams(location.hash.slice(1));
+  const initialTab = initialParams.get("tab");
+  const initialFocus = initialParams.get("focus");
+  const hasTabDeepLink = ["overview", "static", "api", "db"].includes(initialTab);
+  if (!hasTabDeepLink) {
+    history.replaceState(null, "", location.pathname + location.search);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  // Every slide lives in the page at once now, so its maps are built up front
+  // instead of lazily when a tab becomes active. setupScrollSpy also drives
+  // the scroll-progress bar and each panel's fade-in as the page scrolls.
+  initAllFeatureMaps();
+  installBackToTopButtons();
+  scrollSpySuspended = true;               // setTab below clears this once it settles
+  setupScrollSpy();
+  if (!hasTabDeepLink) {
+    setActiveTabUI("overview");
+    window.scrollTo({ top: 0, behavior: "auto" });
+    pickActivePanel();
+    setTimeout(() => { scrollSpySuspended = false; }, 650);
+  } else {
+    setTab(initialTab, initialFocus);
+  }
+  if (hasTabDeepLink && initialParams.get("run") === "1") {
+    setTimeout(() => {
+      if (initialTab === "static" || initialTab === "api") runRace(initialTab);
+      else if (initialTab === "db" && C.db) runDb();
+    }, 500);
+  }
 
   window.addEventListener("hashchange", renderShared);
   renderAll(); renderShared();

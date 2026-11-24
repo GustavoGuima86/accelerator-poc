@@ -35,9 +35,11 @@ _SKIP_GEO_PREFIXES = ("10.", "127.", "169.254.", "172.16.", "172.17.", "172.18."
 
 
 def _respond(status, body):
+    # No CORS header here: the Function URL's cors block already adds it, and a
+    # duplicate Access-Control-Allow-Origin makes browsers reject the response.
     return {
         "statusCode": status,
-        "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+        "headers": {"Content-Type": "application/json"},
         "body": json.dumps(body),
     }
 

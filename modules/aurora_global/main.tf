@@ -70,7 +70,7 @@ resource "aws_rds_cluster" "primary" {
   }
 
   # Required for synchronous HTTPS database initialization from the probe
-  # service and the in-region batching Lambda. Restrict ingress to those roles.
+  # service. Restrict ingress to that role.
   enable_http_endpoint = true
 
   backup_retention_period = 1

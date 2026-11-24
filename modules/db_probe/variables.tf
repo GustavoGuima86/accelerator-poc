@@ -45,16 +45,6 @@ variable "replica_endpoint" {
   type        = string
 }
 
-variable "batch_api_url" {
-  description = "Function URL of the batched-queries API in the far region."
-  type        = string
-}
-
-variable "batch_api_token" {
-  type      = string
-  sensitive = true
-}
-
 variable "global_accelerator_ip" {
   type = string
 }

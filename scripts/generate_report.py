@@ -24,7 +24,6 @@ MS = 1000.0
 COLOR_DIRECT = "#d64545"
 COLOR_MISS = "#f08c00"
 COLOR_HIT = "#2f9e44"
-COLOR_NEUTRAL = "#4263eb"
 COLOR_BG = "#f1f3f5"
 COLOR_TEXT = "#1b1f23"
 COLOR_MUTED = "#6c757d"
@@ -238,7 +237,6 @@ def render_db_section(db_raw):
     chatty application does, so the round-trip time is paid N+handshake times."""
     n_queries = db_raw.get("queries_per_session", "?")
     paths = db_raw.get("paths", {})
-    batch = db_raw.get("batch_api", {})
 
     def path_rows(workload, color_for):
         rows, table = [], []
@@ -260,12 +258,6 @@ def render_db_section(db_raw):
 
     read_rows, read_table = path_rows("read", color_read)
     write_rows, write_table = path_rows("write", color_read)
-
-    # The batched API only exists for the read workload.
-    batch_ok = [r for r in batch.get("runs", []) if r.get("http_code") == 200]
-    batch_total = stats([r["total_ms"] for r in batch_ok])
-    if batch_total:
-        read_rows.append(("One call to API next to DB", batch_total["avg"], COLOR_NEUTRAL, batch_total["n"]))
 
     def chart_block(title, intro, rows):
         values = [v for _, v, _, _ in rows if v]
@@ -292,16 +284,6 @@ def render_db_section(db_raw):
             f"<td>{fmt(st)}</td><td>{failed}</td>"
             "</tr>"
         )
-    if batch_total:
-        lq = stats([r["lambda_queries_ms"] for r in batch_ok if r.get("lambda_queries_ms") is not None])
-        table_rows.append(
-            "<tr>"
-            "<td>One call to API next to DB</td><td>read (batched)</td>"
-            f"<td>n/a</td><td>{fmt(lq)} for all {n_queries}</td><td>n/a</td>"
-            f"<td>{fmt(batch_total)}</td><td>{len(batch.get('runs', [])) - len(batch_ok)}</td>"
-            "</tr>"
-        )
-
     warnings = []
     for name, entry in paths.items():
         meta = entry["meta"]
@@ -318,8 +300,7 @@ def render_db_section(db_raw):
         chart_block(
             f"Database reads: one session = connect + {n_queries} queries",
             "Fresh connection, then sequential primary-key lookups, from Frankfurt. Every statement pays "
-            "the Frankfurt-Ohio round trip unless the data is served locally by the replica, or the "
-            "whole batch runs next to the database.",
+            "the Frankfurt-Ohio round trip unless the data is served locally by the replica.",
             read_rows,
         ),
         chart_block(

@@ -23,7 +23,7 @@ import uuid
 
 import pg8000.native
 
-PATHS = ("public_direct", "global_accelerator", "vpc_peering", "replica_local", "batched_api")
+PATHS = ("public_direct", "global_accelerator", "vpc_peering", "replica_local")
 MAX_QUERIES = 50
 SEED_ROWS = 100
 
@@ -104,7 +104,7 @@ def _target(path):
 
 
 def _ensure_schema():
-    """Check the table exists; schema/seed creation is done by the Ohio Lambda during apply."""
+    """Check the table exists; schema/seed creation is done by the benchmark client (db_benchmark.py) over VPC peering."""
     global _schema_checked
     if _schema_checked:
         return
@@ -125,23 +125,6 @@ def _ensure_schema():
 
 def _json(status, body):
     return {"statusCode": status, "headers": {"content-type": "application/json"}, "body": json.dumps(body)}
-
-
-def _run_batched(queries):
-    """Frankfurt -> ONE HTTPS call to the Ohio function that runs all N queries next to the database."""
-    url = _env("BATCH_API_URL")
-    result = {"path": "batched_api", "workload": "read", "queries": queries}
-    t0 = time.perf_counter()
-    try:
-        with urllib.request.urlopen(f"{url}?t={_env('BATCH_TOKEN')}&queries={queries}", timeout=50) as resp:
-            inner = json.load(resp)
-    except Exception as exc:  # noqa: BLE001
-        result["error"] = f"{type(exc).__name__}: {exc}"
-        return result
-    result["total_ms"] = round((time.perf_counter() - t0) * 1000, 2)
-    result["inner_connect_ms"] = inner.get("connect_ms")
-    result["inner_queries_ms"] = inner.get("queries_ms")
-    return result
 
 
 def handler(event, context):
@@ -166,11 +149,6 @@ def handler(event, context):
         return _json(400, {"error": "queries must be an integer"})
 
     _ensure_schema()
-
-    if path == "batched_api":
-        if workload != "read":
-            return _json(200, {"path": path, "workload": workload, "error": "the batched API only runs the read workload"})
-        return _json(200, _run_batched(queries))
 
     result = {"path": path, "workload": workload, "queries": queries}
     try:

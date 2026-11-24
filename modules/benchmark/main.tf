@@ -236,13 +236,6 @@ data "aws_iam_policy_document" "benchmark_s3" {
     actions   = ["s3:GetBucketLocation"]
     resources = [aws_s3_bucket.reports.arn]
   }
-
-  statement {
-    sid       = "ReadReportsBucketLocation"
-    effect    = "Allow"
-    actions   = ["s3:GetBucketLocation"]
-    resources = [aws_s3_bucket.reports.arn]
-  }
 }
 
 resource "aws_iam_role_policy" "benchmark_s3" {

@@ -231,28 +231,6 @@ module "db_accelerator" {
   endpoint_group_region    = var.aws_region
 }
 
-# Access path 5: one HTTPS call to a function next to the database that runs
-# the whole batch of queries locally.
-module "db_batch_api" {
-  count  = local.aurora_enabled ? 1 : 0
-  source = "./modules/db_batch_api"
-
-  name        = var.project_name
-  source_dir  = "${path.module}/lambda_src"
-  schema_init = local.aurora_enabled
-  vpc_id      = module.vpc_far[0].vpc_id
-  # This function only connects to Aurora over the local VPC route, so public
-  # subnets are fine (Lambda ENIs still have no public IP) and avoid a second
-  # NAT gateway in Ohio.
-  subnet_ids               = module.vpc_far[0].subnet_ids
-  aurora_security_group_id = module.aurora[0].primary_security_group_id
-  db_host                  = module.aurora[0].primary_endpoint
-  db_name                  = module.aurora[0].database_name
-  db_user                  = module.aurora[0].master_username
-  db_password              = module.aurora[0].master_password
-  query_count              = var.db_queries_per_session
-}
-
 # Interactive page, database half: a Lambda in the NEAR region that runs one DB
 # session per request against a chosen access path. Browsers cannot speak the
 # Postgres protocol, so this is the HTTP face of the Frankfurt-to-Ohio paths.
@@ -274,8 +252,6 @@ module "db_probe" {
   primary_endpoint        = module.aurora[0].primary_endpoint
   replica_endpoint        = module.aurora[0].secondary_reader_endpoint
   global_accelerator_ip   = module.api_endpoint.global_accelerator_ip[0]
-  batch_api_url           = module.db_batch_api[0].function_url
-  batch_api_token         = module.db_batch_api[0].token
   global_accelerator_port = 5432
 
   depends_on = [module.vpc_peering, module.db_accelerator]
@@ -335,7 +311,6 @@ module "interactive_site" {
         { id = "global_accelerator", label = "Global Accelerator", optimized = true, writes = true },
         { id = "vpc_peering", label = "VPC peering (private)", optimized = true, writes = true },
         { id = "replica_local", label = "Frankfurt replica", optimized = true, writes = true },
-        { id = "batched_api", label = "One call to API next to DB", optimized = true, writes = false },
       ]
     } : null
     trace = local.trace_enabled ? {
@@ -358,8 +333,6 @@ locals {
     db_accelerator_port   = 5432
     sessions              = var.db_sessions
     queries_per_session   = var.db_queries_per_session
-    batch_api_url         = module.db_batch_api[0].function_url
-    batch_api_token       = module.db_batch_api[0].token
   } : null
 }
 
@@ -392,7 +365,6 @@ module "benchmark" {
   wait_for = local.aurora_enabled ? [
     module.vpc_peering[0].peering_connection_id,
     module.db_accelerator[0].endpoint_group_id,
-    module.db_batch_api[0].function_url,
     module.aurora[0].secondary_reader_endpoint,
   ] : []
 }
